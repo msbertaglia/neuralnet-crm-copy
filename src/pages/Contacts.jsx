@@ -252,6 +252,19 @@ export default function Contacts() {
           onClose={() => { setShowContactForm(false); setEditingContact(null); }}
         />
       )}
+
+      {deleteConfirm && (
+        <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 max-w-sm w-full shadow-2xl">
+            <h3 className="text-white font-bold text-lg mb-2">Confirmar exclusão</h3>
+            <p className="text-slate-400 text-sm mb-6">Tem certeza que deseja excluir <span className="text-white font-semibold">{deleteConfirm.name}</span>? Esta ação não pode ser desfeita.</p>
+            <div className="flex gap-3">
+              <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-2 rounded-lg border border-slate-600 text-slate-300 hover:bg-slate-800 text-sm transition-colors">Cancelar</button>
+              <button onClick={() => handleDelete(deleteConfirm.id)} className="flex-1 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm font-semibold transition-colors">Excluir</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
