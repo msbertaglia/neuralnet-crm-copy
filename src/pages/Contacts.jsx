@@ -39,6 +39,8 @@ export default function Contacts() {
   const [showContactForm, setShowContactForm] = useState(false);
   const [editingContact, setEditingContact] = useState(null);
   const [showLogForm, setShowLogForm] = useState(false);
+  const [viewMode, setViewMode] = useState("list"); // "list" | "grid"
+  const [deleteConfirm, setDeleteConfirm] = useState(null);
 
   useEffect(() => { loadAll(); }, []);
 
