@@ -45,12 +45,22 @@ export default function ConnectionForm({ contacts, connection, existingConnectio
   const handleSubmit = async () => {
     const a = contacts.find(c => c.id === form.contact_a_id);
     const b = contacts.find(c => c.id === form.contact_b_id);
-    const intro = contacts.find(c => c.id === form.introduced_by_id);
+    
+    let introducedByName = "";
+    if (form.introduced_by_id === "sem_informacao") {
+      introducedByName = "Sem informação";
+    } else if (form.introduced_by_id === "direto") {
+      introducedByName = "Direto";
+    } else {
+      const intro = contacts.find(c => c.id === form.introduced_by_id);
+      introducedByName = intro?.name || "";
+    }
+    
     await onSave({
       ...form,
       contact_a_name: a?.name || "",
       contact_b_name: b?.name || "",
-      introduced_by_name: intro?.name || "",
+      introduced_by_name: introducedByName,
     });
     // If user approved suggested implied connection, save it too
     if (pendingImplied) {
