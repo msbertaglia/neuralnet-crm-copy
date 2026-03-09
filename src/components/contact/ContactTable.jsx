@@ -318,6 +318,16 @@ function ContactRow({ contact, columns, canEdit, actionsWidth, isLast, isCentral
           {isCentral && <div className="w-2 h-2 rounded-full bg-blue-400" />}
         </div>
       </div>
+      {/* Connection indicator */}
+      <div
+        style={{ width: CONNECTION_INDICATOR_WIDTH, minWidth: CONNECTION_INDICATOR_WIDTH }}
+        className="flex-shrink-0 px-3 py-3 flex items-center justify-center"
+        title={indicator?.label || ""}
+      >
+        {indicator && (
+          <Circle className="w-3 h-3 flex-shrink-0" style={{ color: indicator.color, fill: indicator.color }} />
+        )}
+      </div>
       {columns.map(col => (
         <div
           key={col.key}
