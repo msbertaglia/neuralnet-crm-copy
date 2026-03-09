@@ -1,12 +1,12 @@
-import { useState } from "react";
-import { X } from "lucide-react";
+import { useState, useMemo } from "react";
+import { X, AlertTriangle, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-export default function ConnectionForm({ contacts, connection, onSave, onClose }) {
+export default function ConnectionForm({ contacts, connection, existingConnections = [], onSave, onClose }) {
   const [form, setForm] = useState({
     contact_a_id: "", contact_b_id: "",
     connection_date: "", discovered_date: "",
@@ -16,8 +16,31 @@ export default function ConnectionForm({ contacts, connection, onSave, onClose }
     notes: "",
     ...connection,
   });
+  const [pendingImplied, setPendingImplied] = useState(null); // suggested implicit connection
 
-  const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+  const set = (k, v) => {
+    setForm(f => {
+      const next = { ...f, [k]: v };
+      return next;
+    });
+    setPendingImplied(null);
+  };
+
+  // Detect missing implied connection: if introducer is set, check if introducer↔contactB exists
+  const missingImplied = useMemo(() => {
+    if (!form.introduced_by_id || !form.contact_b_id) return null;
+    const introId = form.introduced_by_id;
+    const bId = form.contact_b_id;
+    if (introId === bId) return null;
+    const alreadyExists = existingConnections.find(c =>
+      (c.contact_a_id === introId && c.contact_b_id === bId) ||
+      (c.contact_b_id === introId && c.contact_a_id === bId)
+    );
+    if (alreadyExists) return null;
+    const intro = contacts.find(c => c.id === introId);
+    const b = contacts.find(c => c.id === bId);
+    return intro && b ? { introId, bId, introName: intro.name, bName: b.name } : null;
+  }, [form.introduced_by_id, form.contact_b_id, existingConnections, contacts]);
 
   const handleSubmit = async () => {
     const a = contacts.find(c => c.id === form.contact_a_id);
@@ -29,6 +52,24 @@ export default function ConnectionForm({ contacts, connection, onSave, onClose }
       contact_b_name: b?.name || "",
       introduced_by_name: intro?.name || "",
     });
+    // If user approved suggested implied connection, save it too
+    if (pendingImplied) {
+      const introContact = contacts.find(c => c.id === pendingImplied.introId);
+      const bContact = contacts.find(c => c.id === pendingImplied.bId);
+      await onSave({
+        contact_a_id: pendingImplied.introId,
+        contact_b_id: pendingImplied.bId,
+        contact_a_name: introContact?.name || "",
+        contact_b_name: bContact?.name || "",
+        connection_type: form.connection_type,
+        strength: "media",
+        introduced_by_id: "",
+        introduced_by_name: "",
+        notes: "Conexão criada automaticamente pela hierarquia de apresentação.",
+        connection_date: form.connection_date,
+        discovered_date: form.discovered_date,
+      });
+    }
   };
 
   return (
