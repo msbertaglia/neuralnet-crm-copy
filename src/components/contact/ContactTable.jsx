@@ -195,19 +195,18 @@ function ContactRow({ contact, columns, canEdit, actionsWidth, isLast, onView, o
           </div>
         );
       case "nickname":
-        return <span className="text-slate-300 text-sm truncate block">{contact.nickname || <span className="text-slate-700">—</span>}</span>;
+        return <span className="text-slate-300 text-sm">{contact.nickname || <span className="text-slate-700">—</span>}</span>;
       case "tags":
         return contact.tags?.length
-          ? <div className="flex gap-1 flex-nowrap overflow-hidden">
-              {contact.tags.slice(0, 3).map(t => (
+          ? <div className="flex gap-1 flex-wrap">
+              {contact.tags.map(t => (
                 <span key={t} className="bg-slate-700 text-slate-300 text-xs px-1.5 py-0.5 rounded whitespace-nowrap">{t}</span>
               ))}
-              {contact.tags.length > 3 && <span className="text-slate-500 text-xs">+{contact.tags.length - 3}</span>}
             </div>
           : <span className="text-slate-700">—</span>;
       case "company":
         return contact.company
-          ? <span className="text-slate-300 text-sm truncate block">{contact.company}</span>
+          ? <span className="text-slate-300 text-sm">{contact.company}</span>
           : <span className="text-slate-700">—</span>;
       case "social":
         return (
