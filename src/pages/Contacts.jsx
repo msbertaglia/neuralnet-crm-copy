@@ -45,17 +45,9 @@ export default function Contacts() {
   const [showLogForm, setShowLogForm] = useState(false);
   const [viewMode, setViewMode] = useState("list"); // "list" | "grid"
   const [deleteConfirm, setDeleteConfirm] = useState(null);
-  const [centralContactId, setCentralContactId] = useState(() => localStorage.getItem("netmap_central_contact_id") || null);
   const [connections, setConnections] = useState([]);
   const [pendingSave, setPendingSave] = useState(null); // { contactData, editingId, newImplied, saving }
   const [showImpliedModal, setShowImpliedModal] = useState(false);
-
-  const handleSetCentral = (id) => {
-    const newId = id === centralContactId ? null : id;
-    if (newId) localStorage.setItem("netmap_central_contact_id", newId);
-    else localStorage.removeItem("netmap_central_contact_id");
-    setCentralContactId(newId);
-  };
 
   useEffect(() => { loadAll(); }, []);
 
