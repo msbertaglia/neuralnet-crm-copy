@@ -269,13 +269,90 @@ export default function Contacts() {
   );
 }
 
-function ContactCard({ contact, onClick, fmtDate }) {
+function ContactRow({ contact, fmtDate, canEdit, onView, onEdit, onDelete, isLast }) {
+  const nextIcon = NEXT_STEP_ICONS[contact.next_step_status];
+  const NEXT_STEP_COLORS = { pendente: "text-amber-400", aguardando: "text-blue-400", atrasado: "text-red-400", concluido: "text-green-400" };
+
+  return (
+    <div
+      className={`grid grid-cols-[2fr_2fr_1fr_1fr_1fr_auto] gap-4 px-4 py-3 items-center hover:bg-slate-800/50 transition-colors cursor-pointer ${!isLast ? "border-b border-slate-800" : ""}`}
+      onClick={onView}
+    >
+      {/* Nome */}
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden flex-shrink-0 text-xs font-bold text-slate-300">
+          {contact.photo_url ? <img src={contact.photo_url} alt="" className="w-full h-full object-cover" /> : contact.name.split(" ").map(w => w[0]).slice(0,2).join("").toUpperCase()}
+        </div>
+        <div className="min-w-0">
+          <p className="text-white text-sm font-semibold truncate">{contact.name}</p>
+          <Badge className={`text-xs border mt-0.5 ${STATUS_COLORS[contact.status] || STATUS_COLORS.prospect}`}>{contact.status}</Badge>
+        </div>
+      </div>
+
+      {/* Empresa */}
+      <div className="min-w-0">
+        {contact.company && <p className="text-slate-300 text-sm truncate flex items-center gap-1"><Building2 className="w-3 h-3 text-slate-500 flex-shrink-0" />{contact.company}</p>}
+        {contact.position && <p className="text-slate-500 text-xs truncate mt-0.5">{contact.position}</p>}
+      </div>
+
+      {/* Conhecemos em */}
+      <div>
+        {contact.met_date ? (
+          <p className="text-slate-400 text-sm">{fmtDate(contact.met_date)}</p>
+        ) : <p className="text-slate-600 text-sm">—</p>}
+      </div>
+
+      {/* Último contato */}
+      <div>
+        {contact.last_contact_date ? (
+          <p className="text-slate-400 text-sm flex items-center gap-1"><Clock className="w-3 h-3 text-slate-500" />{fmtDate(contact.last_contact_date)}</p>
+        ) : <p className="text-slate-600 text-sm">—</p>}
+      </div>
+
+      {/* Próximo passo */}
+      <div>
+        {nextIcon ? (
+          <div className="flex items-center gap-1.5">
+            {nextIcon}
+            <span className={`text-xs ${NEXT_STEP_COLORS[contact.next_step_status] || ""}`}>
+              {contact.next_step_date ? fmtDate(contact.next_step_date) : contact.next_step_status?.replace("_", " ")}
+            </span>
+          </div>
+        ) : <p className="text-slate-600 text-sm">—</p>}
+      </div>
+
+      {/* Ações */}
+      {canEdit && (
+        <div className="flex items-center gap-1 w-16 justify-center" onClick={e => e.stopPropagation()}>
+          <button onClick={onEdit} className="p-1.5 text-slate-500 hover:text-blue-400 hover:bg-slate-700 rounded-lg transition-colors" title="Editar">
+            <Pencil className="w-3.5 h-3.5" />
+          </button>
+          <button onClick={onDelete} className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-slate-700 rounded-lg transition-colors" title="Excluir">
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ContactCard({ contact, onClick, onEdit, onDelete, canEdit, fmtDate }) {
   const nextIcon = NEXT_STEP_ICONS[contact.next_step_status];
   return (
-    <button
+    <div
       onClick={onClick}
-      className="bg-slate-900 border border-slate-800 hover:border-slate-600 rounded-xl p-4 text-left transition-all hover:bg-slate-800/50 group"
+      className="bg-slate-900 border border-slate-800 hover:border-slate-600 rounded-xl p-4 text-left transition-all hover:bg-slate-800/50 group cursor-pointer relative"
     >
+      {canEdit && (
+        <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity" onClick={e => e.stopPropagation()}>
+          <button onClick={onEdit} className="p-1.5 text-slate-500 hover:text-blue-400 hover:bg-slate-700 rounded-lg transition-colors">
+            <Pencil className="w-3.5 h-3.5" />
+          </button>
+          <button onClick={onDelete} className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-slate-700 rounded-lg transition-colors">
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
       <div className="flex items-start gap-3">
         <div className="w-11 h-11 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden flex-shrink-0">
           {contact.photo_url ? (
@@ -286,7 +363,7 @@ function ContactCard({ contact, onClick, fmtDate }) {
             </span>
           )}
         </div>
-        <div className="flex-1 min-w-0">
+        <div className="flex-1 min-w-0 pr-12">
           <p className="text-white font-semibold text-sm truncate group-hover:text-blue-300 transition-colors">{contact.name}</p>
           {contact.position && <p className="text-slate-400 text-xs truncate">{contact.position}</p>}
           {contact.company && (
@@ -296,29 +373,22 @@ function ContactCard({ contact, onClick, fmtDate }) {
             </div>
           )}
         </div>
-        <ChevronRight className="w-4 h-4 text-slate-600 group-hover:text-slate-400 flex-shrink-0 transition-colors" />
       </div>
-
       <div className="flex items-center justify-between mt-3">
-        <Badge className={`text-xs border ${STATUS_COLORS[contact.status] || STATUS_COLORS.prospect}`}>
-          {contact.status}
-        </Badge>
+        <Badge className={`text-xs border ${STATUS_COLORS[contact.status] || STATUS_COLORS.prospect}`}>{contact.status}</Badge>
         {nextIcon && (
           <div className="flex items-center gap-1">
             {nextIcon}
-            {contact.next_step_date && (
-              <span className="text-xs text-slate-500">{fmtDate(contact.next_step_date)}</span>
-            )}
+            {contact.next_step_date && <span className="text-xs text-slate-500">{fmtDate(contact.next_step_date)}</span>}
           </div>
         )}
       </div>
-
       {contact.last_contact_date && (
         <p className="text-slate-600 text-xs mt-2 flex items-center gap-1">
           <Clock className="w-3 h-3" /> {fmtDate(contact.last_contact_date)}
         </p>
       )}
-    </button>
+    </div>
   );
 }
 
