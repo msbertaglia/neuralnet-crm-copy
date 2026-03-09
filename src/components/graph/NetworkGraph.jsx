@@ -42,9 +42,29 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
     const W = canvas.width;
     const H = canvas.height;
 
-    const nodes = contacts.map((c, i) => {
+    const centerLabel = centerUser?.full_name || "Você";
+
+    // Center node (the logged-in user)
+    const existingCenter = nodesRef.current.find(n => n.id === CENTER_NODE_ID);
+    const centerNode = {
+      id: CENTER_NODE_ID,
+      label: centerLabel,
+      company: "",
+      status: "ativo",
+      nextStepStatus: "sem_proximo_passo",
+      photoUrl: null,
+      x: existingCenter ? existingCenter.x : W / 2,
+      y: existingCenter ? existingCenter.y : H / 2,
+      vx: 0,
+      vy: 0,
+      radius: 38,
+      isCenter: true,
+      contact: null,
+    };
+
+    const nodes = [centerNode, ...contacts.map((c, i) => {
       const angle = (2 * Math.PI * i) / contacts.length;
-      const radius = Math.min(W, H) * 0.3;
+      const radius = Math.min(W, H) * 0.35;
       const existing = nodesRef.current.find(n => n.id === c.id);
       return {
         id: c.id,
@@ -60,16 +80,29 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
         radius: 28,
         contact: c,
       };
-    });
+    })];
 
-    const edges = connections.map(conn => ({
+    // Edges between contacts
+    const contactEdges = connections.map(conn => ({
       id: conn.id,
       sourceId: conn.contact_a_id,
       targetId: conn.contact_b_id,
       strength: conn.strength || "media",
       type: conn.connection_type || "profissional",
-      connection: conn,
+      isCenterEdge: false,
     }));
+
+    // Edges from center to all contacts
+    const centerEdges = contacts.map(c => ({
+      id: `center-${c.id}`,
+      sourceId: CENTER_NODE_ID,
+      targetId: c.id,
+      strength: "fraca",
+      type: "",
+      isCenterEdge: true,
+    }));
+
+    const edges = [...centerEdges, ...contactEdges];
 
     nodesRef.current = nodes;
     edgesRef.current = edges;
