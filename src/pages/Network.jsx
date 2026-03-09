@@ -265,6 +265,41 @@ export default function Network() {
         )}
       </div>
 
+      {/* Applied filters bar */}
+      {(urlStatus !== "todos" || urlTag !== "todas") && (
+        <div className="border-b border-slate-800 bg-slate-900/50 px-4 py-2 flex items-center gap-3 flex-shrink-0">
+          <span className="text-slate-400 text-xs uppercase tracking-wide">Filtros:</span>
+          {urlStatus !== "todos" && (
+            <div className="flex items-center gap-1.5 bg-slate-800/80 px-2 py-1 rounded text-xs text-slate-300">
+              <span className="capitalize font-medium">{urlStatus}</span>
+              <button
+                onClick={() => {
+                  setUrlStatus("todos");
+                  window.history.replaceState({}, "", window.location.pathname + (urlTag !== "todas" ? `?tag=${urlTag}` : ""));
+                }}
+                className="text-slate-500 hover:text-slate-200 ml-1"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+          {urlTag !== "todas" && (
+            <div className="flex items-center gap-1.5 bg-amber-500/20 border border-amber-500/30 px-2 py-1 rounded text-xs text-amber-300">
+              <span className="font-medium">{urlTag}</span>
+              <button
+                onClick={() => {
+                  setUrlTag("todas");
+                  window.history.replaceState({}, "", window.location.pathname + (urlStatus !== "todos" ? `?status=${urlStatus}` : ""));
+                }}
+                className="text-amber-600 hover:text-amber-300 ml-1"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Graph area */}
       <div className="flex-1 relative overflow-hidden">
         {loading ? (
