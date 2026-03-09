@@ -136,7 +136,8 @@ export default function Contacts() {
     return Array.from(tagSet).sort();
   }, [contacts, statusFilter]);
 
-  const userContact = user?.email ? contacts.find(c => c.created_by === user.email) : null;
+  // Find Mauro Bertaglia as the central contact (user profile card)
+  const userContact = contacts.find(c => c.name === "Mauro Bertaglia") || (user?.email ? contacts.find(c => c.created_by === user.email) : null);
 
   const filtered = useMemo(() => {
     let list = contacts;
