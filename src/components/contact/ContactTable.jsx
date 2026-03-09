@@ -269,7 +269,7 @@ function ContactRow({ contact, columns, canEdit, actionsWidth, isLast, onView, o
 
   return (
     <div
-      className={`flex items-center hover:bg-slate-800/50 transition-colors cursor-pointer ${!isLast ? "border-b border-slate-800" : ""}`}
+      className={`flex items-center hover:bg-slate-800/50 transition-colors cursor-pointer whitespace-nowrap ${!isLast ? "border-b border-slate-800" : ""}`}
       onClick={onView}
     >
       {columns.map(col => (
