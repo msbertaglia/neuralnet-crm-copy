@@ -86,6 +86,12 @@ export default function Contacts() {
     await loadAll();
   };
 
+  const handleDelete = async (id) => {
+    await base44.entities.Contact.delete(id);
+    setDeleteConfirm(null);
+    await loadAll();
+  };
+
   const handleSaveLog = async (data) => {
     await base44.entities.MeetingLog.create(data);
     if (data.contact_id) await base44.entities.Contact.update(data.contact_id, { last_contact_date: data.date });
