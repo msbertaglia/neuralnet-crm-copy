@@ -275,16 +275,14 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
 
     // Orbit rings
     if (centerNode) {
-      const ringOpacity = [0, 0.12, 0.08, 0.05];
+      const ringOpacity = [0, 0.15, 0.12, 0.10, 0.08, 0.06];
       for (let lvl = 1; lvl <= MAX_LEVEL; lvl++) {
         const r = ORBIT_RADII[lvl] || lvl * 180;
         ctx.beginPath();
         ctx.arc(centerNode.x, centerNode.y, r, 0, 2 * Math.PI);
-        ctx.strokeStyle = `rgba(99,102,241,${ringOpacity[lvl] || 0.04})`;
-        ctx.lineWidth = 1;
-        ctx.setLineDash([5, 12]);
+        ctx.strokeStyle = `rgba(99,102,241,${ringOpacity[Math.min(lvl, ringOpacity.length - 1)] || 0.03})`;
+        ctx.lineWidth = 0.6; // Very thin line
         ctx.stroke();
-        ctx.setLineDash([]);
         ctx.fillStyle = "rgba(99,102,241,0.18)";
         ctx.font = "10px Inter, sans-serif";
         ctx.textAlign = "left";
