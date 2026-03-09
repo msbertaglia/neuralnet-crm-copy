@@ -1,8 +1,7 @@
 import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Pencil, Trash2, ChevronUp, ChevronDown, ChevronsUpDown, Clock, Timer, AlertCircle, CheckCircle2 } from "lucide-react";
-import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import SmartDate from "@/components/ui/SmartDate";
 
 const STATUS_COLORS = {
   ativo: "bg-green-500/20 text-green-400 border-green-500/30",
