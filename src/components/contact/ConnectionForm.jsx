@@ -84,19 +84,14 @@ export default function ConnectionForm({ contacts, connection, existingConnectio
           <Field label="Pessoa A *">
             <ContactSelect contacts={contacts} value={form.contact_a_id} onChange={v => set("contact_a_id", v)} exclude={form.contact_b_id} />
           </Field>
-          <Field label="Pessoa B *">
+          <Field label="Conheceu Pessoa B *">
             <ContactSelect contacts={contacts} value={form.contact_b_id} onChange={v => set("contact_b_id", v)} exclude={form.contact_a_id} />
           </Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Data da conexão">
-              <Input type="date" value={form.connection_date} onChange={e => set("connection_date", e.target.value)} className="bg-slate-800 border-slate-600 text-white" />
-            </Field>
-            <Field label="Data descoberta (por mim)">
-              <Input type="date" value={form.discovered_date} onChange={e => set("discovered_date", e.target.value)} className="bg-slate-800 border-slate-600 text-white" />
-            </Field>
-          </div>
-          <Field label="Quem apresentou">
+          <Field label="Por intermediário de">
             <ContactSelect contacts={contacts} value={form.introduced_by_id || "none"} onChange={v => set("introduced_by_id", v === "none" ? "" : v)} allowNone />
+          </Field>
+          <Field label="Data da conexão">
+            <Input type="date" value={form.connection_date} onChange={e => set("connection_date", e.target.value)} className="bg-slate-800 border-slate-600 text-white" />
           </Field>
           <div className="grid grid-cols-2 gap-3">
             <Field label="Tipo">
@@ -109,17 +104,17 @@ export default function ConnectionForm({ contacts, connection, existingConnectio
                 </SelectContent>
               </Select>
             </Field>
-            <Field label="Intensidade">
-              <Select value={form.strength} onValueChange={v => set("strength", v)}>
-                <SelectTrigger className="bg-slate-800 border-slate-600 text-white"><SelectValue /></SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700">
-                  <SelectItem value="fraca" className="text-slate-200">Fraca</SelectItem>
-                  <SelectItem value="media" className="text-slate-200">Média</SelectItem>
-                  <SelectItem value="forte" className="text-slate-200">Forte</SelectItem>
-                </SelectContent>
-              </Select>
-            </Field>
           </div>
+          <Field label="Intensidade">
+            <Select value={form.strength} onValueChange={v => set("strength", v)}>
+              <SelectTrigger className="bg-slate-800 border-slate-600 text-white"><SelectValue /></SelectTrigger>
+              <SelectContent className="bg-slate-800 border-slate-700">
+                <SelectItem value="fraca" className="text-slate-200">Fraca</SelectItem>
+                <SelectItem value="media" className="text-slate-200">Média</SelectItem>
+                <SelectItem value="forte" className="text-slate-200">Forte</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
           <Field label="Notas">
             <Textarea value={form.notes} onChange={e => set("notes", e.target.value)} rows={2} className="bg-slate-800 border-slate-600 text-white" />
           </Field>
