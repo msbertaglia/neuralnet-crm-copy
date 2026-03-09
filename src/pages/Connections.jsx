@@ -214,6 +214,9 @@ export default function Connections() {
                   className="flex-shrink-0 px-3 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wide select-none cursor-pointer hover:text-slate-300 transition-colors whitespace-nowrap"
                   onClick={() => handleSort(col)}
                 >
+                  {col.subLabel && (
+                    <div className="text-slate-600 text-[10px] font-normal normal-case mb-0.5">{col.subLabel}</div>
+                  )}
                   <span className="flex items-center">
                     {col.label}
                     <SortIcon colKey={col.key} sortKey={sortKey} sortDir={sortDir} />
