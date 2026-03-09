@@ -156,7 +156,7 @@ export default function Connections() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-white text-2xl font-bold">Conexões</h1>
-          <p className="text-slate-500 text-sm mt-0.5">{connections.length} conexões registradas</p>
+          <p className="text-slate-500 text-sm mt-0.5">{connections.length} conexões registradas · <span className="text-slate-600">{impliedConnections.length} implícitas</span></p>
         </div>
         <Button onClick={() => { setEditingConnection(null); setShowForm(true); }} className="bg-blue-600 hover:bg-blue-700 text-white gap-2">
           <Plus className="w-4 h-4" /> Nova Conexão
