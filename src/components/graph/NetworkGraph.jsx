@@ -97,8 +97,8 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
       isCenterEdge: false,
     }));
 
-    // Edges from center to all contacts
-    const centerEdges = contacts.map(c => ({
+    // Edges from center to all other contacts
+    const centerEdges = otherContacts.map(c => ({
       id: `center-${c.id}`,
       sourceId: CENTER_NODE_ID,
       targetId: c.id,
