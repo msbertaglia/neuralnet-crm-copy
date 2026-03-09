@@ -63,6 +63,14 @@ export default function Contacts() {
 
   const canEdit = user?.role === "admin" || user?.role === "editor";
 
+  // All tags from contacts filtered by current status
+  const availableTags = useMemo(() => {
+    let list = statusFilter === "todos" ? contacts : contacts.filter(c => c.status === statusFilter);
+    const tagSet = new Set();
+    list.forEach(c => (c.tags || []).forEach(t => tagSet.add(t)));
+    return Array.from(tagSet).sort();
+  }, [contacts, statusFilter]);
+
   const filtered = useMemo(() => {
     let list = contacts;
     if (search) {
@@ -74,8 +82,9 @@ export default function Contacts() {
       );
     }
     if (statusFilter !== "todos") list = list.filter(c => c.status === statusFilter);
+    if (tagFilter !== "todas") list = list.filter(c => (c.tags || []).includes(tagFilter));
     return list;
-  }, [contacts, search, statusFilter]);
+  }, [contacts, search, statusFilter, tagFilter]);
 
   const handleSaveContact = async (data) => {
     if (editingContact) {
