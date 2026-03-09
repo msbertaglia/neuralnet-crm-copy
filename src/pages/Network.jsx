@@ -85,15 +85,80 @@ export default function Network() {
     return connections.filter(conn => ids.has(conn.contact_a_id) && ids.has(conn.contact_b_id));
   }, [connections, filteredContacts]);
 
+  const detectImpliedConnections = (contactData, editingId) => {
+    const asIntroducer = connections.filter(c => c.introduced_by_id === editingId);
+    const asParty = connections.filter(c =>
+      (c.contact_a_id === editingId || c.contact_b_id === editingId) && c.introduced_by_id
+    );
+    const newImplied = [];
+    const usedPairs = new Set();
+    [...asIntroducer, ...asParty].forEach(conn => {
+      if (!conn.introduced_by_id) return;
+      const intId = conn.introduced_by_id;
+      const intName = conn.introduced_by_name;
+      const pairs = [
+        { id: conn.contact_a_id, name: conn.contact_a_name },
+        { id: conn.contact_b_id, name: conn.contact_b_name },
+      ];
+      pairs.forEach(({ id: otherId, name: otherName }) => {
+        if (otherId === intId) return;
+        const pairKey = [intId, otherId].sort().join("|");
+        if (usedPairs.has(pairKey)) return;
+        const alreadyExists = connections.find(c =>
+          (c.contact_a_id === intId && c.contact_b_id === otherId) ||
+          (c.contact_b_id === intId && c.contact_a_id === otherId)
+        );
+        if (!alreadyExists) {
+          usedPairs.add(pairKey);
+          newImplied.push({ contact_a_id: intId, contact_a_name: intName, contact_b_id: otherId, contact_b_name: otherName });
+        }
+      });
+    });
+    if (contactData.introduced_by_id && editingId) {
+      const intId = contactData.introduced_by_id;
+      const intName = contactData.introduced_by_name;
+      const pairKey = [intId, editingId].sort().join("|");
+      if (!usedPairs.has(pairKey)) {
+        const alreadyExists = connections.find(c =>
+          (c.contact_a_id === intId && c.contact_b_id === editingId) ||
+          (c.contact_b_id === intId && c.contact_a_id === editingId)
+        );
+        if (!alreadyExists) {
+          usedPairs.add(pairKey);
+          newImplied.push({ contact_a_id: intId, contact_a_name: intName, contact_b_id: editingId, contact_b_name: contactData.name });
+        }
+      }
+    }
+    return newImplied;
+  };
+
   const handleSaveContact = async (data) => {
-    if (editingContact) {
-      await base44.entities.Contact.update(editingContact.id, data);
+    const newImplied = detectImpliedConnections(data, editingContact?.id);
+    if (newImplied.length > 0) {
+      setPendingSave({ contactData: data, editingId: editingContact?.id, newImplied });
+      setShowImpliedModal(true);
+      return;
+    }
+    await doSaveContact(data, editingContact?.id);
+  };
+
+  const doSaveContact = async (data, editingId) => {
+    if (editingId) {
+      await base44.entities.Contact.update(editingId, data);
     } else {
       await base44.entities.Contact.create(data);
     }
     setShowContactForm(false);
     setEditingContact(null);
     await loadAll();
+  };
+
+  const handleConfirmImplied = async () => {
+    if (!pendingSave) return;
+    setPendingSave(prev => ({ ...prev, saving: true }));
+    await doSaveContact(pendingSave.contactData, pendingSave.editingId);
+    setShowImpliedModal(false);
+    setPendingSave(null);
   };
 
   const handleSaveConnection = async (data) => {
