@@ -24,13 +24,13 @@ const TYPE_LABELS = {
 };
 
 const COLUMNS = [
-  { key: "contact_a_name", label: "Contato A", width: 200, type: "alpha" },
-  { key: "contact_b_name", label: "Contato B", width: 200, type: "alpha" },
-  { key: "connection_type", label: "Tipo", width: 130, type: "alpha" },
-  { key: "strength", label: "Força", width: 100, type: "alpha" },
-  { key: "introduced_by_name", label: "Apresentado por", width: 180, type: "alpha" },
-  { key: "connection_date", label: "Data da Conexão", width: 160, type: "date" },
-  { key: "origin", label: "Origem", width: 110, type: "alpha" },
+  { key: "contact_a_name", label: "Pessoa A", subLabel: null, width: 200, type: "alpha" },
+  { key: "contact_b_name", label: "Pessoa B", subLabel: "conheceu", width: 200, type: "alpha" },
+  { key: "introduced_by_name", label: "Por Intermédio De", subLabel: null, width: 200, type: "alpha" },
+  { key: "connection_date", label: "No Dia", subLabel: null, width: 180, type: "date" },
+  { key: "connection_type", label: "Tipo", subLabel: null, width: 130, type: "alpha" },
+  { key: "strength", label: "Força", subLabel: null, width: 100, type: "alpha" },
+  { key: "origin", label: "Origem", subLabel: null, width: 110, type: "alpha" },
 ];
 
 const ACTIONS_WIDTH = 80;
