@@ -265,6 +265,7 @@ export default function Network() {
       {showConnectionForm && (
         <ConnectionForm
           contacts={contacts}
+          existingConnections={connections}
           onSave={handleSaveConnection}
           onClose={() => setShowConnectionForm(false)}
         />
