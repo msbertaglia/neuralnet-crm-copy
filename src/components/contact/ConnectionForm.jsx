@@ -123,11 +123,40 @@ export default function ConnectionForm({ contacts, connection, existingConnectio
           <Field label="Notas">
             <Textarea value={form.notes} onChange={e => set("notes", e.target.value)} rows={2} className="bg-slate-800 border-slate-600 text-white" />
           </Field>
+
+          {/* Suggested implied connection */}
+          {missingImplied && (
+            <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 p-3 space-y-2">
+              <div className="flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
+                <p className="text-amber-300 text-xs leading-relaxed">
+                  <strong>{missingImplied.introName}</strong> está como apresentador, mas não há conexão cadastrada entre <strong>{missingImplied.introName}</strong> e <strong>{missingImplied.bName}</strong>. Para manter a hierarquia correta na rede, crie essa conexão também.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  className="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs h-7"
+                  onClick={() => setPendingImplied(missingImplied)}
+                >
+                  <Plus className="w-3 h-3 mr-1" />
+                  {pendingImplied ? "✓ Será criada junto" : `Criar ${missingImplied.introName} ↔ ${missingImplied.bName}`}
+                </Button>
+                {pendingImplied && (
+                  <Button size="sm" variant="ghost" className="text-slate-400 text-xs h-7" onClick={() => setPendingImplied(null)}>
+                    Cancelar
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="flex gap-3 p-5 border-t border-slate-700">
           <Button variant="outline" onClick={onClose} className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-800">Cancelar</Button>
-          <Button onClick={handleSubmit} disabled={!form.contact_a_id || !form.contact_b_id} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white">Salvar</Button>
+          <Button onClick={handleSubmit} disabled={!form.contact_a_id || !form.contact_b_id} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white">
+            {pendingImplied ? "Salvar (2 conexões)" : "Salvar"}
+          </Button>
         </div>
       </div>
     </div>
