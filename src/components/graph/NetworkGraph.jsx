@@ -137,10 +137,10 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
       contact: centerContact,
     });
 
-    // Level 1 & 2 nodes
-    [1, 2].forEach(lvl => {
+    // Level 1..MAX_LEVEL nodes
+    for (let lvl = 1; lvl <= MAX_LEVEL; lvl++) {
       const group = contacts.filter(c => levelMap.get(c.id) === lvl);
-      const orbitR = ORBIT_RADII[lvl];
+      const orbitR = ORBIT_RADII[lvl] || lvl * 180;
       group.forEach((c, i) => {
         const angle = (2 * Math.PI * i) / group.length - Math.PI / 2;
         const existing = nodesRef.current.find(n => n.id === c.id);
@@ -155,33 +155,67 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
           x: existing ? existing.x : W / 2 + orbitR * Math.cos(angle),
           y: existing ? existing.y : H / 2 + orbitR * Math.sin(angle),
           vx: 0, vy: 0,
-          radius: lvl === 1 ? 26 : 20,
+          radius: lvl === 1 ? 26 : lvl === 2 ? 21 : 17,
           level: lvl,
           orbitRadius: orbitR,
           contact: c,
         });
       });
-    });
+    }
 
-    // Edges: only between nodes that are visible, direct connections (no introducer)
     const visibleIds = new Set(nodes.map(n => n.contactId || n.id));
     const edges = [];
+    const addedEdges = new Set();
+
     connections.forEach(conn => {
-      if (conn.introduced_by_id) return; // skip introduced
       const aId = conn.contact_a_id;
       const bId = conn.contact_b_id;
-      if (!visibleIds.has(aId) || !visibleIds.has(bId)) return;
-      const srcNodeId = aId === centralContactId ? "__center__" : aId;
-      const tgtNodeId = bId === centralContactId ? "__center__" : bId;
-      edges.push({
-        id: conn.id,
-        sourceId: srcNodeId,
-        targetId: tgtNodeId,
-        strength: conn.strength || "media",
-        type: conn.connection_type || "",
-        aLevel: levelMap.get(aId) ?? 0,
-        bLevel: levelMap.get(bId) ?? 0,
-      });
+
+      if (!conn.introduced_by_id) {
+        // Direct connection: draw edge between the two parties
+        if (!visibleIds.has(aId) || !visibleIds.has(bId)) return;
+        const srcNodeId = aId === centralContactId ? "__center__" : aId;
+        const tgtNodeId = bId === centralContactId ? "__center__" : bId;
+        const key = [srcNodeId, tgtNodeId].sort().join("|");
+        if (addedEdges.has(key)) return;
+        addedEdges.add(key);
+        const isCenterEdge = srcNodeId === "__center__" || tgtNodeId === "__center__";
+        edges.push({
+          id: conn.id,
+          sourceId: srcNodeId,
+          targetId: tgtNodeId,
+          strength: conn.strength || "media",
+          type: conn.connection_type || "",
+          isCenterEdge,
+        });
+      } else {
+        // Introduced connection: draw edge from introducer → introduced person
+        const intId = conn.introduced_by_id;
+        if (!visibleIds.has(intId)) return;
+
+        // The introduced person is whichever of A/B is at the higher level (further from center)
+        const intLevel = levelMap.get(intId) ?? 99;
+        const aLevel = levelMap.get(aId) ?? 99;
+        const bLevel = levelMap.get(bId) ?? 99;
+
+        // Draw edge: introducer → the party that is further away (introduced)
+        const introducedId = aLevel > bLevel ? aId : bId;
+        if (!visibleIds.has(introducedId)) return;
+        const srcNodeId = intId === centralContactId ? "__center__" : intId;
+        const tgtNodeId = introducedId === centralContactId ? "__center__" : introducedId;
+        const key = [srcNodeId, tgtNodeId].sort().join("|");
+        if (addedEdges.has(key)) return;
+        addedEdges.add(key);
+        edges.push({
+          id: `intro-${conn.id}`,
+          sourceId: srcNodeId,
+          targetId: tgtNodeId,
+          strength: conn.strength || "media",
+          type: conn.connection_type || "",
+          isCenterEdge: srcNodeId === "__center__" || tgtNodeId === "__center__",
+          isIntroduced: true,
+        });
+      }
     });
 
     nodesRef.current = nodes;
