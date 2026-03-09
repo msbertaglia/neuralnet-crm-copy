@@ -183,13 +183,40 @@ export default function Contacts() {
             <Users className="w-12 h-12 mx-auto mb-3 opacity-30" />
             <p>Nenhum contato encontrado</p>
           </div>
+        ) : viewMode === "list" ? (
+          <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            {/* Table header */}
+            <div className="grid grid-cols-[2fr_2fr_1fr_1fr_1fr_auto] gap-4 px-4 py-2.5 border-b border-slate-800 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+              <span>Nome</span>
+              <span>Empresa / Cargo</span>
+              <span>Conhecemos em</span>
+              <span>Último contato</span>
+              <span>Próximo passo</span>
+              {canEdit && <span className="w-16 text-center">Ações</span>}
+            </div>
+            {filtered.map((contact, i) => (
+              <ContactRow
+                key={contact.id}
+                contact={contact}
+                fmtDate={fmtDate}
+                canEdit={canEdit}
+                onView={() => setSelectedContact(contact)}
+                onEdit={() => { setEditingContact(contact); setShowContactForm(true); }}
+                onDelete={() => setDeleteConfirm(contact)}
+                isLast={i === filtered.length - 1}
+              />
+            ))}
+          </div>
         ) : (
           <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filtered.map(contact => (
               <ContactCard
                 key={contact.id}
                 contact={contact}
+                canEdit={canEdit}
                 onClick={() => setSelectedContact(contact)}
+                onEdit={() => { setEditingContact(contact); setShowContactForm(true); }}
+                onDelete={() => setDeleteConfirm(contact)}
                 fmtDate={fmtDate}
               />
             ))}
