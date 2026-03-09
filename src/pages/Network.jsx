@@ -181,14 +181,7 @@ export default function Network() {
         {/* Actions */}
         {canEdit && (
           <>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => setShowConnectionForm(true)}
-              className="bg-slate-800 border-slate-600 text-slate-200 hover:bg-slate-700 gap-1.5 hidden sm:flex"
-            >
-              <Link2 className="w-3.5 h-3.5" /> Conexão
-            </Button>
+
             <Button
               size="sm"
               onClick={() => { setEditingContact(null); setShowContactForm(true); }}
