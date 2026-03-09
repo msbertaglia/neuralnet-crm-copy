@@ -217,8 +217,8 @@ export default function ContactForm({ contact, contacts, onSave, onClose }) {
                 }}>
                   <SelectTrigger className="bg-slate-800 border-slate-600 text-white"><SelectValue placeholder="Selecione..." /></SelectTrigger>
                   <SelectContent className="bg-slate-800 border-slate-700">
-                    <SelectItem value="sem_informacao" className="text-slate-400">Sem informação</SelectItem>
-                    <SelectItem value="direto" className="text-slate-400">Direto</SelectItem>
+                    <SelectItem value="sem_informacao" className="text-slate-400">Sem informação (campo vazio)</SelectItem>
+                    <SelectItem value="direto" className="text-slate-400">Direto (sem intermediário)</SelectItem>
                     {contacts.filter(c => c.id !== contact?.id).map(c => (
                       <SelectItem key={c.id} value={c.id} className="text-slate-200">{c.name}</SelectItem>
                     ))}
