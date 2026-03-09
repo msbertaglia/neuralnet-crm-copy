@@ -213,7 +213,8 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
     const W = canvas.width;
     const H = canvas.height;
     const REPULSION = 4500;
-    const ORBIT_STRENGTH = 0.045;
+    const ORBIT_STRENGTH = 0.08; // Stronger to keep on orbit
+    const TARGET_STRENGTH = 0.05; // Pull towards target position
     const DAMPING = 0.80;
 
     const centerNode = nodes.find(n => n.isCenter);
@@ -226,7 +227,15 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
         continue;
       }
 
-      // Orbit attraction
+      // Pull towards target position on orbit
+      if (n.targetX !== undefined && n.targetY !== undefined) {
+        const dtx = n.targetX - n.x;
+        const dty = n.targetY - n.y;
+        n.vx += dtx * TARGET_STRENGTH;
+        n.vy += dty * TARGET_STRENGTH;
+      }
+
+      // Orbit radius maintenance
       if (centerNode) {
         const dcx = n.x - centerNode.x;
         const dcy = n.y - centerNode.y;
@@ -237,14 +246,14 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
         n.vy -= (dcy / dist) * force;
       }
 
-      // Repulsion
+      // Repulsion (softer)
       for (let j = i + 1; j < nodes.length; j++) {
         const m = nodes[j];
         const dx = m.x - n.x;
         const dy = m.y - n.y;
         const dist = Math.sqrt(dx * dx + dy * dy) || 1;
         const sameLevel = n.level === m.level;
-        const force = (REPULSION * (sameLevel ? 1.5 : 1.0)) / (dist * dist);
+        const force = (REPULSION * (sameLevel ? 1.2 : 0.8)) / (dist * dist);
         const fx = (dx / dist) * force;
         const fy = (dy / dist) * force;
         n.vx -= fx; n.vy -= fy;
