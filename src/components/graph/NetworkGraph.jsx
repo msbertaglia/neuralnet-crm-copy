@@ -23,15 +23,14 @@ const CONNECTION_STRENGTH = {
   forte: { width: 3, opacity: 0.85 },
 };
 
-const ORBIT_RADII = [0, 200, 380]; // level 0, 1, 2
+const ORBIT_RADII = [0, 200, 370, 540]; // level 0, 1, 2, 3
+const MAX_LEVEL = 3;
 
 /**
- * Compute strict orbital levels:
- * Level 0: center
- * Level 1: contacts with a DIRECT connection (no introduced_by_id) to center
- * Level 2: contacts with a DIRECT connection (no introduced_by_id) to any Level-1 contact,
- *           who are NOT already level 0 or 1
- * All others: undefined (hidden)
+ * Compute orbital levels using BFS:
+ * - Direct connections (no introduced_by_id): BFS from center up to MAX_LEVEL
+ * - Introduced connections (introduced_by_id = C): the introduced person goes to C's level + 1,
+ *   with a visual edge drawn from C to the introduced person (not from center)
  */
 function computeOrbits(centralContactId, connections) {
   const levels = new Map();
@@ -39,24 +38,53 @@ function computeOrbits(centralContactId, connections) {
 
   levels.set(centralContactId, 0);
 
-  // Level 1: direct (no introducer) connections to center
-  connections.forEach(conn => {
-    if (conn.introduced_by_id) return; // skip introduced connections
-    const aId = conn.contact_a_id;
-    const bId = conn.contact_b_id;
-    if (aId === centralContactId && !levels.has(bId)) levels.set(bId, 1);
-    if (bId === centralContactId && !levels.has(aId)) levels.set(aId, 1);
-  });
-
-  // Level 2: direct (no introducer) connections to any level-1 node
+  // Build direct adjacency map (no introducer)
+  const directAdj = new Map();
   connections.forEach(conn => {
     if (conn.introduced_by_id) return;
+    const a = conn.contact_a_id, b = conn.contact_b_id;
+    if (!directAdj.has(a)) directAdj.set(a, []);
+    if (!directAdj.has(b)) directAdj.set(b, []);
+    directAdj.get(a).push(b);
+    directAdj.get(b).push(a);
+  });
+
+  // BFS for direct connections
+  const queue = [centralContactId];
+  while (queue.length > 0) {
+    const current = queue.shift();
+    const currentLevel = levels.get(current);
+    if (currentLevel >= MAX_LEVEL) continue;
+    (directAdj.get(current) || []).forEach(neighbor => {
+      if (!levels.has(neighbor)) {
+        levels.set(neighbor, currentLevel + 1);
+        queue.push(neighbor);
+      }
+    });
+  }
+
+  // Handle introduced connections:
+  // (A ↔ B, introduced_by = C) → the introduced person goes to C's level + 1
+  connections.forEach(conn => {
+    if (!conn.introduced_by_id) return;
+    const intId = conn.introduced_by_id;
+    const intLevel = levels.get(intId);
+    if (intLevel === undefined) return; // introducer not reachable
+    const newLevel = intLevel + 1;
+    if (newLevel > MAX_LEVEL) return;
+
     const aId = conn.contact_a_id;
     const bId = conn.contact_b_id;
-    const aLevel = levels.get(aId);
-    const bLevel = levels.get(bId);
-    if (aLevel === 1 && bLevel === undefined) levels.set(bId, 2);
-    if (bLevel === 1 && aLevel === undefined) levels.set(aId, 2);
+
+    // The "introduced" person is the one that did NOT yet know the introducer
+    // i.e., the one NOT equal to centralContactId and at a higher level than the introducer
+    // We place both A and B if they're unknown, but only if they make sense
+    [aId, bId].forEach(id => {
+      if (id === intId) return; // introducer itself
+      if (!levels.has(id)) {
+        levels.set(id, newLevel);
+      }
+    });
   });
 
   return levels;
