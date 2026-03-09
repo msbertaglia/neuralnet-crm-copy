@@ -329,8 +329,7 @@ export default function Network() {
           </div>
         ) : (
           <NetworkGraph
-            contacts={contacts}
-            connections={connections}
+            contacts={filteredContacts}
             onNodeClick={setSelectedContact}
             onNodeDoubleClick={(c) => { setEditingContact(c); setShowContactForm(true); }}
             centralContactId={centralContactId}
