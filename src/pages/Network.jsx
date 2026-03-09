@@ -337,6 +337,16 @@ export default function Network() {
           onClose={() => setShowConnectionForm(false)}
         />
       )}
+
+      {showImpliedModal && pendingSave && (
+        <ImpliedConnectionsModal
+          newImplied={pendingSave.newImplied}
+          updatedConnections={[]}
+          onConfirm={handleConfirmImplied}
+          onCancel={() => { setShowImpliedModal(false); setPendingSave(null); }}
+          saving={pendingSave.saving}
+        />
+      )}
     </div>
   );
 }
