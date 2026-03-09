@@ -60,17 +60,77 @@ export default function Contacts() {
 
   const loadAll = async () => {
     setLoading(true);
-    const [c, l, d, u] = await Promise.all([
+    const [c, l, d, u, conn] = await Promise.all([
       base44.entities.Contact.list("-created_date", 500),
       base44.entities.MeetingLog.list("-date", 500),
       base44.entities.Document.list(),
       base44.auth.me().catch(() => null),
+      base44.entities.Connection.list("-created_date", 500),
     ]);
     setContacts(c);
     setLogs(l);
     setDocuments(d);
     setUser(u);
+    setConnections(conn);
     setLoading(false);
+  };
+
+  // Detect new implied connections that would be created for a contact
+  const detectImpliedConnections = (contactData, editingId, currentConnections, currentContacts) => {
+    // Find all connections where this contact is an introducer
+    const asIntroducer = currentConnections.filter(c => c.introduced_by_id === editingId);
+    // Find all connections where this contact is involved and has an introducer
+    const asParty = currentConnections.filter(c =>
+      (c.contact_a_id === editingId || c.contact_b_id === editingId) && c.introduced_by_id
+    );
+    // Also check if contact has introduced_by_id set (new or changed)
+    const newImplied = [];
+    const usedPairs = new Set();
+
+    // For connections involving this contact with an introducer, check introducer↔otherParty
+    [...asIntroducer, ...asParty].forEach(conn => {
+      if (!conn.introduced_by_id) return;
+      const intId = conn.introduced_by_id;
+      const intName = conn.introduced_by_name;
+      const pairs = [
+        { id: conn.contact_a_id, name: conn.contact_a_name },
+        { id: conn.contact_b_id, name: conn.contact_b_name },
+      ];
+      pairs.forEach(({ id: otherId, name: otherName }) => {
+        if (otherId === intId) return;
+        const pairKey = [intId, otherId].sort().join("|");
+        if (usedPairs.has(pairKey)) return;
+        const alreadyExists = currentConnections.find(c =>
+          (c.contact_a_id === intId && c.contact_b_id === otherId) ||
+          (c.contact_b_id === intId && c.contact_a_id === otherId)
+        );
+        if (!alreadyExists) {
+          usedPairs.add(pairKey);
+          newImplied.push({ contact_a_id: intId, contact_a_name: intName, contact_b_id: otherId, contact_b_name: otherName });
+        }
+      });
+    });
+
+    // If this contact has an introduced_by set (new contact or changed introducer)
+    if (contactData.introduced_by_id) {
+      const intId = contactData.introduced_by_id;
+      const intName = contactData.introduced_by_name;
+      const contactId = editingId || "__new__";
+      const contactName = contactData.name;
+      const pairKey = [intId, contactId].sort().join("|");
+      if (!usedPairs.has(pairKey)) {
+        const alreadyExists = currentConnections.find(c =>
+          (c.contact_a_id === intId && c.contact_b_id === editingId) ||
+          (c.contact_b_id === intId && c.contact_a_id === editingId)
+        );
+        if (!alreadyExists && editingId) {
+          usedPairs.add(pairKey);
+          newImplied.push({ contact_a_id: intId, contact_a_name: intName, contact_b_id: editingId, contact_b_name: contactName });
+        }
+      }
+    }
+
+    return newImplied;
   };
 
   const canEdit = user?.role === "admin" || user?.role === "editor";
