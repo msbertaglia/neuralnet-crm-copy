@@ -23,7 +23,9 @@ const CONNECTION_STRENGTH = {
   forte: { width: 3, opacity: 0.9 },
 };
 
-export default function NetworkGraph({ contacts, connections, onNodeClick, onNodeDoubleClick, filterMode, selectedProject }) {
+const CENTER_NODE_ID = "__center__";
+
+export default function NetworkGraph({ contacts, connections, onNodeClick, onNodeDoubleClick, centerUser }) {
   const canvasRef = useRef(null);
   const nodesRef = useRef([]);
   const edgesRef = useRef([]);
