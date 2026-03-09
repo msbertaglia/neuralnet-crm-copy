@@ -102,7 +102,7 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
     const W = canvas.width;
     const H = canvas.height;
 
-    const levelMap = computeOrbits(centralContactId, connections);
+    const levelMap = computeOrbits(centralContactId, contacts);
     const centerContact = contacts.find(c => c.id === centralContactId);
 
     const nodes = [];
