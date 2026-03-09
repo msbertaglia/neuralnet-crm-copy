@@ -85,9 +85,45 @@ export default function Connections() {
     }
   };
 
+  // Compute implied connections (introducer ↔ introduced contact)
+  const impliedConnections = useMemo(() => {
+    const implied = [];
+    const usedPairs = new Set();
+    connections.forEach(conn => {
+      if (!conn.introduced_by_id) return;
+      const intId = conn.introduced_by_id;
+      const introducedId = conn.contact_a_id === intId ? conn.contact_b_id : conn.contact_a_id;
+      const pairKey = [intId, introducedId].sort().join("|");
+      if (usedPairs.has(pairKey)) return;
+      const alreadyExists = connections.find(c =>
+        (c.contact_a_id === intId && c.contact_b_id === introducedId) ||
+        (c.contact_b_id === intId && c.contact_a_id === introducedId)
+      );
+      if (!alreadyExists) {
+        usedPairs.add(pairKey);
+        implied.push({
+          id: `implied-${conn.id}`,
+          contact_a_id: intId,
+          contact_a_name: conn.introduced_by_name,
+          contact_b_id: introducedId,
+          contact_b_name: intId === conn.contact_a_id ? conn.contact_b_name : conn.contact_a_name,
+          connection_type: null,
+          strength: "fraca",
+          introduced_by_id: null,
+          introduced_by_name: null,
+          connection_date: conn.connection_date,
+          isImplied: true,
+        });
+      }
+    });
+    return implied;
+  }, [connections]);
+
+  const allConnections = useMemo(() => [...connections, ...impliedConnections], [connections, impliedConnections]);
+
   const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    const list = connections.filter((c) =>
+    const list = allConnections.filter((c) =>
       (c.contact_a_name || "").toLowerCase().includes(q) ||
       (c.contact_b_name || "").toLowerCase().includes(q) ||
       (c.introduced_by_name || "").toLowerCase().includes(q)
