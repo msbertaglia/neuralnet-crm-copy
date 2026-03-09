@@ -3,7 +3,10 @@ import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { LayoutDashboard, Users, Share2, FolderOpen, Menu, X, ChevronRight } from "lucide-react";
 
+import { User } from "lucide-react";
+
 const navItems = [
+  { label: "Perfil", page: "Profile", icon: User },
   { label: "Contatos", page: "Contacts", icon: Users },
   { label: "Conexões", page: "Connections", icon: Share2 },
   { label: "Rede Visual", page: "Network", icon: Share2 },
