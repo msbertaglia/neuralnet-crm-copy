@@ -42,27 +42,32 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
     const W = canvas.width;
     const H = canvas.height;
 
-    const centerLabel = centerUser?.full_name || "Você";
+    // Determine center contact
+    const centerContact = centralContactId ? contacts.find(c => c.id === centralContactId) : null;
+    const centerLabel = centerContact ? (centerContact.nickname || centerContact.name) : (centerUser?.full_name || "Você");
 
-    // Center node (the logged-in user)
+    // Center node
     const existingCenter = nodesRef.current.find(n => n.id === CENTER_NODE_ID);
     const centerNode = {
       id: CENTER_NODE_ID,
       label: centerLabel,
-      company: "",
-      status: "ativo",
-      nextStepStatus: "sem_proximo_passo",
-      photoUrl: null,
+      company: centerContact?.company || "",
+      status: centerContact?.status || "ativo",
+      nextStepStatus: centerContact?.next_step_status || "sem_proximo_passo",
+      photoUrl: centerContact?.photo_url || null,
       x: existingCenter ? existingCenter.x : W / 2,
       y: existingCenter ? existingCenter.y : H / 2,
       vx: 0,
       vy: 0,
       radius: 38,
       isCenter: true,
-      contact: null,
+      contact: centerContact || null,
     };
 
-    const nodes = [centerNode, ...contacts.map((c, i) => {
+    // Contacts excludes the central contact (it becomes the center node)
+    const otherContacts = centerContact ? contacts.filter(c => c.id !== centralContactId) : contacts;
+
+    const nodes = [centerNode, ...otherContacts.map((c, i) => {
       const angle = (2 * Math.PI * i) / contacts.length;
       const radius = Math.min(W, H) * 0.35;
       const existing = nodesRef.current.find(n => n.id === c.id);
