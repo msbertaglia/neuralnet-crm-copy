@@ -47,6 +47,7 @@ export default function Connections() {
   const [editingConnection, setEditingConnection] = useState(null);
   const [sortKey, setSortKey] = useState("connection_date");
   const [sortDir, setSortDir] = useState("desc");
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const queryClient = useQueryClient();
 
   const { data: connections = [], isLoading } = useQuery({
