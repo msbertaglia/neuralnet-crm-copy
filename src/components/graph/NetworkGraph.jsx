@@ -162,52 +162,36 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
     const edges = [];
     const addedEdges = new Set();
 
-    connections.forEach(conn => {
-      const aId = conn.contact_a_id;
-      const bId = conn.contact_b_id;
+    // Create edges based on introduced_by_id hierarchy
+    contacts.forEach(contact => {
+      if (!contact.introduced_by_id || contact.introduced_by_id === "sem_informacao") {
+        return; // Skip contacts with no introducer
+      }
 
-      if (!conn.introduced_by_id) {
-        // Direct connection: draw edge between the two parties
-        if (!visibleIds.has(aId) || !visibleIds.has(bId)) return;
-        const srcNodeId = aId === centralContactId ? "__center__" : aId;
-        const tgtNodeId = bId === centralContactId ? "__center__" : bId;
-        const key = [srcNodeId, tgtNodeId].sort().join("|");
-        if (addedEdges.has(key)) return;
-        addedEdges.add(key);
-        const isCenterEdge = srcNodeId === "__center__" || tgtNodeId === "__center__";
-        edges.push({
-          id: conn.id,
-          sourceId: srcNodeId,
-          targetId: tgtNodeId,
-          strength: conn.strength || "media",
-          type: conn.connection_type || "",
-          isCenterEdge,
-        });
-      } else {
-        // Introduced connection: draw edge from introducer → introduced person
-        const intId = conn.introduced_by_id;
-        if (!visibleIds.has(intId)) return;
+      let introducerId = contact.introduced_by_id;
+      
+      // If "direto", draw edge from center
+      if (contact.introduced_by_id === "direto") {
+        introducerId = centralContactId;
+      }
 
-        // The introduced person is whichever of A/B is at the higher level (further from center)
-        const intLevel = levelMap.get(intId) ?? 99;
-        const aLevel = levelMap.get(aId) ?? 99;
-        const bLevel = levelMap.get(bId) ?? 99;
+      if (!visibleIds.has(introducerId) || !visibleIds.has(contact.id)) {
+        return;
+      }
 
-        // Draw edge: introducer → the party that is further away (introduced)
-        const introducedId = aLevel > bLevel ? aId : bId;
-        if (!visibleIds.has(introducedId)) return;
-        const srcNodeId = intId === centralContactId ? "__center__" : intId;
-        const tgtNodeId = introducedId === centralContactId ? "__center__" : introducedId;
-        const key = [srcNodeId, tgtNodeId].sort().join("|");
-        if (addedEdges.has(key)) return;
+      const srcNodeId = introducerId === centralContactId ? "__center__" : introducerId;
+      const tgtNodeId = contact.id;
+      const key = [srcNodeId, tgtNodeId].sort().join("|");
+      
+      if (!addedEdges.has(key)) {
         addedEdges.add(key);
         edges.push({
-          id: `intro-${conn.id}`,
+          id: `intro-${contact.id}`,
           sourceId: srcNodeId,
           targetId: tgtNodeId,
-          strength: conn.strength || "media",
-          type: conn.connection_type || "",
-          isCenterEdge: srcNodeId === "__center__" || tgtNodeId === "__center__",
+          strength: "media",
+          type: "hierarquica",
+          isCenterEdge: srcNodeId === "__center__",
           isIntroduced: true,
         });
       }
