@@ -329,24 +329,6 @@ export default function Network() {
               )}
             </div>
           </div>
-        ) : !centralContactId ? (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center space-y-4 max-w-sm w-full px-6">
-              <div className="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-center mx-auto">
-                <Users className="w-10 h-10 text-slate-500" />
-              </div>
-              <div>
-                <p className="text-slate-200 font-semibold text-lg">Escolha a pessoa central</p>
-                <p className="text-slate-500 text-sm mt-1">A rede será montada a partir das conexões diretas dela</p>
-              </div>
-              <button
-                onClick={() => setShowCenterPicker(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-medium transition-colors"
-              >
-                Selecionar pessoa central
-              </button>
-            </div>
-          </div>
         ) : (
           <NetworkGraph
             contacts={contacts}
