@@ -6,6 +6,7 @@ import { LayoutDashboard, Users, Share2, FolderOpen, Menu, X, ChevronRight } fro
 const navItems = [
   { label: "Dashboard", page: "Dashboard", icon: LayoutDashboard },
   { label: "Rede Visual", page: "Network", icon: Share2 },
+  { label: "Conexões", page: "Connections", icon: Share2 },
   { label: "Contatos", page: "Contacts", icon: Users },
   { label: "Projetos", page: "Projects", icon: FolderOpen },
 ];
