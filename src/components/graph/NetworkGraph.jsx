@@ -29,7 +29,11 @@ const ORBIT_UNIT = 210; // px per level
 // Compute level (degrees of separation) for each contact from the center
 function computeLevels(centralContactId, connections, contacts) {
   const levels = new Map();
-  if (centralContactId) levels.set(centralContactId, 0);
+  if (!centralContactId) {
+    contacts.forEach(c => levels.set(c.id, 1));
+    return levels;
+  }
+  levels.set(centralContactId, 0);
 
   // First pass: connections directly involving center contact
   connections.forEach(conn => {
