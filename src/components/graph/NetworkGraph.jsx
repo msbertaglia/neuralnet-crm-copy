@@ -103,7 +103,7 @@ function computeLevels(centralContactId, connections, contacts) {
   return levels;
 }
 
-export default function NetworkGraph({ contacts, connections, onNodeClick, onNodeDoubleClick, centerUser, centralContactId }) {
+export default function NetworkGraph({ contacts, connections, onNodeClick, onNodeDoubleClick, centralContactId }) {
   const canvasRef = useRef(null);
   const nodesRef = useRef([]);
   const edgesRef = useRef([]);
