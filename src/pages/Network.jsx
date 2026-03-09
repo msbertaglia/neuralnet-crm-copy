@@ -22,7 +22,9 @@ export default function Network() {
   const [user, setUser] = useState(null);
 
   const [selectedContact, setSelectedContact] = useState(null);
-  const [centralContactId] = useState(() => localStorage.getItem("netmap_central_contact_id") || null);
+  const [centralContactId, setCentralContactId] = useState(() => localStorage.getItem("netmap_central_contact_id") || null);
+  const [showCenterPicker, setShowCenterPicker] = useState(false);
+  const [centerSearch, setCenterSearch] = useState("");
   const [showContactForm, setShowContactForm] = useState(false);
   const [editingContact, setEditingContact] = useState(null);
   const [showConnectionForm, setShowConnectionForm] = useState(false);
