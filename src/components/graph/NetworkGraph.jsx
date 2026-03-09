@@ -392,7 +392,7 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
 
       const statusColor = STATUS_COLORS[n.status] || "#94a3b8";
       const nextColor = NEXT_STEP_COLORS[n.nextStepStatus] || "#94a3b8";
-      const alpha = n.level === 2 ? 0.7 : 1;
+      const alpha = n.level === 1 ? 1 : n.level === 2 ? 0.78 : 0.6;
 
       if (isHovered) { ctx.shadowColor = statusColor; ctx.shadowBlur = 18; }
 
