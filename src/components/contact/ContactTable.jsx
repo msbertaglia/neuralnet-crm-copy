@@ -181,27 +181,23 @@ export default function ContactTable({ contacts, canEdit, onView, onEdit, onDele
   );
 }
 
-function ContactRow({ contact, columns, canEdit, actionsWidth, isLast, isCentral, centralContactId, onSetCentral, onView, onEdit, onDelete }) {
+function ContactRow({ contact, columns, canEdit, actionsWidth, isLast, onView, onEdit, onDelete }) {
   const ns = NEXT_STEP_STATUS_CONFIG[contact.next_step_status] || NEXT_STEP_STATUS_CONFIG.sem_proximo_passo;
   const NsIcon = ns.icon;
 
   // Determine connection indicator color
-  // Green: há conexão direta (introduced_by_id = central contact's ID)
+  // Green: há conexão direta (introduced_by_id = não é especial)
   // Yellow: indicação de conexão "Direto" (introduced_by_id === "direto")
   // Red: Sem informação (introduced_by_id === "sem_informacao" ou vazio)
   const getConnectionIndicator = () => {
-    if (!centralContactId || centralContactId === contact.id) return null;
-    
     const introducedBy = contact.introduced_by_id;
     
     if (!introducedBy || introducedBy === "sem_informacao") {
       return { color: "#ef4444", label: "Sem informação" }; // Red
     } else if (introducedBy === "direto") {
       return { color: "#eab308", label: "Direto" }; // Yellow
-    } else if (introducedBy === centralContactId) {
-      return { color: "#22c55e", label: "Conexão direta" }; // Green
     } else {
-      return { color: "#94a3b8", label: "Outra conexão" }; // Gray (outro intermediário)
+      return { color: "#22c55e", label: "Conexão" }; // Green (tem um introdutor específico)
     }
   };
 
