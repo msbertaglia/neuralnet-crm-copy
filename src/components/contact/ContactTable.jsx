@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Pencil, Trash2, ChevronUp, ChevronDown, ChevronsUpDown, Clock, Timer, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Pencil, Trash2, ChevronUp, ChevronDown, ChevronsUpDown, Clock, Timer, AlertCircle, CheckCircle2, Circle } from "lucide-react";
 import SmartDate from "@/components/ui/SmartDate";
 
 const STATUS_COLORS = {
