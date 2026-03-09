@@ -271,6 +271,34 @@ export default function Connections() {
         </div>
       </div>
 
+      {/* Delete Confirm Modal */}
+      {confirmDeleteId && (() => {
+        const conn = connections.find(c => c.id === confirmDeleteId);
+        return (
+          <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
+            <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 max-w-sm w-full shadow-2xl">
+              <h3 className="text-white font-bold text-lg mb-2">Confirmar exclusão</h3>
+              <p className="text-slate-400 text-sm mb-1">Tem certeza que deseja apagar a conexão entre:</p>
+              <p className="text-white font-semibold text-sm mb-4">
+                {conn?.contact_a_name} ↔ {conn?.contact_b_name}
+              </p>
+              <p className="text-slate-500 text-xs mb-6">Esta ação não pode ser desfeita.</p>
+              <div className="flex gap-3 justify-end">
+                <Button variant="outline" className="border-slate-700 text-slate-300 hover:bg-slate-800" onClick={() => setConfirmDeleteId(null)}>
+                  Cancelar
+                </Button>
+                <Button
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                  onClick={() => { deleteMutation.mutate(confirmDeleteId); setConfirmDeleteId(null); }}
+                >
+                  Apagar
+                </Button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Form Modal */}
       {showForm && (
         <ConnectionForm
