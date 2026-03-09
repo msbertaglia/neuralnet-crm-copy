@@ -253,9 +253,7 @@ function ContactRow({ contact, columns, canEdit, actionsWidth, isLast, onView, o
           ? <span className="text-slate-400 text-xs whitespace-nowrap">{NEXT_STEP_TYPE_LABELS[contact.next_step_type] || contact.next_step_type}</span>
           : <span className="text-slate-700">—</span>;
       case "next_step_date":
-        return contact.next_step_date
-          ? <span className="text-slate-400 text-sm whitespace-nowrap">{fmtDate(contact.next_step_date)}</span>
-          : <span className="text-slate-700">—</span>;
+        return <SmartDate date={contact.next_step_date} />;
       case "next_step_status":
         return (
           <div className={`flex items-center gap-1.5 ${ns.color}`}>
