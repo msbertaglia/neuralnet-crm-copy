@@ -197,7 +197,7 @@ function ContactRow({ contact, columns, canEdit, actionsWidth, isLast, onView, o
           <Badge className={`text-xs border whitespace-nowrap ${STATUS_COLORS[contact.status] || STATUS_COLORS.prospect}`}>{contact.status}</Badge>
         );
       case "nickname":
-        return <span className="text-slate-300 text-sm">{contact.nickname || <span className="text-slate-700">—</span>}</span>;
+        return <span className="text-slate-300 text-sm whitespace-nowrap">{contact.nickname || <span className="text-slate-700">—</span>}</span>;
       case "tags":
         return contact.tags?.length
           ? <div className="flex gap-1 flex-wrap">
