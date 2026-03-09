@@ -239,26 +239,33 @@ export default function Connections() {
                 key={conn.id}
                 className={`flex items-center hover:bg-slate-800/50 transition-colors whitespace-nowrap ${i < filtered.length - 1 ? "border-b border-slate-800" : ""}`}
               >
+                {/* Pessoa A */}
                 <div style={{ width: 200, minWidth: 200 }} className="flex-shrink-0 px-3 py-3 overflow-hidden">
                   <span className="text-white text-sm font-semibold truncate block">{conn.contact_a_name || "—"}</span>
                 </div>
+                {/* conheceu / Pessoa B */}
                 <div style={{ width: 200, minWidth: 200 }} className="flex-shrink-0 px-3 py-3 overflow-hidden">
                   <span className="text-white text-sm font-semibold truncate block">{conn.contact_b_name || "—"}</span>
                 </div>
+                {/* Por Intermédio De */}
+                <div style={{ width: 200, minWidth: 200 }} className="flex-shrink-0 px-3 py-3 overflow-hidden">
+                  <span className="text-slate-400 text-sm truncate block">{conn.introduced_by_name || "—"}</span>
+                </div>
+                {/* No Dia */}
+                <div style={{ width: 180, minWidth: 180 }} className="flex-shrink-0 px-3 py-3 overflow-hidden">
+                  <SmartDate date={conn.connection_date} />
+                </div>
+                {/* Tipo */}
                 <div style={{ width: 130, minWidth: 130 }} className="flex-shrink-0 px-3 py-3 overflow-hidden">
                   <span className="text-slate-400 text-sm">{TYPE_LABELS[conn.connection_type] || conn.connection_type || "—"}</span>
                 </div>
+                {/* Força */}
                 <div style={{ width: 100, minWidth: 100 }} className="flex-shrink-0 px-3 py-3 overflow-hidden">
                   {conn.strength
                     ? <Badge className={`text-xs border ${STRENGTH_COLORS[conn.strength]}`}>{conn.strength}</Badge>
                     : <span className="text-slate-700">—</span>}
                 </div>
-                <div style={{ width: 180, minWidth: 180 }} className="flex-shrink-0 px-3 py-3 overflow-hidden">
-                  <span className="text-slate-400 text-sm truncate block">{conn.introduced_by_name || "—"}</span>
-                </div>
-                <div style={{ width: 160, minWidth: 160 }} className="flex-shrink-0 px-3 py-3 overflow-hidden">
-                  <SmartDate date={conn.connection_date} />
-                </div>
+                {/* Origem */}
                 <div style={{ width: 110, minWidth: 110 }} className="flex-shrink-0 px-3 py-3 overflow-hidden">
                   {conn.origin === "implicita"
                     ? <Badge className="text-xs border bg-purple-500/15 text-purple-400 border-purple-500/30">Implícita</Badge>
