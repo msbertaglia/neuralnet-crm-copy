@@ -36,6 +36,7 @@ export default function Contacts() {
   const [user, setUser] = useState(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("todos");
+  const [tagFilter, setTagFilter] = useState("todas");
   const [selectedContact, setSelectedContact] = useState(null);
   const [showContactForm, setShowContactForm] = useState(false);
   const [editingContact, setEditingContact] = useState(null);
