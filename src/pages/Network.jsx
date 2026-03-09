@@ -29,8 +29,7 @@ export default function Network() {
   const [showLogForm, setShowLogForm] = useState(false);
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState({ statuses: [], nextSteps: [], projectIds: [] });
-  const [pendingSave, setPendingSave] = useState(null);
-  const [showImpliedModal, setShowImpliedModal] = useState(false);
+
   const [urlStatus, setUrlStatus] = useState("todos");
   const [urlTag, setUrlTag] = useState("todas");
 
