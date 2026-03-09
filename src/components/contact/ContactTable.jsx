@@ -208,7 +208,7 @@ function ContactRow({ contact, columns, canEdit, actionsWidth, isLast, onView, o
           : <span className="text-slate-700">—</span>;
       case "company":
         return contact.company
-          ? <span className="text-slate-300 text-sm">{contact.company}</span>
+          ? <span className="text-slate-300 text-sm whitespace-nowrap">{contact.company}</span>
           : <span className="text-slate-700">—</span>;
       case "social":
         return (
