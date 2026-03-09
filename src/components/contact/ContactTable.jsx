@@ -136,8 +136,6 @@ export default function ContactTable({ contacts, canEdit, onView, onEdit, onDele
         <div style={{ minWidth: totalWidth }}>
           {/* Header */}
           <div className="flex items-center border-b border-slate-800 bg-slate-900/80 sticky top-0 z-10">
-            {/* Avatar */}
-            <div className="w-16 flex-shrink-0 px-4 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wide" />
             {COLUMNS.map(col => (
               <div
                 key={col.key}
