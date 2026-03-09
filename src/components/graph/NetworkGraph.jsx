@@ -267,6 +267,8 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
         continue;
       }
 
+      const centerNode = nodes.find(n => n.isCenter);
+
       // Orbit force: pull toward target orbit radius from center
       if (centerNode) {
         const dcx = n.x - centerNode.x;
