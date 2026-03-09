@@ -226,8 +226,9 @@ export default function Connections() {
         <ConnectionForm
           connection={editingConnection}
           contacts={contacts}
+          existingConnections={connections}
           onSave={(data) => saveMutation.mutate(data)}
-          onCancel={() => { setShowForm(false); setEditingConnection(null); }}
+          onClose={() => { setShowForm(false); setEditingConnection(null); }}
         />
       )}
     </div>
