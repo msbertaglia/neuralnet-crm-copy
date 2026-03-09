@@ -447,7 +447,7 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
         } else {
           clickTimeout = setTimeout(() => {
             clickTimeout = null;
-            if (onNodeClick) onNodeClick(node.contact);
+            if (onNodeClick && !node.isCenter) onNodeClick(node.contact);
           }, 250);
         }
       }
