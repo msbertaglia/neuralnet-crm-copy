@@ -137,7 +137,10 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
       const group = contacts.filter(c => levelMap.get(c.id) === lvl);
       const orbitR = ORBIT_RADII[lvl] || lvl * 180;
       group.forEach((c, i) => {
-        const angle = (2 * Math.PI * i) / group.length - Math.PI / 2;
+        // Distribute evenly on orbit
+        const angle = (2 * Math.PI * i) / (group.length || 1) - Math.PI / 2;
+        const x = W / 2 + orbitR * Math.cos(angle);
+        const y = H / 2 + orbitR * Math.sin(angle);
         const existing = nodesRef.current.find(n => n.id === c.id);
         nodes.push({
           id: c.id,
@@ -147,12 +150,14 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
           status: c.status || "prospect",
           nextStepStatus: c.next_step_status || "sem_proximo_passo",
           photoUrl: c.photo_url || null,
-          x: existing ? existing.x : W / 2 + orbitR * Math.cos(angle),
-          y: existing ? existing.y : H / 2 + orbitR * Math.sin(angle),
+          x: existing ? existing.x : x,
+          y: existing ? existing.y : y,
           vx: 0, vy: 0,
           radius: lvl === 1 ? 26 : lvl === 2 ? 21 : 17,
           level: lvl,
           orbitRadius: orbitR,
+          targetX: x,
+          targetY: y,
           contact: c,
         });
       });
