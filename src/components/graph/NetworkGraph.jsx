@@ -68,7 +68,7 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
       const existing = nodesRef.current.find(n => n.id === c.id);
       return {
         id: c.id,
-        label: c.name,
+        label: c.nickname || c.name,
         company: c.company || "",
         status: c.status || "prospect",
         nextStepStatus: c.next_step_status || "sem_proximo_passo",
