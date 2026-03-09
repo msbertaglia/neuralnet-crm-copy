@@ -29,11 +29,18 @@ export default function ContactForm({ contact, contacts, onSave, onClose }) {
 
   const handleSubmit = async () => {
     setLoading(true);
-    if (form.introduced_by_id) {
+    
+    let introducedByName = "";
+    if (form.introduced_by_id === "sem_informacao") {
+      introducedByName = "Sem informação";
+    } else if (form.introduced_by_id === "direto") {
+      introducedByName = "Direto";
+    } else if (form.introduced_by_id) {
       const found = contacts.find(c => c.id === form.introduced_by_id);
-      if (found) form.introduced_by_name = found.name;
+      introducedByName = found?.name || "";
     }
-    await onSave(form);
+    
+    await onSave({ ...form, introduced_by_name: introducedByName });
     setLoading(false);
   };
 
