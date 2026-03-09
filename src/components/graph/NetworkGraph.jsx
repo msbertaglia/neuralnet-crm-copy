@@ -119,9 +119,15 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
     const REPULSION = 3500;
     const ATTRACTION = 0.015;
     const DAMPING = 0.85;
-    const CENTER_GRAVITY = 0.003;
+    const CENTER_GRAVITY = 0.001;
 
     for (let i = 0; i < nodes.length; i++) {
+      // Pin the center node strongly
+      if (nodes[i].isCenter) {
+        nodes[i].vx += (W / 2 - nodes[i].x) * 0.1;
+        nodes[i].vy += (H / 2 - nodes[i].y) * 0.1;
+        continue;
+      }
       nodes[i].vx += (W / 2 - nodes[i].x) * CENTER_GRAVITY;
       nodes[i].vy += (H / 2 - nodes[i].y) * CENTER_GRAVITY;
 
