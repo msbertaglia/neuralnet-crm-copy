@@ -30,17 +30,19 @@ export default function ContactForm({ contact, contacts, onSave, onClose }) {
   const handleSubmit = async () => {
     setLoading(true);
     
+    // Don't save special states as names - only save actual contact names
     let introducedByName = "";
-    if (form.introduced_by_id === "sem_informacao") {
-      introducedByName = "Sem informação";
-    } else if (form.introduced_by_id === "direto") {
-      introducedByName = "Direto";
+    let introducedById = form.introduced_by_id;
+    
+    if (form.introduced_by_id === "sem_informacao" || form.introduced_by_id === "direto") {
+      introducedById = form.introduced_by_id; // Keep the special state
+      introducedByName = ""; // Don't set a name
     } else if (form.introduced_by_id) {
       const found = contacts.find(c => c.id === form.introduced_by_id);
       introducedByName = found?.name || "";
     }
     
-    await onSave({ ...form, introduced_by_name: introducedByName });
+    await onSave({ ...form, introduced_by_id: introducedById, introduced_by_name: introducedByName });
     setLoading(false);
   };
 
