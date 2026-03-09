@@ -121,30 +121,33 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
     const H = canvas.height;
 
     const centerContact = centralContactId ? contacts.find(c => c.id === centralContactId) : null;
-    const centerLabel = centerContact ? (centerContact.nickname || centerContact.name) : (centerUser?.full_name || "Você");
 
     // Compute levels
     const levelMap = computeLevels(centralContactId, connections, contacts);
 
-    // Center node
-    const existingCenter = nodesRef.current.find(n => n.id === CENTER_NODE_ID);
-    const centerNode = {
-      id: CENTER_NODE_ID,
-      label: centerLabel,
-      company: centerContact?.company || "",
-      status: centerContact?.status || "ativo",
-      nextStepStatus: centerContact?.next_step_status || "sem_proximo_passo",
-      photoUrl: centerContact?.photo_url || null,
-      x: existingCenter ? existingCenter.x : W / 2,
-      y: existingCenter ? existingCenter.y : H / 2,
-      vx: 0,
-      vy: 0,
-      radius: 38,
-      isCenter: true,
-      level: 0,
-      orbitRadius: 0,
-      contact: centerContact || null,
-    };
+    const nodes = [];
+
+    // Only add center node when a contact is explicitly selected as center
+    if (centerContact) {
+      const existingCenter = nodesRef.current.find(n => n.id === CENTER_NODE_ID);
+      nodes.push({
+        id: CENTER_NODE_ID,
+        label: centerContact.nickname || centerContact.name,
+        company: centerContact.company || "",
+        status: centerContact.status || "ativo",
+        nextStepStatus: centerContact.next_step_status || "sem_proximo_passo",
+        photoUrl: centerContact.photo_url || null,
+        x: existingCenter ? existingCenter.x : W / 2,
+        y: existingCenter ? existingCenter.y : H / 2,
+        vx: 0,
+        vy: 0,
+        radius: 38,
+        isCenter: true,
+        level: 0,
+        orbitRadius: 0,
+        contact: centerContact,
+      });
+    }
 
     const otherContacts = centerContact ? contacts.filter(c => c.id !== centralContactId) : contacts;
 
