@@ -146,7 +146,7 @@ export default function Connections() {
     });
 
     return list;
-  }, [connections, search, sortKey, sortDir]);
+  }, [allConnections, search, sortKey, sortDir]);
 
   const totalWidth = COLUMNS.reduce((acc, c) => acc + c.width, 0) + ACTIONS_WIDTH;
 
