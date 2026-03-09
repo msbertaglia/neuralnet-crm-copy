@@ -208,6 +208,7 @@ export default function Network() {
             connections={filteredConnections}
             onNodeClick={setSelectedContact}
             onNodeDoubleClick={(c) => { setEditingContact(c); setShowContactForm(true); }}
+            centerUser={user}
           />
         )}
 
