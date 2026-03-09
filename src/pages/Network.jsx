@@ -23,7 +23,7 @@ export default function Network() {
   const [centralContactId, setCentralContactId] = useState(null);
   const [showContactForm, setShowContactForm] = useState(false);
   const [editingContact, setEditingContact] = useState(null);
-  const [showConnectionForm, setShowConnectionForm] = useState(false);
+
   const [showLogForm, setShowLogForm] = useState(false);
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState({ statuses: [], nextSteps: [], projectIds: [] });
