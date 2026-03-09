@@ -434,7 +434,7 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
 
       // Name
       ctx.fillStyle = isHovered ? "#f8fafc" : `rgba(203,213,225,${alpha})`;
-      ctx.font = `${isHovered ? "bold " : ""}${n.level === 2 ? "9" : "11"}px Inter, sans-serif`;
+      ctx.font = `${isHovered ? "bold " : ""}${n.level >= 3 ? "9" : n.level === 2 ? "10" : "11"}px Inter, sans-serif`;
       ctx.textAlign = "center";
       ctx.fillText(n.label.split(" ").slice(0, 2).join(" "), n.x, n.y + n.radius + 14);
 
