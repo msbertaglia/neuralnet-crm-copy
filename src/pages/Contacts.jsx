@@ -124,7 +124,7 @@ export default function Contacts() {
             </h1>
             <p className="text-slate-400 text-sm">{contacts.length} pessoas na sua rede</p>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
               <Input
@@ -133,6 +133,23 @@ export default function Contacts() {
                 placeholder="Buscar..."
                 className="pl-9 h-9 bg-slate-800 border-slate-700 text-slate-200 text-sm w-48"
               />
+            </div>
+            {/* View toggle */}
+            <div className="flex bg-slate-800 border border-slate-700 rounded-lg overflow-hidden">
+              <button
+                onClick={() => setViewMode("list")}
+                className={`p-2 transition-colors ${viewMode === "list" ? "bg-blue-600 text-white" : "text-slate-400 hover:text-slate-200"}`}
+                title="Visão lista"
+              >
+                <LayoutList className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => setViewMode("grid")}
+                className={`p-2 transition-colors ${viewMode === "grid" ? "bg-blue-600 text-white" : "text-slate-400 hover:text-slate-200"}`}
+                title="Visão cards"
+              >
+                <LayoutGrid className="w-4 h-4" />
+              </button>
             </div>
             {canEdit && (
               <Button
