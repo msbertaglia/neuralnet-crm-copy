@@ -51,16 +51,16 @@ function TwitterIcon({ active }) {
 }
 
 const COLUMNS = [
-  { key: "name", label: "Nome", width: 180, type: "alpha" },
-  { key: "nickname", label: "Apelido", width: 130, type: "alpha" },
-  { key: "tags", label: "Tags", width: 180, type: "alpha" },
-  { key: "company", label: "Empresa", width: 160, type: "alpha" },
-  { key: "social", label: "Redes Sociais", width: 110, sortable: false },
-  { key: "met_date", label: "Relacionamento", width: 130, type: "date" },
-  { key: "last_contact_date", label: "Último Contato", width: 130, type: "date" },
-  { key: "next_step_type", label: "Tipo Próx. Passo", width: 140, type: "alpha" },
-  { key: "next_step_date", label: "Data Limite", width: 120, type: "date" },
-  { key: "next_step_status", label: "Status Próx. Passo", width: 150, type: "alpha" },
+  { key: "name", label: "Nome", width: 240, type: "alpha" },
+  { key: "nickname", label: "Apelido", width: 160, type: "alpha" },
+  { key: "tags", label: "Tags", width: 220, type: "alpha" },
+  { key: "company", label: "Empresa", width: 200, type: "alpha" },
+  { key: "social", label: "Redes Sociais", width: 120, sortable: false },
+  { key: "met_date", label: "Relacionamento", width: 200, type: "date" },
+  { key: "last_contact_date", label: "Último Contato", width: 200, type: "date" },
+  { key: "next_step_type", label: "Tipo Próx. Passo", width: 160, type: "alpha" },
+  { key: "next_step_date", label: "Data Limite", width: 200, type: "date" },
+  { key: "next_step_status", label: "Status Próx. Passo", width: 160, type: "alpha" },
 ];
 
 function SortIcon({ col, sortKey, sortDir }) {
