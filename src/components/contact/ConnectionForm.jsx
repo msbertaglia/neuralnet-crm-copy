@@ -159,13 +159,24 @@ export default function ConnectionForm({ contacts, connection, existingConnectio
 }
 
 function ContactSelect({ contacts, value, onChange, exclude, allowNone }) {
+  const getDisplayName = (val) => {
+    if (val === "sem_informacao") return "Sem informação";
+    if (val === "direto") return "Direto";
+    const contact = contacts.find(c => c.id === val);
+    return contact?.name || "";
+  };
+
   return (
-    <Select value={value || "none"} onValueChange={onChange}>
-      <SelectTrigger className="bg-slate-800 border-slate-600 text-white"><SelectValue placeholder="Selecione..." /></SelectTrigger>
+    <Select value={value || "sem_informacao"} onValueChange={onChange}>
+      <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
+        <SelectValue placeholder="Selecione...">
+          {getDisplayName(value)}
+        </SelectValue>
+      </SelectTrigger>
       <SelectContent className="bg-slate-800 border-slate-700">
         {allowNone && (
           <>
-            <SelectItem value="none" className="text-slate-400">Sem informação</SelectItem>
+            <SelectItem value="sem_informacao" className="text-slate-400">Sem informação</SelectItem>
             <SelectItem value="direto" className="text-slate-400">Direto</SelectItem>
           </>
         )}
