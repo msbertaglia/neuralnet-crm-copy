@@ -136,8 +136,10 @@ export default function Contacts() {
     return Array.from(tagSet).sort();
   }, [contacts, statusFilter]);
 
+  const userContact = user?.email ? contacts.find(c => c.created_by === user.email) : null;
+
   const filtered = useMemo(() => {
-    let list = contacts;
+    let list = contacts.filter(c => c.created_by !== user?.email); // Exclude user's own contact
     if (search) {
       const s = search.toLowerCase();
       list = list.filter(c =>
@@ -149,7 +151,7 @@ export default function Contacts() {
     if (statusFilter !== "todos") list = list.filter(c => c.status === statusFilter);
     if (tagFilter !== "todas") list = list.filter(c => (c.tags || []).includes(tagFilter));
     return list;
-  }, [contacts, search, statusFilter, tagFilter]);
+  }, [contacts, search, statusFilter, tagFilter, user?.email]);
 
   const handleSaveContact = async (data) => {
     const newImplied = detectImpliedConnections(data, editingContact?.id, connections, contacts);
