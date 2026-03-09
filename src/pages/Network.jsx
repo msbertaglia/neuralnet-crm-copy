@@ -355,65 +355,7 @@ export default function Network() {
           <RefreshCw className="w-4 h-4" />
         </button>
 
-        {/* Change center button */}
-        {centralContactId && (
-          <button
-            onClick={() => setShowCenterPicker(true)}
-            className="absolute bottom-4 left-4 bg-slate-800/80 hover:bg-slate-700 border border-slate-700 rounded-lg px-3 py-2 text-slate-400 hover:text-white transition-colors text-xs flex items-center gap-1.5"
-          >
-            <Users className="w-3.5 h-3.5" />
-            Trocar centro
-          </button>
-        )}
       </div>
-
-      {/* Center Picker Modal */}
-      {showCenterPicker && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-700 rounded-xl p-5 w-full max-w-md shadow-2xl">
-            <h3 className="text-white font-bold text-base mb-4">Escolher pessoa central</h3>
-            <input
-              autoFocus
-              value={centerSearch}
-              onChange={e => setCenterSearch(e.target.value)}
-              placeholder="Buscar contato..."
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 text-sm placeholder:text-slate-600 outline-none focus:border-blue-500 mb-3"
-            />
-            <div className="overflow-y-auto max-h-72 space-y-1">
-              {contacts
-                .filter(c => !centerSearch || c.name?.toLowerCase().includes(centerSearch.toLowerCase()))
-                .slice(0, 30)
-                .map(c => (
-                  <button
-                    key={c.id}
-                    onClick={() => {
-                      localStorage.setItem("netmap_central_contact_id", c.id);
-                      setCentralContactId(c.id);
-                      setShowCenterPicker(false);
-                      setCenterSearch("");
-                    }}
-                    className={`w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors ${
-                      c.id === centralContactId
-                        ? "bg-blue-600/30 text-blue-300 border border-blue-500/40"
-                        : "text-slate-300 hover:bg-slate-800"
-                    }`}
-                  >
-                    <span className="font-medium">{c.name}</span>
-                    {c.company && <span className="text-slate-500 ml-2 text-xs">{c.company}</span>}
-                  </button>
-                ))}
-            </div>
-            <div className="flex justify-end mt-4">
-              <button
-                onClick={() => { setShowCenterPicker(false); setCenterSearch(""); }}
-                className="text-slate-400 hover:text-white text-sm transition-colors"
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Sidebar */}
       {selectedContact && (
