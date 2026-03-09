@@ -44,9 +44,24 @@ function computeLevels(centralContactId, connections, contacts) {
         // Truly direct — level 1
         if (!levels.has(otherId) || levels.get(otherId) > 1) levels.set(otherId, 1);
       } else {
-        // Introduced: introducer = level 1, introduced contact = level 2
+        // Introduced: introducer = level 1, the introduced contact = level 2
         if (!levels.has(intId) || levels.get(intId) > 1) levels.set(intId, 1);
         if (!levels.has(otherId) || levels.get(otherId) > 2) levels.set(otherId, 2);
+      }
+    }
+  });
+
+  // Also: any introducer referenced in any connection inherits level from the node they introduced to
+  connections.forEach(conn => {
+    if (!conn.introduced_by_id) return;
+    const intId = conn.introduced_by_id;
+    const la = levels.get(conn.contact_a_id);
+    const lb = levels.get(conn.contact_b_id);
+    const minLevel = Math.min(la ?? 99, lb ?? 99);
+    if (minLevel < 99) {
+      // Introducer sits at same level as the "closer" of the two contacts they connected
+      if (!levels.has(intId) || levels.get(intId) > minLevel) {
+        levels.set(intId, minLevel);
       }
     }
   });
