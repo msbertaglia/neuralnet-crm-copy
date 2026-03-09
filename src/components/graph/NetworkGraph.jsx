@@ -218,9 +218,60 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
       }
     });
 
-    // Draw nodes
-    nodesRef.current.forEach(n => {
+    // Draw nodes (center last so it's on top)
+    const sortedNodes = [...nodesRef.current].sort((a, b) => (a.isCenter ? 1 : 0) - (b.isCenter ? 1 : 0));
+    sortedNodes.forEach(n => {
       const isHovered = hoveredRef.current === n.id;
+
+      if (n.isCenter) {
+        // Draw center node (you)
+        ctx.shadowColor = "#6366f1";
+        ctx.shadowBlur = 30;
+
+        // Outer glow ring
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, n.radius + 8, 0, 2 * Math.PI);
+        ctx.fillStyle = "rgba(99,102,241,0.15)";
+        ctx.fill();
+        ctx.strokeStyle = "#6366f1";
+        ctx.lineWidth = 2.5;
+        ctx.stroke();
+
+        // Main circle
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, n.radius, 0, 2 * Math.PI);
+        const grad = ctx.createRadialGradient(n.x, n.y - 10, 4, n.x, n.y, n.radius);
+        grad.addColorStop(0, "#4f46e5");
+        grad.addColorStop(1, "#1e1b4b");
+        ctx.fillStyle = grad;
+        ctx.fill();
+        ctx.strokeStyle = "#818cf8";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        ctx.shadowBlur = 0;
+
+        // Initials
+        const initials = n.label.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
+        ctx.fillStyle = "#e0e7ff";
+        ctx.font = `bold ${n.radius * 0.55}px Inter, sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(initials, n.x, n.y);
+        ctx.textBaseline = "alphabetic";
+
+        // Name below
+        ctx.fillStyle = "#a5b4fc";
+        ctx.font = "bold 12px Inter, sans-serif";
+        ctx.textAlign = "center";
+        const shortName = n.label.split(" ").slice(0, 2).join(" ");
+        ctx.fillText(shortName, n.x, n.y + n.radius + 17);
+        ctx.fillStyle = "#6366f1";
+        ctx.font = "9px Inter, sans-serif";
+        ctx.fillText("Você", n.x, n.y + n.radius + 28);
+        return;
+      }
+
       const statusColor = STATUS_COLORS[n.status] || "#94a3b8";
       const nextColor = NEXT_STEP_COLORS[n.nextStepStatus] || "#94a3b8";
 
@@ -257,7 +308,6 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
       ctx.clip();
 
       if (n.photoUrl) {
-        // draw image if loaded
         if (!n._img) {
           n._img = new Image();
           n._img.src = n.photoUrl;
