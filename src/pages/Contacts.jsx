@@ -45,6 +45,9 @@ export default function Contacts() {
   const [viewMode, setViewMode] = useState("list"); // "list" | "grid"
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [centralContactId, setCentralContactId] = useState(() => localStorage.getItem("netmap_central_contact_id") || null);
+  const [connections, setConnections] = useState([]);
+  const [pendingSave, setPendingSave] = useState(null); // { contactData, editingId, newImplied, saving }
+  const [showImpliedModal, setShowImpliedModal] = useState(false);
 
   const handleSetCentral = (id) => {
     const newId = id === centralContactId ? null : id;
