@@ -85,36 +85,43 @@ export default function Connections() {
     }
   };
 
-  // Compute implied connections (introducer ↔ introduced contact)
+  // Compute implied connections (introducer ↔ each contact)
   const impliedConnections = useMemo(() => {
     const implied = [];
     const usedPairs = new Set();
     connections.forEach(conn => {
       if (!conn.introduced_by_id) return;
       const intId = conn.introduced_by_id;
-      const introducedId = conn.contact_a_id === intId ? conn.contact_b_id : conn.contact_a_id;
-      const pairKey = [intId, introducedId].sort().join("|");
-      if (usedPairs.has(pairKey)) return;
-      const alreadyExists = connections.find(c =>
-        (c.contact_a_id === intId && c.contact_b_id === introducedId) ||
-        (c.contact_b_id === intId && c.contact_a_id === introducedId)
-      );
-      if (!alreadyExists) {
-        usedPairs.add(pairKey);
-        implied.push({
-          id: `implied-${conn.id}`,
-          contact_a_id: intId,
-          contact_a_name: conn.introduced_by_name,
-          contact_b_id: introducedId,
-          contact_b_name: intId === conn.contact_a_id ? conn.contact_b_name : conn.contact_a_name,
-          connection_type: null,
-          strength: "fraca",
-          introduced_by_id: null,
-          introduced_by_name: null,
-          connection_date: conn.connection_date,
-          isImplied: true,
-        });
-      }
+      const intName = conn.introduced_by_name;
+      const pairs = [
+        { id: conn.contact_a_id, name: conn.contact_a_name },
+        { id: conn.contact_b_id, name: conn.contact_b_name },
+      ];
+      pairs.forEach(({ id: otherId, name: otherName }) => {
+        if (otherId === intId) return; // introducer is one of the contacts, skip
+        const pairKey = [intId, otherId].sort().join("|");
+        if (usedPairs.has(pairKey)) return;
+        const alreadyExists = connections.find(c =>
+          (c.contact_a_id === intId && c.contact_b_id === otherId) ||
+          (c.contact_b_id === intId && c.contact_a_id === otherId)
+        );
+        if (!alreadyExists) {
+          usedPairs.add(pairKey);
+          implied.push({
+            id: `implied-${conn.id}-${otherId}`,
+            contact_a_id: intId,
+            contact_a_name: intName,
+            contact_b_id: otherId,
+            contact_b_name: otherName,
+            connection_type: null,
+            strength: "fraca",
+            introduced_by_id: null,
+            introduced_by_name: null,
+            connection_date: conn.connection_date,
+            isImplied: true,
+          });
+        }
+      });
     });
     return implied;
   }, [connections]);
