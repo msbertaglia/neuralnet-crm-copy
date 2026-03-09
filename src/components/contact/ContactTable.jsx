@@ -50,6 +50,8 @@ function TwitterIcon({ active }) {
   );
 }
 
+const RADIO_WIDTH = 40;
+
 const COLUMNS = [
   { key: "name", label: "Nome", width: 280, type: "alpha" },
   { key: "status", label: "Status", width: 120, type: "alpha" },
