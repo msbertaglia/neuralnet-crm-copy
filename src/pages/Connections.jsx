@@ -238,18 +238,24 @@ export default function Connections() {
                 </div>
                 {/* Ações */}
                 <div style={{ width: ACTIONS_WIDTH, minWidth: ACTIONS_WIDTH }} className="flex-shrink-0 px-3 py-3 flex items-center justify-center gap-1">
-                  <button
-                    onClick={() => { setEditingConnection(conn); setShowForm(true); }}
-                    className="p-1.5 text-slate-500 hover:text-blue-400 hover:bg-slate-700 rounded-lg transition-colors"
-                  >
-                    <Pencil className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => deleteMutation.mutate(conn.id)}
-                    className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-slate-700 rounded-lg transition-colors"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
+                  {conn.isImplied ? (
+                    <span className="text-xs text-slate-600 italic px-1">implícita</span>
+                  ) : (
+                    <>
+                      <button
+                        onClick={() => { setEditingConnection(conn); setShowForm(true); }}
+                        className="p-1.5 text-slate-500 hover:text-blue-400 hover:bg-slate-700 rounded-lg transition-colors"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => deleteMutation.mutate(conn.id)}
+                        className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-slate-700 rounded-lg transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
             ))}
