@@ -172,6 +172,9 @@ export default function ContactTable({ contacts, canEdit, onView, onEdit, onDele
               onDelete={() => onDelete(contact)}
             />
           ))}
+          {sorted.length === 0 && (
+            <div className="text-center py-12 text-slate-500 text-sm">Nenhum contato encontrado</div>
+          )}
         </div>
       </div>
     </div>
