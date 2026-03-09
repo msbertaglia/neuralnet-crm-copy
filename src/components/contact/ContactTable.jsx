@@ -297,16 +297,6 @@ function ContactRow({ contact, columns, canEdit, actionsWidth, isLast, onView, o
       className={`flex items-center hover:bg-slate-800/50 transition-colors cursor-pointer whitespace-nowrap ${!isLast ? "border-b border-slate-800" : ""}`}
       onClick={onView}
     >
-      {/* Radio button */}
-      <div
-        style={{ width: RADIO_WIDTH, minWidth: RADIO_WIDTH }}
-        className="flex-shrink-0 px-3 py-3 flex items-center justify-center"
-        onClick={e => { e.stopPropagation(); onSetCentral(); }}
-      >
-        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-colors ${isCentral ? "border-blue-400 bg-blue-400/20" : "border-slate-600 hover:border-slate-400"}`}>
-          {isCentral && <div className="w-2 h-2 rounded-full bg-blue-400" />}
-        </div>
-      </div>
       {/* Connection indicator */}
       <div
         style={{ width: CONNECTION_INDICATOR_WIDTH, minWidth: CONNECTION_INDICATOR_WIDTH }}
