@@ -182,7 +182,7 @@ export default function ContactTable({ contacts, canEdit, onView, onEdit, onDele
   );
 }
 
-function ContactRow({ contact, columns, canEdit, actionsWidth, isLast, onView, onEdit, onDelete }) {
+function ContactRow({ contact, columns, canEdit, actionsWidth, isLast, isCentral, onSetCentral, onView, onEdit, onDelete }) {
   const ns = NEXT_STEP_STATUS_CONFIG[contact.next_step_status] || NEXT_STEP_STATUS_CONFIG.sem_proximo_passo;
   const NsIcon = ns.icon;
 
