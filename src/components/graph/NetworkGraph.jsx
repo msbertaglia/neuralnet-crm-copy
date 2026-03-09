@@ -18,86 +18,45 @@ const NEXT_STEP_COLORS = {
 };
 
 const CONNECTION_STRENGTH = {
-  fraca: { width: 1, opacity: 0.35 },
-  media: { width: 2, opacity: 0.6 },
-  forte: { width: 3.5, opacity: 0.9 },
+  fraca: { width: 1, opacity: 0.3 },
+  media: { width: 2, opacity: 0.55 },
+  forte: { width: 3, opacity: 0.85 },
 };
 
-const CENTER_NODE_ID = "__center__";
-const ORBIT_UNIT = 210; // px per level
+const ORBIT_RADII = [0, 200, 380]; // level 0, 1, 2
 
-// Compute level (degrees of separation) for each contact from the center
-function computeLevels(centralContactId, connections, contacts) {
+/**
+ * Compute strict orbital levels:
+ * Level 0: center
+ * Level 1: contacts with a DIRECT connection (no introduced_by_id) to center
+ * Level 2: contacts with a DIRECT connection (no introduced_by_id) to any Level-1 contact,
+ *           who are NOT already level 0 or 1
+ * All others: undefined (hidden)
+ */
+function computeOrbits(centralContactId, connections) {
   const levels = new Map();
-  if (!centralContactId) {
-    contacts.forEach(c => levels.set(c.id, 1));
-    return levels;
-  }
+  if (!centralContactId) return levels;
+
   levels.set(centralContactId, 0);
 
-  // First pass: connections directly involving center contact
+  // Level 1: direct (no introducer) connections to center
   connections.forEach(conn => {
+    if (conn.introduced_by_id) return; // skip introduced connections
     const aId = conn.contact_a_id;
     const bId = conn.contact_b_id;
-    const intId = conn.introduced_by_id;
-    const involveCenter = aId === centralContactId || bId === centralContactId;
-
-    if (involveCenter && centralContactId) {
-      const otherId = aId === centralContactId ? bId : aId;
-      if (!intId) {
-        // Truly direct — level 1
-        if (!levels.has(otherId) || levels.get(otherId) > 1) levels.set(otherId, 1);
-      } else {
-        // Introduced: introducer = level 1, the introduced contact = level 2
-        if (!levels.has(intId) || levels.get(intId) > 1) levels.set(intId, 1);
-        if (!levels.has(otherId) || levels.get(otherId) > 2) levels.set(otherId, 2);
-      }
-    }
+    if (aId === centralContactId && !levels.has(bId)) levels.set(bId, 1);
+    if (bId === centralContactId && !levels.has(aId)) levels.set(aId, 1);
   });
 
-  // Also: any introducer referenced in any connection inherits level from the node they introduced to
+  // Level 2: direct (no introducer) connections to any level-1 node
   connections.forEach(conn => {
-    if (!conn.introduced_by_id) return;
-    const intId = conn.introduced_by_id;
-    const la = levels.get(conn.contact_a_id);
-    const lb = levels.get(conn.contact_b_id);
-    const minLevel = Math.min(la ?? 99, lb ?? 99);
-    if (minLevel < 99) {
-      // Introducer sits at same level as the "closer" of the two contacts they connected
-      if (!levels.has(intId) || levels.get(intId) > minLevel) {
-        levels.set(intId, minLevel);
-      }
-    }
-  });
-
-  // If no centralContactId (center is "Você"), put everyone at level 1 initially
-  if (!centralContactId) {
-    contacts.forEach(c => { if (!levels.has(c.id)) levels.set(c.id, 1); });
-  }
-
-  // BFS propagation through non-center connections
-  let changed = true;
-  let itr = 0;
-  while (changed && itr < 20) {
-    changed = false;
-    itr++;
-    connections.forEach(conn => {
-      const la = levels.get(conn.contact_a_id);
-      const lb = levels.get(conn.contact_b_id);
-      if (la !== undefined && (lb === undefined || lb > la + 1)) {
-        levels.set(conn.contact_b_id, la + 1);
-        changed = true;
-      }
-      if (lb !== undefined && (la === undefined || la > lb + 1)) {
-        levels.set(conn.contact_a_id, lb + 1);
-        changed = true;
-      }
-    });
-  }
-
-  // Orphaned contacts get a far level
-  contacts.forEach(c => {
-    if (!levels.has(c.id)) levels.set(c.id, 4);
+    if (conn.introduced_by_id) return;
+    const aId = conn.contact_a_id;
+    const bId = conn.contact_b_id;
+    const aLevel = levels.get(aId);
+    const bLevel = levels.get(bId);
+    if (aLevel === 1 && bLevel === undefined) levels.set(bId, 2);
+    if (bLevel === 1 && aLevel === undefined) levels.set(aId, 2);
   });
 
   return levels;
@@ -116,57 +75,50 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
 
   const buildGraph = useCallback(() => {
     const canvas = canvasRef.current;
-    if (!canvas || !contacts.length) return;
+    if (!canvas) return;
     const W = canvas.width;
     const H = canvas.height;
 
-    const centerContact = centralContactId ? contacts.find(c => c.id === centralContactId) : null;
-
-    // Compute levels
-    const levelMap = computeLevels(centralContactId, connections, contacts);
+    const levelMap = computeOrbits(centralContactId, connections);
+    const centerContact = contacts.find(c => c.id === centralContactId);
 
     const nodes = [];
 
-    // Only add center node when a contact is explicitly selected as center
-    if (centerContact) {
-      const existingCenter = nodesRef.current.find(n => n.id === CENTER_NODE_ID);
-      nodes.push({
-        id: CENTER_NODE_ID,
-        label: centerContact.nickname || centerContact.name,
-        company: centerContact.company || "",
-        status: centerContact.status || "ativo",
-        nextStepStatus: centerContact.next_step_status || "sem_proximo_passo",
-        photoUrl: centerContact.photo_url || null,
-        x: existingCenter ? existingCenter.x : W / 2,
-        y: existingCenter ? existingCenter.y : H / 2,
-        vx: 0,
-        vy: 0,
-        radius: 38,
-        isCenter: true,
-        level: 0,
-        orbitRadius: 0,
-        contact: centerContact,
-      });
+    if (!centerContact) {
+      nodesRef.current = [];
+      edgesRef.current = [];
+      return;
     }
 
-    const otherContacts = centerContact ? contacts.filter(c => c.id !== centralContactId) : contacts;
-
-    // Group contacts by level for angular distribution
-    const byLevel = {};
-    otherContacts.forEach(c => {
-      const lvl = levelMap.get(c.id) || 4;
-      if (!byLevel[lvl]) byLevel[lvl] = [];
-      byLevel[lvl].push(c);
+    // Center node
+    const existingCenter = nodesRef.current.find(n => n.isCenter);
+    nodes.push({
+      id: "__center__",
+      contactId: centerContact.id,
+      label: centerContact.nickname || centerContact.name,
+      company: centerContact.company || "",
+      status: centerContact.status || "ativo",
+      nextStepStatus: centerContact.next_step_status || "sem_proximo_passo",
+      photoUrl: centerContact.photo_url || null,
+      x: existingCenter ? existingCenter.x : W / 2,
+      y: existingCenter ? existingCenter.y : H / 2,
+      vx: 0, vy: 0,
+      radius: 40,
+      isCenter: true,
+      level: 0,
+      contact: centerContact,
     });
 
-    Object.entries(byLevel).forEach(([lvlStr, group]) => {
-      const lvl = Number(lvlStr);
-      const orbitR = lvl * ORBIT_UNIT;
+    // Level 1 & 2 nodes
+    [1, 2].forEach(lvl => {
+      const group = contacts.filter(c => levelMap.get(c.id) === lvl);
+      const orbitR = ORBIT_RADII[lvl];
       group.forEach((c, i) => {
         const angle = (2 * Math.PI * i) / group.length - Math.PI / 2;
         const existing = nodesRef.current.find(n => n.id === c.id);
         nodes.push({
           id: c.id,
+          contactId: c.id,
           label: c.nickname || c.name,
           company: c.company || "",
           status: c.status || "prospect",
@@ -174,9 +126,8 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
           photoUrl: c.photo_url || null,
           x: existing ? existing.x : W / 2 + orbitR * Math.cos(angle),
           y: existing ? existing.y : H / 2 + orbitR * Math.sin(angle),
-          vx: 0,
-          vy: 0,
-          radius: Math.max(18, 28 - (lvl - 1) * 2), // slightly smaller per level
+          vx: 0, vy: 0,
+          radius: lvl === 1 ? 26 : 20,
           level: lvl,
           orbitRadius: orbitR,
           contact: c,
@@ -184,60 +135,26 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
       });
     });
 
-    // Build edges from real connection records
-    const usedImpliedPairs = new Set();
-    const contactEdges = connections.map(conn => {
-      const srcNode = conn.contact_a_id === centralContactId ? CENTER_NODE_ID : conn.contact_a_id;
-      const tgtNode = conn.contact_b_id === centralContactId ? CENTER_NODE_ID : conn.contact_b_id;
-      const srcLevel = srcNode === CENTER_NODE_ID ? 0 : (levelMap.get(srcNode) || 1);
-      const tgtLevel = tgtNode === CENTER_NODE_ID ? 0 : (levelMap.get(tgtNode) || 1);
-      const levelDiff = Math.abs(srcLevel - tgtLevel);
-      return {
-        id: conn.id,
-        sourceId: srcNode,
-        targetId: tgtNode,
-        strength: conn.strength || "media",
-        type: conn.connection_type || "profissional",
-        isCenterEdge: false,
-        isImplied: false,
-        isDirect: levelDiff <= 1,
-        hasIntroducer: !!conn.introduced_by_id,
-      };
-    });
-
-    // Add implied edges from introduction paths (introducer ↔ introduced contact)
-    const impliedEdges = [];
+    // Edges: only between nodes that are visible, direct connections (no introducer)
+    const visibleIds = new Set(nodes.map(n => n.contactId || n.id));
+    const edges = [];
     connections.forEach(conn => {
-      if (!conn.introduced_by_id) return;
-      const intId = conn.introduced_by_id;
-      // The "introduced" contact is the one that's NOT the center and NOT the introducer
-      const aIsCenter = conn.contact_a_id === centralContactId;
-      const bIsCenter = conn.contact_b_id === centralContactId;
-      const introducedId = aIsCenter ? conn.contact_b_id : bIsCenter ? conn.contact_a_id : conn.contact_b_id;
-      const pairKey = [intId, introducedId].sort().join("|");
-      if (usedImpliedPairs.has(pairKey)) return;
-      // Only add if there's no existing connection record for this pair
-      const alreadyExists = connections.find(c =>
-        (c.contact_a_id === intId && c.contact_b_id === introducedId) ||
-        (c.contact_b_id === intId && c.contact_a_id === introducedId)
-      );
-      if (!alreadyExists && nodes.find(n => n.id === intId) && nodes.find(n => n.id === introducedId)) {
-        usedImpliedPairs.add(pairKey);
-        impliedEdges.push({
-          id: `implied-${conn.id}`,
-          sourceId: intId,
-          targetId: introducedId,
-          strength: "media",
-          type: "",
-          isCenterEdge: false,
-          isImplied: true,
-          isDirect: true,
-          hasIntroducer: false,
-        });
-      }
+      if (conn.introduced_by_id) return; // skip introduced
+      const aId = conn.contact_a_id;
+      const bId = conn.contact_b_id;
+      if (!visibleIds.has(aId) || !visibleIds.has(bId)) return;
+      const srcNodeId = aId === centralContactId ? "__center__" : aId;
+      const tgtNodeId = bId === centralContactId ? "__center__" : bId;
+      edges.push({
+        id: conn.id,
+        sourceId: srcNodeId,
+        targetId: tgtNodeId,
+        strength: conn.strength || "media",
+        type: conn.connection_type || "",
+        aLevel: levelMap.get(aId) ?? 0,
+        bLevel: levelMap.get(bId) ?? 0,
+      });
     });
-
-    const edges = [...contactEdges, ...impliedEdges];
 
     nodesRef.current = nodes;
     edgesRef.current = edges;
@@ -245,77 +162,49 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
 
   const simulate = useCallback(() => {
     const nodes = nodesRef.current;
-    const edges = edgesRef.current;
     const canvas = canvasRef.current;
     if (!canvas || !nodes.length) return;
-
     const W = canvas.width;
     const H = canvas.height;
-    const REPULSION = 3800;
-    const ORBIT_STRENGTH = 0.035;
-    const EDGE_ATTRACTION = 0.008;
-    const DAMPING = 0.82;
+    const REPULSION = 4500;
+    const ORBIT_STRENGTH = 0.045;
+    const DAMPING = 0.80;
 
     const centerNode = nodes.find(n => n.isCenter);
 
     for (let i = 0; i < nodes.length; i++) {
       const n = nodes[i];
       if (n.isCenter) {
-        // Pin center
-        n.vx += (W / 2 - n.x) * 0.1;
-        n.vy += (H / 2 - n.y) * 0.1;
+        n.vx += (W / 2 - n.x) * 0.12;
+        n.vy += (H / 2 - n.y) * 0.12;
         continue;
       }
 
-      // Orbit force: pull toward target orbit radius from center
+      // Orbit attraction
       if (centerNode) {
         const dcx = n.x - centerNode.x;
         const dcy = n.y - centerNode.y;
-        const distFromCenter = Math.sqrt(dcx * dcx + dcy * dcy) || 1;
-        const targetOrbit = n.orbitRadius;
-        const orbitError = distFromCenter - targetOrbit;
-        const orbitForce = orbitError * ORBIT_STRENGTH;
-        n.vx -= (dcx / distFromCenter) * orbitForce;
-        n.vy -= (dcy / distFromCenter) * orbitForce;
+        const dist = Math.sqrt(dcx * dcx + dcy * dcy) || 1;
+        const err = dist - n.orbitRadius;
+        const force = err * ORBIT_STRENGTH;
+        n.vx -= (dcx / dist) * force;
+        n.vy -= (dcy / dist) * force;
       }
 
-      // Repulsion between all nodes
+      // Repulsion
       for (let j = i + 1; j < nodes.length; j++) {
         const m = nodes[j];
         const dx = m.x - n.x;
         const dy = m.y - n.y;
         const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-        // Stronger repulsion between same-level nodes
         const sameLevel = n.level === m.level;
-        const repMult = sameLevel ? 1.4 : 1.0;
-        const force = (REPULSION * repMult) / (dist * dist);
+        const force = (REPULSION * (sameLevel ? 1.5 : 1.0)) / (dist * dist);
         const fx = (dx / dist) * force;
         const fy = (dy / dist) * force;
-        n.vx -= fx;
-        n.vy -= fy;
-        m.vx += fx;
-        m.vy += fy;
+        n.vx -= fx; n.vy -= fy;
+        m.vx += fx; m.vy += fy;
       }
     }
-
-    // Edge spring forces (gentle, to cluster connected nodes angularly)
-    edges.forEach(e => {
-      if (e.isImplied) return; // implied edges don't affect physics
-      const src = nodes.find(n => n.id === e.sourceId);
-      const tgt = nodes.find(n => n.id === e.targetId);
-      if (!src || !tgt || src.isCenter || tgt.isCenter) return;
-      const dx = tgt.x - src.x;
-      const dy = tgt.y - src.y;
-      const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-      // Only angular attraction (tangential), not radial
-      const force = EDGE_ATTRACTION * dist;
-      const fx = (dx / dist) * force;
-      const fy = (dy / dist) * force;
-      src.vx += fx * 0.5;
-      src.vy += fy * 0.5;
-      tgt.vx -= fx * 0.5;
-      tgt.vy -= fy * 0.5;
-    });
 
     nodes.forEach(n => {
       if (dragRef.current && dragRef.current.id === n.id) return;
@@ -323,8 +212,8 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
       n.vy *= DAMPING;
       n.x += n.vx;
       n.y += n.vy;
-      n.x = Math.max(n.radius, Math.min(W - n.radius, n.x));
-      n.y = Math.max(n.radius, Math.min(H - n.radius, n.y));
+      n.x = Math.max(n.radius + 4, Math.min(W - n.radius - 4, n.x));
+      n.y = Math.max(n.radius + 4, Math.min(H - n.radius - 4, n.y));
     });
   }, []);
 
@@ -342,93 +231,72 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
     ctx.scale(scale, scale);
 
     const centerNode = nodesRef.current.find(n => n.isCenter);
-    const maxLevel = Math.max(...nodesRef.current.filter(n => !n.isCenter).map(n => n.level || 1), 1);
 
-    // Draw orbit rings
+    // Orbit rings
     if (centerNode) {
-      for (let lvl = 1; lvl <= maxLevel; lvl++) {
-        const orbitR = lvl * ORBIT_UNIT;
+      [1, 2].forEach(lvl => {
+        const r = ORBIT_RADII[lvl];
         ctx.beginPath();
-        ctx.arc(centerNode.x, centerNode.y, orbitR, 0, 2 * Math.PI);
-        ctx.strokeStyle = `rgba(99,102,241,${0.05 + (lvl === 1 ? 0.04 : 0)})`;
+        ctx.arc(centerNode.x, centerNode.y, r, 0, 2 * Math.PI);
+        ctx.strokeStyle = lvl === 1 ? "rgba(99,102,241,0.12)" : "rgba(99,102,241,0.07)";
         ctx.lineWidth = 1;
-        ctx.setLineDash([4, 10]);
+        ctx.setLineDash([5, 12]);
         ctx.stroke();
         ctx.setLineDash([]);
-
-        // Level label
-        ctx.fillStyle = "rgba(99,102,241,0.2)";
+        ctx.fillStyle = "rgba(99,102,241,0.18)";
         ctx.font = "10px Inter, sans-serif";
         ctx.textAlign = "left";
-        ctx.fillText(`N${lvl}`, centerNode.x + orbitR + 5, centerNode.y - 4);
-      }
+        ctx.fillText(`N${lvl}`, centerNode.x + r + 6, centerNode.y - 5);
+      });
     }
 
-    // Draw edges
+    // Edges
     edgesRef.current.forEach(e => {
       const src = nodesRef.current.find(n => n.id === e.sourceId);
       const tgt = nodesRef.current.find(n => n.id === e.targetId);
       if (!src || !tgt) return;
-
       const s = CONNECTION_STRENGTH[e.strength] || CONNECTION_STRENGTH.media;
-      const srcLevel = src.isCenter ? 0 : (src.level || 1);
-      const tgtLevel = tgt.isCenter ? 0 : (tgt.level || 1);
-      const levelDiff = Math.abs(srcLevel - tgtLevel);
+      const isCenterEdge = src.isCenter || tgt.isCenter;
 
       ctx.beginPath();
       ctx.moveTo(src.x, src.y);
       ctx.lineTo(tgt.x, tgt.y);
-
-      if (e.isImplied) {
-        // Implied introduction path — subtle dashed purple
-        ctx.strokeStyle = `rgba(99,102,241,0.25)`;
-        ctx.lineWidth = 1.5;
-        ctx.setLineDash([5, 5]);
-      } else if (e.hasIntroducer) {
-        // Connection made through an introducer — always dashed (indirect)
-        ctx.strokeStyle = `rgba(148,163,184,0.25)`;
-        ctx.lineWidth = 1;
-        ctx.setLineDash([4, 7]);
-      } else if (srcLevel === 0 || tgtLevel === 0) {
-        // Direct center connection (no introducer) — vivid solid
+      if (isCenterEdge) {
         ctx.strokeStyle = `rgba(99,102,241,${s.opacity})`;
         ctx.lineWidth = s.width + 0.5;
-        ctx.setLineDash([]);
       } else {
-        // Contact-to-contact direct connection
         ctx.strokeStyle = `rgba(148,163,184,${s.opacity})`;
         ctx.lineWidth = s.width;
-        ctx.setLineDash([]);
       }
-
-      ctx.stroke();
       ctx.setLineDash([]);
+      ctx.stroke();
 
-      // Edge type label (only for direct contact-contact edges)
-      if (!e.isImplied && !e.isCenterEdge && e.type && levelDiff <= 1) {
+      // Type label on center edges
+      if (isCenterEdge && e.type) {
         const mx = (src.x + tgt.x) / 2;
         const my = (src.y + tgt.y) / 2;
-        ctx.fillStyle = "rgba(100,116,139,0.7)";
+        ctx.fillStyle = "rgba(100,116,139,0.75)";
         ctx.font = "9px Inter, sans-serif";
         ctx.textAlign = "center";
         ctx.fillText(e.type, mx, my - 4);
       }
     });
 
-    // Draw nodes (center last)
-    const sortedNodes = [...nodesRef.current].sort((a, b) => (a.isCenter ? 1 : 0) - (b.isCenter ? 1 : 0));
-    sortedNodes.forEach(n => {
+    // Nodes (center last)
+    const sorted = [...nodesRef.current].sort((a, b) => (a.isCenter ? 1 : 0) - (b.isCenter ? 1 : 0));
+    sorted.forEach(n => {
       const isHovered = hoveredRef.current === n.id;
 
       if (n.isCenter) {
+        // Glow ring
         ctx.shadowColor = "#6366f1";
-        ctx.shadowBlur = 30;
+        ctx.shadowBlur = 28;
         ctx.beginPath();
-        ctx.arc(n.x, n.y, n.radius + 8, 0, 2 * Math.PI);
-        ctx.fillStyle = "rgba(99,102,241,0.15)";
+        ctx.arc(n.x, n.y, n.radius + 9, 0, 2 * Math.PI);
+        ctx.fillStyle = "rgba(99,102,241,0.12)";
         ctx.fill();
         ctx.strokeStyle = "#6366f1";
-        ctx.lineWidth = 2.5;
+        ctx.lineWidth = 2;
         ctx.stroke();
 
         ctx.beginPath();
@@ -445,7 +313,7 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
 
         const initials = n.label.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
         ctx.fillStyle = "#e0e7ff";
-        ctx.font = `bold ${n.radius * 0.55}px Inter, sans-serif`;
+        ctx.font = `bold ${Math.round(n.radius * 0.52)}px Inter, sans-serif`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText(initials, n.x, n.y);
@@ -454,30 +322,26 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
         ctx.fillStyle = "#a5b4fc";
         ctx.font = "bold 12px Inter, sans-serif";
         ctx.textAlign = "center";
-        ctx.fillText(n.label.split(" ").slice(0, 2).join(" "), n.x, n.y + n.radius + 17);
+        ctx.fillText(n.label.split(" ").slice(0, 2).join(" "), n.x, n.y + n.radius + 18);
         ctx.fillStyle = "#6366f1";
         ctx.font = "9px Inter, sans-serif";
-        ctx.fillText("Centro", n.x, n.y + n.radius + 28);
+        ctx.fillText("Centro", n.x, n.y + n.radius + 29);
         return;
       }
 
       const statusColor = STATUS_COLORS[n.status] || "#94a3b8";
       const nextColor = NEXT_STEP_COLORS[n.nextStepStatus] || "#94a3b8";
-      // Fade out higher-level nodes slightly
-      const levelAlpha = Math.max(0.4, 1 - (n.level - 1) * 0.15);
+      const alpha = n.level === 2 ? 0.7 : 1;
 
-      if (isHovered) {
-        ctx.shadowColor = statusColor;
-        ctx.shadowBlur = 20;
-      }
+      if (isHovered) { ctx.shadowColor = statusColor; ctx.shadowBlur = 18; }
 
       // Outer ring (next step)
       ctx.beginPath();
       ctx.arc(n.x, n.y, n.radius + 5, 0, 2 * Math.PI);
-      ctx.fillStyle = nextColor + "33";
+      ctx.fillStyle = nextColor + "22";
       ctx.fill();
-      ctx.strokeStyle = nextColor + Math.round(levelAlpha * 255).toString(16).padStart(2, "0");
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = nextColor + Math.round(alpha * 200).toString(16).padStart(2, "0");
+      ctx.lineWidth = 1.5;
       ctx.stroke();
 
       // Main circle
@@ -485,10 +349,9 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
       ctx.arc(n.x, n.y, n.radius, 0, 2 * Math.PI);
       ctx.fillStyle = isHovered ? "#1e293b" : "#0f172a";
       ctx.fill();
-      ctx.strokeStyle = statusColor + Math.round(levelAlpha * 255).toString(16).padStart(2, "0");
+      ctx.strokeStyle = statusColor + Math.round(alpha * 230).toString(16).padStart(2, "0");
       ctx.lineWidth = 2.5;
       ctx.stroke();
-
       ctx.shadowBlur = 0;
 
       // Avatar / initials
@@ -497,29 +360,25 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
       ctx.arc(n.x, n.y, n.radius - 3, 0, 2 * Math.PI);
       ctx.clip();
       if (n.photoUrl) {
-        if (!n._img) {
-          n._img = new Image();
-          n._img.src = n.photoUrl;
-        }
+        if (!n._img) { n._img = new Image(); n._img.src = n.photoUrl; }
         if (n._img.complete && n._img.naturalWidth > 0) {
           ctx.drawImage(n._img, n.x - n.radius + 3, n.y - n.radius + 3, (n.radius - 3) * 2, (n.radius - 3) * 2);
         } else {
-          drawInitials(ctx, n, levelAlpha);
+          drawInitials(ctx, n, alpha);
         }
       } else {
-        drawInitials(ctx, n, levelAlpha);
+        drawInitials(ctx, n, alpha);
       }
       ctx.restore();
 
-      // Name label
-      const nameAlpha = Math.round(levelAlpha * (isHovered ? 255 : 200)).toString(16).padStart(2, "0");
-      ctx.fillStyle = isHovered ? "#f8fafc" : `#cbd5e1${nameAlpha}`;
-      ctx.font = `${isHovered ? "bold " : ""}${n.level > 2 ? "9" : "11"}px Inter, sans-serif`;
+      // Name
+      ctx.fillStyle = isHovered ? "#f8fafc" : `rgba(203,213,225,${alpha})`;
+      ctx.font = `${isHovered ? "bold " : ""}${n.level === 2 ? "9" : "11"}px Inter, sans-serif`;
       ctx.textAlign = "center";
       ctx.fillText(n.label.split(" ").slice(0, 2).join(" "), n.x, n.y + n.radius + 14);
 
-      if (n.company && n.level <= 2) {
-        ctx.fillStyle = "#64748b";
+      if (n.company && n.level === 1) {
+        ctx.fillStyle = "rgba(100,116,139,0.7)";
         ctx.font = "9px Inter, sans-serif";
         ctx.fillText(n.company, n.x, n.y + n.radius + 24);
       }
@@ -535,11 +394,9 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
     gradient.addColorStop(1, statusColor + "11");
     ctx.fillStyle = gradient;
     ctx.fillRect(n.x - n.radius + 3, n.y - n.radius + 3, (n.radius - 3) * 2, (n.radius - 3) * 2);
-
     const initials = n.label.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
-    const alphaHex = Math.round(alpha * 255).toString(16).padStart(2, "0");
-    ctx.fillStyle = statusColor + alphaHex;
-    ctx.font = `bold ${n.radius * 0.6}px Inter, sans-serif`;
+    ctx.fillStyle = statusColor + Math.round(alpha * 255).toString(16).padStart(2, "0");
+    ctx.font = `bold ${Math.round(n.radius * 0.58)}px Inter, sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(initials, n.x, n.y);
@@ -589,7 +446,6 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     let clickTimeout = null;
 
     const onMouseDown = (e) => {
@@ -606,7 +462,6 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
       const node = getNodeAtPos(e.clientX, e.clientY);
       hoveredRef.current = node ? node.id : null;
       canvas.style.cursor = node ? "pointer" : (isPanningRef.current ? "grabbing" : "grab");
-
       if (dragRef.current) {
         const rect = canvas.getBoundingClientRect();
         const { x: tx, y: ty, scale } = transformRef.current;
@@ -667,10 +522,6 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
   }, [onNodeClick, onNodeDoubleClick]);
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="w-full h-full"
-      style={{ background: "transparent" }}
-    />
+    <canvas ref={canvasRef} className="w-full h-full" style={{ background: "transparent" }} />
   );
 }
