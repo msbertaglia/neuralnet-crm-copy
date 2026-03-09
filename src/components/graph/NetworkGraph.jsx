@@ -152,7 +152,7 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
       const dx = tgt.x - src.x;
       const dy = tgt.y - src.y;
       const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-      const idealDist = 180;
+      const idealDist = e.isCenterEdge ? 220 : 180;
       const force = (dist - idealDist) * ATTRACTION;
       const fx = (dx / dist) * force;
       const fy = (dy / dist) * force;
