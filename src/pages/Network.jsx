@@ -120,19 +120,7 @@ export default function Network() {
     await loadAll();
   };
 
-  const handleConfirmImplied = async () => {
-    if (!pendingSave) return;
-    setPendingSave(prev => ({ ...prev, saving: true }));
-    await doSaveContact(pendingSave.contactData, pendingSave.editingId);
-    setShowImpliedModal(false);
-    setPendingSave(null);
-  };
 
-  const handleSaveConnection = async (data) => {
-    await base44.entities.Connection.create(data);
-    setShowConnectionForm(false);
-    await loadAll();
-  };
 
   const handleSaveLog = async (data) => {
     await base44.entities.MeetingLog.create(data);
