@@ -68,7 +68,7 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
     const otherContacts = centerContact ? contacts.filter(c => c.id !== centralContactId) : contacts;
 
     const nodes = [centerNode, ...otherContacts.map((c, i) => {
-      const angle = (2 * Math.PI * i) / contacts.length;
+      const angle = (2 * Math.PI * i) / otherContacts.length;
       const radius = Math.min(W, H) * 0.35;
       const existing = nodesRef.current.find(n => n.id === c.id);
       return {
