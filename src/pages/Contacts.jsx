@@ -174,13 +174,26 @@ export default function Contacts() {
           </div>
         </div>
 
-        {/* Status filters */}
-        <div className="flex gap-2 mt-3 flex-wrap">
-          <FilterChip label="Todos" count={contacts.length} active={statusFilter === "todos"} onClick={() => setStatusFilter("todos")} />
+        {/* Status tabs (row 1) */}
+        <div className="flex gap-1 mt-3 flex-wrap border-b border-slate-800 pb-0">
+          <StatusTab label="Todos" count={contacts.length} active={statusFilter === "todos"} onClick={() => { setStatusFilter("todos"); setTagFilter("todas"); }} />
           {Object.entries(statusCounts).map(([s, count]) => (
-            <FilterChip key={s} label={s} count={count} active={statusFilter === s} onClick={() => setStatusFilter(s)} />
+            <StatusTab key={s} label={s} count={count} active={statusFilter === s} onClick={() => { setStatusFilter(s); setTagFilter("todas"); }} status={s} />
           ))}
         </div>
+
+        {/* Tag sub-tabs (row 2) */}
+        {availableTags.length > 0 && (
+          <div className="flex gap-1 mt-0 pt-1.5 flex-wrap border-b border-slate-800 pb-1.5">
+            <TagTab label="Todas" active={tagFilter === "todas"} onClick={() => setTagFilter("todas")} />
+            {availableTags.map(tag => {
+              const count = contacts.filter(c =>
+                (statusFilter === "todos" || c.status === statusFilter) && (c.tags || []).includes(tag)
+              ).length;
+              return <TagTab key={tag} label={tag} count={count} active={tagFilter === tag} onClick={() => setTagFilter(tag)} />;
+            })}
+          </div>
+        )}
       </div>
 
       {/* Content */}
