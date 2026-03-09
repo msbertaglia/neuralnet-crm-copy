@@ -457,7 +457,7 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
         ctx.fillText(n.label.split(" ").slice(0, 2).join(" "), n.x, n.y + n.radius + 17);
         ctx.fillStyle = "#6366f1";
         ctx.font = "9px Inter, sans-serif";
-        ctx.fillText(centralContactId ? "Centro" : "Você", n.x, n.y + n.radius + 28);
+        ctx.fillText("Centro", n.x, n.y + n.radius + 28);
         return;
       }
 
