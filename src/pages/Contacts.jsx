@@ -139,7 +139,11 @@ export default function Contacts() {
   const userContact = user?.email ? contacts.find(c => c.created_by === user.email) : null;
 
   const filtered = useMemo(() => {
-    let list = contacts.filter(c => c.created_by !== user?.email); // Exclude user's own contact
+    let list = contacts;
+    // Exclude user's own contact from the main list (will show in card above)
+    if (userContact) {
+      list = list.filter(c => c.id !== userContact.id);
+    }
     if (search) {
       const s = search.toLowerCase();
       list = list.filter(c =>
