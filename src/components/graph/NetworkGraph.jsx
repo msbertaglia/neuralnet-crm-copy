@@ -199,7 +199,7 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
 
     nodesRef.current = nodes;
     edgesRef.current = edges;
-  }, [contacts, connections, centralContactId]);
+  }, [contacts, centralContactId]);
 
   const simulate = useCallback(() => {
     const nodes = nodesRef.current;
