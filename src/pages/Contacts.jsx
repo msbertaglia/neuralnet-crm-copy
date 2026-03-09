@@ -216,38 +216,6 @@ export default function Contacts() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
-      {/* User Profile Card */}
-      {userContact && (
-        <div className="bg-gradient-to-r from-slate-800 to-slate-900 border-b border-slate-800 px-6 py-4">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-xl bg-slate-700 border border-slate-600 flex items-center justify-center overflow-hidden flex-shrink-0">
-              {userContact.photo_url ? (
-                <img src={userContact.photo_url} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-xl font-bold text-slate-300">
-                  {userContact.name.split(" ").map(w => w[0]).slice(0,2).join("").toUpperCase()}
-                </span>
-              )}
-            </div>
-            <div className="flex-1">
-              <h2 className="text-white font-bold text-lg">{userContact.name}</h2>
-              <p className="text-slate-400 text-sm">{userContact.position || "Usuário"} {userContact.company ? `• ${userContact.company}` : ""}</p>
-              <p className="text-slate-500 text-xs mt-1">Meu Cadastro</p>
-            </div>
-            {canEdit && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => { setEditingContact(userContact); setShowContactForm(true); }}
-                className="border-slate-600 text-slate-300 hover:bg-slate-700"
-              >
-                <Pencil className="w-4 h-4" />
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* Header */}
       <div className="bg-slate-900 border-b border-slate-800 px-6 py-4">
         <div className="flex items-center justify-between gap-4">
