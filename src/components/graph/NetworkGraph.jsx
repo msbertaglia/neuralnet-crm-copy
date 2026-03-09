@@ -195,18 +195,27 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
       ctx.beginPath();
       ctx.moveTo(src.x, src.y);
       ctx.lineTo(tgt.x, tgt.y);
-      ctx.strokeStyle = `rgba(148,163,184,${s.opacity})`;
-      ctx.lineWidth = s.width;
-      ctx.setLineDash([]);
+      if (e.isCenterEdge) {
+        ctx.strokeStyle = `rgba(99,102,241,0.2)`;
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 6]);
+      } else {
+        ctx.strokeStyle = `rgba(148,163,184,${s.opacity})`;
+        ctx.lineWidth = s.width;
+        ctx.setLineDash([]);
+      }
       ctx.stroke();
+      ctx.setLineDash([]);
 
-      // Mid label
-      const mx = (src.x + tgt.x) / 2;
-      const my = (src.y + tgt.y) / 2;
-      ctx.fillStyle = "rgba(100,116,139,0.8)";
-      ctx.font = "10px Inter, sans-serif";
-      ctx.textAlign = "center";
-      ctx.fillText(e.type, mx, my - 4);
+      // Mid label (only for contact-contact edges)
+      if (!e.isCenterEdge && e.type) {
+        const mx = (src.x + tgt.x) / 2;
+        const my = (src.y + tgt.y) / 2;
+        ctx.fillStyle = "rgba(100,116,139,0.8)";
+        ctx.font = "10px Inter, sans-serif";
+        ctx.textAlign = "center";
+        ctx.fillText(e.type, mx, my - 4);
+      }
     });
 
     // Draw nodes
