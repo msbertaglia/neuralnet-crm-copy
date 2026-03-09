@@ -182,18 +182,19 @@ function ContactRow({ contact, columns, canEdit, actionsWidth, isLast, onView, o
     switch (col.key) {
       case "name":
         return (
-          <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden flex-shrink-0 text-xs font-bold text-slate-300">
               {contact.photo_url
                 ? <img src={contact.photo_url} alt="" className="w-full h-full object-cover" />
                 : contact.name.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase()
               }
             </div>
-            <div className="flex items-center gap-1.5 min-w-0">
-              <p className="text-white text-sm font-semibold">{contact.name}</p>
-              <Badge className={`text-xs border flex-shrink-0 ${STATUS_COLORS[contact.status] || STATUS_COLORS.prospect}`}>{contact.status}</Badge>
-            </div>
+            <p className="text-white text-sm font-semibold whitespace-nowrap">{contact.name}</p>
           </div>
+        );
+      case "status":
+        return (
+          <Badge className={`text-xs border whitespace-nowrap ${STATUS_COLORS[contact.status] || STATUS_COLORS.prospect}`}>{contact.status}</Badge>
         );
       case "nickname":
         return <span className="text-slate-300 text-sm">{contact.nickname || <span className="text-slate-700">—</span>}</span>;
