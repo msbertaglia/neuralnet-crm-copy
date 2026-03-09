@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Trash2, Pencil, Search } from "lucide-react";
+import { Plus, Trash2, Pencil, Search, ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 import ConnectionForm from "@/components/contact/ConnectionForm";
 import SmartDate from "@/components/ui/SmartDate";
 
@@ -24,25 +24,34 @@ const TYPE_LABELS = {
 };
 
 const COLUMNS = [
-  { key: "contact_a_name", label: "Contato A", width: 220 },
-  { key: "contact_b_name", label: "Contato B", width: 220 },
-  { key: "connection_type", label: "Tipo", width: 140 },
-  { key: "strength", label: "Força", width: 110 },
-  { key: "introduced_by_name", label: "Apresentado por", width: 200 },
-  { key: "connection_date", label: "Data da Conexão", width: 200 },
+  { key: "contact_a_name", label: "Contato A", width: 220, type: "alpha" },
+  { key: "contact_b_name", label: "Contato B", width: 220, type: "alpha" },
+  { key: "connection_type", label: "Tipo", width: 140, type: "alpha" },
+  { key: "strength", label: "Força", width: 110, type: "alpha" },
+  { key: "introduced_by_name", label: "Apresentado por", width: 200, type: "alpha" },
+  { key: "connection_date", label: "Data da Conexão", width: 200, type: "date" },
 ];
 
 const ACTIONS_WIDTH = 72;
+
+function SortIcon({ colKey, sortKey, sortDir }) {
+  if (sortKey !== colKey) return <ChevronsUpDown className="w-3 h-3 text-slate-600 ml-1 inline flex-shrink-0" />;
+  return sortDir === "asc"
+    ? <ChevronUp className="w-3 h-3 text-blue-400 ml-1 inline flex-shrink-0" />
+    : <ChevronDown className="w-3 h-3 text-blue-400 ml-1 inline flex-shrink-0" />;
+}
 
 export default function Connections() {
   const [search, setSearch] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editingConnection, setEditingConnection] = useState(null);
+  const [sortKey, setSortKey] = useState("connection_date");
+  const [sortDir, setSortDir] = useState("desc");
   const queryClient = useQueryClient();
 
   const { data: connections = [], isLoading } = useQuery({
     queryKey: ["connections"],
-    queryFn: () => base44.entities.Connection.list("-connection_date"),
+    queryFn: () => base44.entities.Connection.list(),
   });
 
   const { data: contacts = [] } = useQuery({
@@ -67,14 +76,41 @@ export default function Connections() {
     },
   });
 
-  const filtered = connections.filter((c) => {
+  const handleSort = (col) => {
+    if (sortKey === col.key) {
+      setSortDir(d => d === "asc" ? "desc" : "asc");
+    } else {
+      setSortKey(col.key);
+      setSortDir("asc");
+    }
+  };
+
+  const filtered = useMemo(() => {
     const q = search.toLowerCase();
-    return (
+    const list = connections.filter((c) =>
       (c.contact_a_name || "").toLowerCase().includes(q) ||
       (c.contact_b_name || "").toLowerCase().includes(q) ||
       (c.introduced_by_name || "").toLowerCase().includes(q)
     );
-  });
+
+    list.sort((a, b) => {
+      const col = COLUMNS.find(c => c.key === sortKey);
+      if (!col) return 0;
+
+      if (col.type === "date") {
+        const va = a[sortKey] ? new Date(a[sortKey]).getTime() : (sortDir === "asc" ? Infinity : -Infinity);
+        const vb = b[sortKey] ? new Date(b[sortKey]).getTime() : (sortDir === "asc" ? Infinity : -Infinity);
+        return sortDir === "asc" ? va - vb : vb - va;
+      }
+
+      const va = a[sortKey] || "";
+      const vb = b[sortKey] || "";
+      const cmp = va.localeCompare(vb, "pt-BR");
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+
+    return list;
+  }, [connections, search, sortKey, sortDir]);
 
   const totalWidth = COLUMNS.reduce((acc, c) => acc + c.width, 0) + ACTIONS_WIDTH;
 
@@ -112,12 +148,16 @@ export default function Connections() {
                 <div
                   key={col.key}
                   style={{ width: col.width, minWidth: col.width }}
-                  className="flex-shrink-0 px-3 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wide whitespace-nowrap"
+                  className="flex-shrink-0 px-3 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wide select-none cursor-pointer hover:text-slate-300 transition-colors whitespace-nowrap"
+                  onClick={() => handleSort(col)}
                 >
-                  {col.label}
+                  <span className="flex items-center">
+                    {col.label}
+                    <SortIcon colKey={col.key} sortKey={sortKey} sortDir={sortDir} />
+                  </span>
                 </div>
               ))}
-              <div style={{ width: ACTIONS_WIDTH, minWidth: ACTIONS_WIDTH }} className="flex-shrink-0 px-3 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wide text-center">
+              <div style={{ width: ACTIONS_WIDTH, minWidth: ACTIONS_WIDTH }} className="flex-shrink-0 px-3 py-2.5 text-xs font-semibold text-slate-500 uppercase tracking-wide text-center whitespace-nowrap">
                 Ações
               </div>
             </div>
@@ -135,16 +175,16 @@ export default function Connections() {
                 className={`flex items-center hover:bg-slate-800/50 transition-colors whitespace-nowrap ${i < filtered.length - 1 ? "border-b border-slate-800" : ""}`}
               >
                 {/* Contato A */}
-                <div style={{ width: 220, minWidth: 220 }} className="flex-shrink-0 px-3 py-3 text-white text-sm font-semibold overflow-hidden">
-                  {conn.contact_a_name || <span className="text-slate-700">—</span>}
+                <div style={{ width: 220, minWidth: 220 }} className="flex-shrink-0 px-3 py-3 overflow-hidden">
+                  <span className="text-white text-sm font-semibold">{conn.contact_a_name || <span className="text-slate-700">—</span>}</span>
                 </div>
                 {/* Contato B */}
-                <div style={{ width: 220, minWidth: 220 }} className="flex-shrink-0 px-3 py-3 text-white text-sm font-semibold overflow-hidden">
-                  {conn.contact_b_name || <span className="text-slate-700">—</span>}
+                <div style={{ width: 220, minWidth: 220 }} className="flex-shrink-0 px-3 py-3 overflow-hidden">
+                  <span className="text-white text-sm font-semibold">{conn.contact_b_name || <span className="text-slate-700">—</span>}</span>
                 </div>
                 {/* Tipo */}
-                <div style={{ width: 140, minWidth: 140 }} className="flex-shrink-0 px-3 py-3 text-slate-400 text-sm overflow-hidden">
-                  {TYPE_LABELS[conn.connection_type] || conn.connection_type || <span className="text-slate-700">—</span>}
+                <div style={{ width: 140, minWidth: 140 }} className="flex-shrink-0 px-3 py-3 overflow-hidden">
+                  <span className="text-slate-400 text-sm">{TYPE_LABELS[conn.connection_type] || conn.connection_type || <span className="text-slate-700">—</span>}</span>
                 </div>
                 {/* Força */}
                 <div style={{ width: 110, minWidth: 110 }} className="flex-shrink-0 px-3 py-3 overflow-hidden">
@@ -153,8 +193,8 @@ export default function Connections() {
                     : <span className="text-slate-700">—</span>}
                 </div>
                 {/* Apresentado por */}
-                <div style={{ width: 200, minWidth: 200 }} className="flex-shrink-0 px-3 py-3 text-slate-400 text-sm overflow-hidden">
-                  {conn.introduced_by_name || <span className="text-slate-700">—</span>}
+                <div style={{ width: 200, minWidth: 200 }} className="flex-shrink-0 px-3 py-3 overflow-hidden">
+                  <span className="text-slate-400 text-sm">{conn.introduced_by_name || <span className="text-slate-700">—</span>}</span>
                 </div>
                 {/* Data */}
                 <div style={{ width: 200, minWidth: 200 }} className="flex-shrink-0 px-3 py-3 overflow-hidden">
