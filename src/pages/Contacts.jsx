@@ -159,14 +159,32 @@ export default function Contacts() {
   }, [contacts, search, statusFilter, tagFilter]);
 
   const handleSaveContact = async (data) => {
-    if (editingContact) {
-      await base44.entities.Contact.update(editingContact.id, data);
+    const newImplied = detectImpliedConnections(data, editingContact?.id, connections, contacts);
+    if (newImplied.length > 0) {
+      setPendingSave({ contactData: data, editingId: editingContact?.id, newImplied });
+      setShowImpliedModal(true);
+      return;
+    }
+    await doSaveContact(data, editingContact?.id);
+  };
+
+  const doSaveContact = async (data, editingId) => {
+    if (editingId) {
+      await base44.entities.Contact.update(editingId, data);
     } else {
       await base44.entities.Contact.create(data);
     }
     setShowContactForm(false);
     setEditingContact(null);
     await loadAll();
+  };
+
+  const handleConfirmImplied = async () => {
+    if (!pendingSave) return;
+    setPendingSave(prev => ({ ...prev, saving: true }));
+    await doSaveContact(pendingSave.contactData, pendingSave.editingId);
+    setShowImpliedModal(false);
+    setPendingSave(null);
   };
 
   const handleDelete = async (id) => {
