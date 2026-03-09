@@ -21,6 +21,7 @@ export default function Network() {
   const [user, setUser] = useState(null);
 
   const [selectedContact, setSelectedContact] = useState(null);
+  const [centralContactId] = useState(() => localStorage.getItem("netmap_central_contact_id") || null);
   const [showContactForm, setShowContactForm] = useState(false);
   const [editingContact, setEditingContact] = useState(null);
   const [showConnectionForm, setShowConnectionForm] = useState(false);
@@ -209,6 +210,7 @@ export default function Network() {
             onNodeClick={setSelectedContact}
             onNodeDoubleClick={(c) => { setEditingContact(c); setShowContactForm(true); }}
             centerUser={user}
+            centralContactId={centralContactId}
           />
         )}
 
