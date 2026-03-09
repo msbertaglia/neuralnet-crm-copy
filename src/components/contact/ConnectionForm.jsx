@@ -163,7 +163,12 @@ function ContactSelect({ contacts, value, onChange, exclude, allowNone }) {
     <Select value={value || "none"} onValueChange={onChange}>
       <SelectTrigger className="bg-slate-800 border-slate-600 text-white"><SelectValue placeholder="Selecione..." /></SelectTrigger>
       <SelectContent className="bg-slate-800 border-slate-700">
-        {allowNone && <SelectItem value="none" className="text-slate-400">Ninguém</SelectItem>}
+        {allowNone && (
+          <>
+            <SelectItem value="none" className="text-slate-400">Sem informação</SelectItem>
+            <SelectItem value="direto" className="text-slate-400">Direto</SelectItem>
+          </>
+        )}
         {contacts.filter(c => c.id !== exclude).map(c => (
           <SelectItem key={c.id} value={c.id} className="text-slate-200">{c.name}</SelectItem>
         ))}
