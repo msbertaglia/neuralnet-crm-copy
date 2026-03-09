@@ -25,11 +25,6 @@ const NEXT_STEP_TYPE_LABELS = {
   aguardando_deles: "Aguardando deles",
 };
 
-function fmtDate(d) {
-  if (!d) return null;
-  try { return format(new Date(d), "dd MMM yy", { locale: ptBR }); } catch { return d; }
-}
-
 // Brand icons as inline SVG
 function LinkedInIcon({ active }) {
   return (
