@@ -257,7 +257,7 @@ export default function Connections() {
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
                       <button
-                        onClick={() => deleteMutation.mutate(conn.id)}
+                        onClick={() => setConfirmDeleteId(conn.id)}
                         className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-slate-700 rounded-lg transition-colors"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
