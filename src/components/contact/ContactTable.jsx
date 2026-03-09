@@ -194,9 +194,9 @@ function ContactRow({ contact, columns, canEdit, actionsWidth, isLast, onView, o
                 : contact.name.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase()
               }
             </div>
-            <div className="min-w-0">
+            <div className="flex items-center gap-1.5 min-w-0">
               <p className="text-white text-sm font-semibold truncate">{contact.name}</p>
-              <Badge className={`text-xs border mt-0.5 ${STATUS_COLORS[contact.status] || STATUS_COLORS.prospect}`}>{contact.status}</Badge>
+              <Badge className={`text-xs border flex-shrink-0 ${STATUS_COLORS[contact.status] || STATUS_COLORS.prospect}`}>{contact.status}</Badge>
             </div>
           </div>
         );
