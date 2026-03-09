@@ -211,17 +211,14 @@ export default function ContactForm({ contact, contacts, onSave, onClose }) {
                 <Input type="date" value={form.met_date} onChange={e => set("met_date", e.target.value)} className="bg-slate-800 border-slate-600 text-white" />
               </Field>
               <Field label="Apresentado por">
-                <Select value={form.introduced_by_id || "none"} onValueChange={v => {
-                  if (v === "none") { set("introduced_by_id", ""); set("introduced_by_name", ""); }
-                  else {
-                    const c = contacts.find(c => c.id === v);
-                    set("introduced_by_id", v);
-                    set("introduced_by_name", c?.name || "");
-                  }
+                <Select value={form.introduced_by_id || "sem_informacao"} onValueChange={v => {
+                  set("introduced_by_id", v);
+                  // Name will be set on submit
                 }}>
                   <SelectTrigger className="bg-slate-800 border-slate-600 text-white"><SelectValue placeholder="Selecione..." /></SelectTrigger>
                   <SelectContent className="bg-slate-800 border-slate-700">
-                    <SelectItem value="none" className="text-slate-400">Ninguém</SelectItem>
+                    <SelectItem value="sem_informacao" className="text-slate-400">Sem informação</SelectItem>
+                    <SelectItem value="direto" className="text-slate-400">Direto</SelectItem>
                     {contacts.filter(c => c.id !== contact?.id).map(c => (
                       <SelectItem key={c.id} value={c.id} className="text-slate-200">{c.name}</SelectItem>
                     ))}
