@@ -126,7 +126,7 @@ export default function ContactTable({ contacts, canEdit, onView, onEdit, onDele
   }, [contacts, sortKey, sortDir]);
 
   const actionsWidth = canEdit ? 72 : 0;
-  const totalWidth = COLUMNS.reduce((acc, c) => acc + c.width, 0) + actionsWidth + RADIO_WIDTH;
+  const totalWidth = COLUMNS.reduce((acc, c) => acc + c.width, 0) + actionsWidth + RADIO_WIDTH + CONNECTION_INDICATOR_WIDTH;
 
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
