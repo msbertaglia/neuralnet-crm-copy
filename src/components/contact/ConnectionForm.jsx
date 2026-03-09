@@ -9,8 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 export default function ConnectionForm({ contacts, connection, existingConnections = [], onSave, onClose }) {
   const [form, setForm] = useState({
     contact_a_id: "", contact_b_id: "",
-    connection_date: "", discovered_date: "",
-    introduced_by_id: "",
+    connection_date: "",
+    introduced_by_id: "sem_informacao",
     connection_type: "profissional",
     strength: "media",
     notes: "",
