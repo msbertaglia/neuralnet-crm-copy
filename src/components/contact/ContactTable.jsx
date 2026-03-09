@@ -51,7 +51,8 @@ function TwitterIcon({ active }) {
 }
 
 const COLUMNS = [
-  { key: "name", label: "Nome", width: 240, type: "alpha" },
+  { key: "name", label: "Nome", width: 280, type: "alpha" },
+  { key: "status", label: "Status", width: 120, type: "alpha" },
   { key: "nickname", label: "Apelido", width: 160, type: "alpha" },
   { key: "tags", label: "Tags", width: 220, type: "alpha" },
   { key: "company", label: "Empresa", width: 200, type: "alpha" },
