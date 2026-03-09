@@ -172,6 +172,7 @@ export default function ContactTable({ contacts, canEdit, onView, onEdit, onDele
               actionsWidth={actionsWidth}
               isLast={i === sorted.length - 1}
               isCentral={centralContactId === contact.id}
+              centralContactId={centralContactId}
               onSetCentral={() => onSetCentral(contact.id)}
               onView={() => onView(contact)}
               onEdit={() => onEdit(contact)}
