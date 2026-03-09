@@ -319,30 +319,28 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
       const tgt = nodesRef.current.find(n => n.id === e.targetId);
       if (!src || !tgt) return;
       const s = CONNECTION_STRENGTH[e.strength] || CONNECTION_STRENGTH.media;
-      const isCenterEdge = src.isCenter || tgt.isCenter;
+      const isCenterEdge = e.isCenterEdge || src.isCenter || tgt.isCenter;
 
       ctx.beginPath();
       ctx.moveTo(src.x, src.y);
       ctx.lineTo(tgt.x, tgt.y);
-      if (isCenterEdge) {
+
+      if (e.isIntroduced) {
+        // Introduced: dashed, softer
+        ctx.strokeStyle = `rgba(148,163,184,${s.opacity * 0.7})`;
+        ctx.lineWidth = s.width * 0.8;
+        ctx.setLineDash([4, 6]);
+      } else if (isCenterEdge) {
         ctx.strokeStyle = `rgba(99,102,241,${s.opacity})`;
         ctx.lineWidth = s.width + 0.5;
+        ctx.setLineDash([]);
       } else {
         ctx.strokeStyle = `rgba(148,163,184,${s.opacity})`;
         ctx.lineWidth = s.width;
+        ctx.setLineDash([]);
       }
-      ctx.setLineDash([]);
       ctx.stroke();
-
-      // Type label on center edges
-      if (isCenterEdge && e.type) {
-        const mx = (src.x + tgt.x) / 2;
-        const my = (src.y + tgt.y) / 2;
-        ctx.fillStyle = "rgba(100,116,139,0.75)";
-        ctx.font = "9px Inter, sans-serif";
-        ctx.textAlign = "center";
-        ctx.fillText(e.type, mx, my - 4);
-      }
+      ctx.setLineDash([]);
     });
 
     // Nodes (center last)
