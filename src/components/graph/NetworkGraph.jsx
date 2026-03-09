@@ -296,11 +296,12 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
 
     // Orbit rings
     if (centerNode) {
-      [1, 2].forEach(lvl => {
-        const r = ORBIT_RADII[lvl];
+      const ringOpacity = [0, 0.12, 0.08, 0.05];
+      for (let lvl = 1; lvl <= MAX_LEVEL; lvl++) {
+        const r = ORBIT_RADII[lvl] || lvl * 180;
         ctx.beginPath();
         ctx.arc(centerNode.x, centerNode.y, r, 0, 2 * Math.PI);
-        ctx.strokeStyle = lvl === 1 ? "rgba(99,102,241,0.12)" : "rgba(99,102,241,0.07)";
+        ctx.strokeStyle = `rgba(99,102,241,${ringOpacity[lvl] || 0.04})`;
         ctx.lineWidth = 1;
         ctx.setLineDash([5, 12]);
         ctx.stroke();
@@ -309,7 +310,7 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
         ctx.font = "10px Inter, sans-serif";
         ctx.textAlign = "left";
         ctx.fillText(`N${lvl}`, centerNode.x + r + 6, centerNode.y - 5);
-      });
+      }
     }
 
     // Edges
