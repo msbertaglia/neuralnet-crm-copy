@@ -189,7 +189,7 @@ function ContactRow({ contact, columns, canEdit, actionsWidth, isLast, onView, o
               }
             </div>
             <div className="flex items-center gap-1.5 min-w-0">
-              <p className="text-white text-sm font-semibold truncate">{contact.name}</p>
+              <p className="text-white text-sm font-semibold">{contact.name}</p>
               <Badge className={`text-xs border flex-shrink-0 ${STATUS_COLORS[contact.status] || STATUS_COLORS.prospect}`}>{contact.status}</Badge>
             </div>
           </div>
