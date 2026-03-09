@@ -378,18 +378,18 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
         ctx.strokeStyle = `rgba(99,102,241,0.25)`;
         ctx.lineWidth = 1.5;
         ctx.setLineDash([5, 5]);
-      } else if (e.hasIntroducer && levelDiff > 1) {
-        // Connection that skips levels (indirect shortcut) — very faint dashed
-        ctx.strokeStyle = `rgba(148,163,184,0.15)`;
+      } else if (e.hasIntroducer) {
+        // Connection made through an introducer — always dashed (indirect)
+        ctx.strokeStyle = `rgba(148,163,184,0.25)`;
         ctx.lineWidth = 1;
-        ctx.setLineDash([3, 8]);
+        ctx.setLineDash([4, 7]);
       } else if (srcLevel === 0 || tgtLevel === 0) {
-        // Direct center connection — vivid
+        // Direct center connection (no introducer) — vivid solid
         ctx.strokeStyle = `rgba(99,102,241,${s.opacity})`;
         ctx.lineWidth = s.width + 0.5;
         ctx.setLineDash([]);
       } else {
-        // Contact-to-contact
+        // Contact-to-contact direct connection
         ctx.strokeStyle = `rgba(148,163,184,${s.opacity})`;
         ctx.lineWidth = s.width;
         ctx.setLineDash([]);
