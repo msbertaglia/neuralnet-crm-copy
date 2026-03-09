@@ -33,6 +33,16 @@ export default function Network() {
   const [filters, setFilters] = useState({ statuses: [], nextSteps: [], projectIds: [] });
   const [pendingSave, setPendingSave] = useState(null);
   const [showImpliedModal, setShowImpliedModal] = useState(false);
+  const [urlStatus, setUrlStatus] = useState("todos");
+  const [urlTag, setUrlTag] = useState("todas");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const status = params.get("status") || "todos";
+    const tag = params.get("tag") || "todas";
+    setUrlStatus(status);
+    setUrlTag(tag);
+  }, []);
 
   useEffect(() => {
     loadAll();
