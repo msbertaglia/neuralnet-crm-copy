@@ -283,10 +283,6 @@ function ContactRow({ contact, columns, canEdit, actionsWidth, isLast, onView, o
       className={`flex items-center hover:bg-slate-800/50 transition-colors cursor-pointer ${!isLast ? "border-b border-slate-800" : ""}`}
       onClick={onView}
     >
-      {/* Avatar spacer */}
-      <div className="w-16 flex-shrink-0 px-4 py-3 flex items-center">
-        {/* avatar rendered inside name cell */}
-      </div>
       {columns.map(col => (
         <div
           key={col.key}
