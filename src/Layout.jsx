@@ -4,11 +4,11 @@ import { createPageUrl } from "@/utils";
 import { LayoutDashboard, Users, Share2, FolderOpen, Menu, X, ChevronRight } from "lucide-react";
 
 const navItems = [
-  { label: "Dashboard", page: "Dashboard", icon: LayoutDashboard },
-  { label: "Rede Visual", page: "Network", icon: Share2 },
-  { label: "Conexões", page: "Connections", icon: Share2 },
   { label: "Contatos", page: "Contacts", icon: Users },
+  { label: "Conexões", page: "Connections", icon: Share2 },
+  { label: "Rede Visual", page: "Network", icon: Share2 },
   { label: "Projetos", page: "Projects", icon: FolderOpen },
+  { label: "Dashboard", page: "Dashboard", icon: LayoutDashboard },
 ];
 
 export default function Layout({ children, currentPageName }) {
