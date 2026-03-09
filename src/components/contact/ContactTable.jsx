@@ -245,13 +245,9 @@ function ContactRow({ contact, columns, canEdit, actionsWidth, isLast, onView, o
           </div>
         );
       case "met_date":
-        return contact.met_date
-          ? <span className="text-slate-400 text-sm whitespace-nowrap">{fmtDate(contact.met_date)}</span>
-          : <span className="text-slate-700">—</span>;
+        return <SmartDate date={contact.met_date} />;
       case "last_contact_date":
-        return contact.last_contact_date
-          ? <span className="text-slate-400 text-sm whitespace-nowrap flex items-center gap-1"><Clock className="w-3 h-3 text-slate-600 flex-shrink-0" />{fmtDate(contact.last_contact_date)}</span>
-          : <span className="text-slate-700">—</span>;
+        return <SmartDate date={contact.last_contact_date} />;
       case "next_step_type":
         return contact.next_step_type
           ? <span className="text-slate-400 text-xs whitespace-nowrap">{NEXT_STEP_TYPE_LABELS[contact.next_step_type] || contact.next_step_type}</span>
