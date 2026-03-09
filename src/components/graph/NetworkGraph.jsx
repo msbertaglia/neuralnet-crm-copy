@@ -159,7 +159,6 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
       byLevel[lvl].push(c);
     });
 
-    const nodes = [centerNode];
     Object.entries(byLevel).forEach(([lvlStr, group]) => {
       const lvl = Number(lvlStr);
       const orbitR = lvl * ORBIT_UNIT;
