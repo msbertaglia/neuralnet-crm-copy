@@ -62,6 +62,11 @@ export default function Network() {
     setLogs(l);
     setDocuments(d);
     setUser(u);
+    // Set central contact to logged-in user
+    if (u?.email) {
+      const userContact = c.find(c => c.created_by === u.email);
+      setCentralContactId(userContact?.id || null);
+    }
     setLoading(false);
   };
 
