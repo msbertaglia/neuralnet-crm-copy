@@ -25,7 +25,7 @@ const CONNECTION_STRENGTH = {
 
 const CENTER_NODE_ID = "__center__";
 
-export default function NetworkGraph({ contacts, connections, onNodeClick, onNodeDoubleClick, centerUser }) {
+export default function NetworkGraph({ contacts, connections, onNodeClick, onNodeDoubleClick, centerUser, centralContactId }) {
   const canvasRef = useRef(null);
   const nodesRef = useRef([]);
   const edgesRef = useRef([]);
