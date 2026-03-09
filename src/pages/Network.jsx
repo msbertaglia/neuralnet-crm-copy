@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { Plus, Link2, Search, ZoomIn, ZoomOut, Maximize2, RefreshCw, Users } from "lucide-react";
+import ImpliedConnectionsModal from "@/components/contact/ImpliedConnectionsModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import NetworkGraph from "@/components/graph/NetworkGraph";
