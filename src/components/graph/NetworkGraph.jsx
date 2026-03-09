@@ -23,69 +23,64 @@ const CONNECTION_STRENGTH = {
   forte: { width: 3, opacity: 0.85 },
 };
 
-const ORBIT_RADII = [0, 200, 370, 540]; // level 0, 1, 2, 3
-const MAX_LEVEL = 3;
+const ORBIT_RADII = [0, 200, 370, 540, 700, 850]; // nivel 0, 1, 2, 3, 4, 5
+const MAX_LEVEL = 20; // Allow up to 20 levels of hierarchy
 
 /**
- * Compute orbital levels using BFS:
- * - Direct connections (no introduced_by_id): BFS from center up to MAX_LEVEL
- * - Introduced connections (introduced_by_id = C): the introduced person goes to C's level + 1,
- *   with a visual edge drawn from C to the introduced person (not from center)
+ * Compute orbital levels based on "introduced_by_id" field:
+ * - Central contact (Mauro) is level 0
+ * - Contacts with introduced_by_id = central are level 1 (N1)
+ * - Contacts with introduced_by_id = someone at level 1 are level 2 (N2)
+ * - And so on... (N3, N4, N5, ... Nx)
+ * 
+ * Special cases:
+ * - introduced_by_id = "direto" → level 1 (direct, without intermediary)
+ * - introduced_by_id = "sem_informacao" → not included in graph
  */
-function computeOrbits(centralContactId, connections) {
+function computeOrbits(centralContactId, contacts) {
   const levels = new Map();
   if (!centralContactId) return levels;
 
   levels.set(centralContactId, 0);
 
-  // Build direct adjacency map (no introducer)
-  const directAdj = new Map();
-  connections.forEach(conn => {
-    if (conn.introduced_by_id) return;
-    const a = conn.contact_a_id, b = conn.contact_b_id;
-    if (!directAdj.has(a)) directAdj.set(a, []);
-    if (!directAdj.has(b)) directAdj.set(b, []);
-    directAdj.get(a).push(b);
-    directAdj.get(b).push(a);
+  // Build a map of introducer -> contacts they introduced
+  const introducedMap = new Map();
+  contacts.forEach(contact => {
+    if (!contact.introduced_by_id || contact.introduced_by_id === "sem_informacao") {
+      return; // Skip contacts with no introducer or empty introducer
+    }
+    
+    let introducerId = contact.introduced_by_id;
+    
+    // If "direto", treat as directly linked to central contact
+    if (contact.introduced_by_id === "direto") {
+      introducerId = centralContactId;
+    }
+    
+    if (!introducedMap.has(introducerId)) {
+      introducedMap.set(introducerId, []);
+    }
+    introducedMap.get(introducerId).push(contact.id);
   });
 
-  // BFS for direct connections
+  // BFS to assign levels based on introducer hierarchy
   const queue = [centralContactId];
+  const visited = new Set([centralContactId]);
+
   while (queue.length > 0) {
     const current = queue.shift();
     const currentLevel = levels.get(current);
-    if (currentLevel >= MAX_LEVEL) continue;
-    (directAdj.get(current) || []).forEach(neighbor => {
-      if (!levels.has(neighbor)) {
-        levels.set(neighbor, currentLevel + 1);
-        queue.push(neighbor);
+    
+    // Get all contacts introduced by current contact
+    const introduced = introducedMap.get(current) || [];
+    introduced.forEach(contactId => {
+      if (!visited.has(contactId) && currentLevel < MAX_LEVEL) {
+        levels.set(contactId, currentLevel + 1);
+        visited.add(contactId);
+        queue.push(contactId);
       }
     });
   }
-
-  // Handle introduced connections:
-  // (A ↔ B, introduced_by = C) → the introduced person goes to C's level + 1
-  connections.forEach(conn => {
-    if (!conn.introduced_by_id) return;
-    const intId = conn.introduced_by_id;
-    const intLevel = levels.get(intId);
-    if (intLevel === undefined) return; // introducer not reachable
-    const newLevel = intLevel + 1;
-    if (newLevel > MAX_LEVEL) return;
-
-    const aId = conn.contact_a_id;
-    const bId = conn.contact_b_id;
-
-    // The "introduced" person is the one that did NOT yet know the introducer
-    // i.e., the one NOT equal to centralContactId and at a higher level than the introducer
-    // We place both A and B if they're unknown, but only if they make sense
-    [aId, bId].forEach(id => {
-      if (id === intId) return; // introducer itself
-      if (!levels.has(id)) {
-        levels.set(id, newLevel);
-      }
-    });
-  });
 
   return levels;
 }
