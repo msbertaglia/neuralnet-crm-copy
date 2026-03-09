@@ -51,6 +51,7 @@ function TwitterIcon({ active }) {
 }
 
 const RADIO_WIDTH = 40;
+const CONNECTION_INDICATOR_WIDTH = 50;
 
 const COLUMNS = [
   { key: "name", label: "Nome", width: 280, type: "alpha" },
