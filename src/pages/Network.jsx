@@ -80,7 +80,15 @@ export default function Network() {
         c.tags?.some(t => t.toLowerCase().includes(s))
       );
     }
+    // Apply status filter from URL or GraphFilters
+    if (urlStatus !== "todos") {
+      list = list.filter(c => c.status === urlStatus);
+    }
     if (filters.statuses?.length) list = list.filter(c => filters.statuses.includes(c.status));
+    // Apply tag filter from URL
+    if (urlTag !== "todas") {
+      list = list.filter(c => (c.tags || []).includes(urlTag));
+    }
     if (filters.nextSteps?.length) list = list.filter(c => filters.nextSteps.includes(c.next_step_status));
     if (filters.projectIds?.length) {
       const projectContacts = new Set();
@@ -90,7 +98,7 @@ export default function Network() {
       list = list.filter(c => projectContacts.has(c.id));
     }
     return list;
-  }, [contacts, search, filters, projects]);
+  }, [contacts, search, filters, projects, urlStatus, urlTag]);
 
   const filteredConnections = useMemo(() => {
     const ids = new Set(filteredContacts.map(c => c.id));
