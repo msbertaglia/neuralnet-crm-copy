@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { Plus, Link2, Search, ZoomIn, ZoomOut, Maximize2, RefreshCw, Users } from "lucide-react";
-import ImpliedConnectionsModal from "@/components/contact/ImpliedConnectionsModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import NetworkGraph from "@/components/graph/NetworkGraph";
@@ -9,7 +8,6 @@ import GraphLegend from "@/components/graph/GraphLegend";
 import GraphFilters from "@/components/graph/GraphFilters";
 import ContactSidebar from "@/components/contact/ContactSidebar";
 import ContactForm from "@/components/contact/ContactForm";
-import ConnectionForm from "@/components/contact/ConnectionForm";
 import MeetingLogForm from "@/components/contact/MeetingLogForm";
 
 export default function Network() {
