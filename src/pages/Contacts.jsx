@@ -400,17 +400,52 @@ function ContactCard({ contact, onClick, onEdit, onDelete, canEdit, fmtDate }) {
   );
 }
 
-function FilterChip({ label, count, active, onClick }) {
+const STATUS_TAB_COLORS = {
+  ativo:     { active: "border-b-2 border-green-400 text-green-300",  count: "text-green-500" },
+  inativo:   { active: "border-b-2 border-slate-400 text-slate-300",  count: "text-slate-500" },
+  prospect:  { active: "border-b-2 border-amber-400 text-amber-300",  count: "text-amber-500" },
+  parceiro:  { active: "border-b-2 border-blue-400 text-blue-300",    count: "text-blue-500" },
+  cliente:   { active: "border-b-2 border-purple-400 text-purple-300",count: "text-purple-500" },
+  investidor:{ active: "border-b-2 border-pink-400 text-pink-300",    count: "text-pink-500" },
+};
+
+function StatusTab({ label, count, active, onClick, status }) {
+  const colors = status ? STATUS_TAB_COLORS[status] : null;
   return (
     <button
       onClick={onClick}
-      className={`px-3 py-1 rounded-full text-xs font-semibold transition-all border ${
+      className={`px-4 py-2 text-xs font-bold uppercase tracking-wide transition-all rounded-t-md -mb-px ${
         active
-          ? "bg-blue-600 border-blue-500 text-white"
-          : "border-slate-700 text-slate-400 hover:border-slate-500 hover:text-slate-300"
+          ? colors
+            ? `bg-slate-800/60 ${colors.active} text-white`
+            : "bg-slate-800/60 border-b-2 border-blue-400 text-white"
+          : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/40"
       }`}
     >
-      {label} <span className={active ? "text-blue-200" : "text-slate-500"}>{count}</span>
+      {label}
+      {count !== undefined && (
+        <span className={`ml-1.5 text-[10px] font-normal ${active && colors ? colors.count : "text-slate-600"}`}>
+          ({count})
+        </span>
+      )}
+    </button>
+  );
+}
+
+function TagTab({ label, count, active, onClick }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-3 py-1 text-xs font-semibold rounded-md transition-all border ${
+        active
+          ? "bg-amber-500/20 border-amber-500/50 text-amber-300"
+          : "border-slate-700/60 text-slate-500 hover:text-slate-300 hover:border-slate-600"
+      }`}
+    >
+      {label}
+      {count !== undefined && (
+        <span className={`ml-1 ${active ? "text-amber-500" : "text-slate-600"}`}>({count})</span>
+      )}
     </button>
   );
 }
