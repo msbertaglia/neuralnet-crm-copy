@@ -193,15 +193,15 @@ function ContactRow({ contact, columns, canEdit, actionsWidth, isLast, isCentral
   const NsIcon = ns.icon;
 
   // Determine connection indicator color
-  // Green: há conexão direta
+  // Green: há conexão direta (introduced_by_id = central contact's ID)
   // Yellow: indicação de conexão "Direto" (introduced_by_id === "direto")
-  // Red: Sem informação (introduced_by_id não está preenchido ou vazio)
+  // Red: Sem informação (introduced_by_id === "sem_informacao" ou vazio)
   const getConnectionIndicator = () => {
     if (!centralContactId || centralContactId === contact.id) return null;
     
     const introducedBy = contact.introduced_by_id;
     
-    if (!introducedBy || introducedBy === "none") {
+    if (!introducedBy || introducedBy === "sem_informacao") {
       return { color: "#ef4444", label: "Sem informação" }; // Red
     } else if (introducedBy === "direto") {
       return { color: "#eab308", label: "Direto" }; // Yellow
