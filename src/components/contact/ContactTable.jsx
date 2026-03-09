@@ -75,7 +75,7 @@ function SortIcon({ col, sortKey, sortDir }) {
     : <ChevronDown className="w-3 h-3 text-blue-400 ml-1 inline flex-shrink-0" />;
 }
 
-export default function ContactTable({ contacts, canEdit, onView, onEdit, onDelete, centralContactId, onSetCentral }) {
+export default function ContactTable({ contacts, canEdit, onView, onEdit, onDelete }) {
   const [sortKey, setSortKey] = useState("met_date");
   const [sortDir, setSortDir] = useState("asc");
 
@@ -126,7 +126,7 @@ export default function ContactTable({ contacts, canEdit, onView, onEdit, onDele
   }, [contacts, sortKey, sortDir]);
 
   const actionsWidth = canEdit ? 72 : 0;
-  const totalWidth = COLUMNS.reduce((acc, c) => acc + c.width, 0) + actionsWidth + RADIO_WIDTH + CONNECTION_INDICATOR_WIDTH;
+  const totalWidth = COLUMNS.reduce((acc, c) => acc + c.width, 0) + actionsWidth + CONNECTION_INDICATOR_WIDTH;
 
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
