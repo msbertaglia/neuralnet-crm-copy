@@ -28,15 +28,11 @@ export default function Network() {
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState({ statuses: [], nextSteps: [], projectIds: [] });
 
-  const [urlStatus, setUrlStatus] = useState("todos");
-  const [urlTag, setUrlTag] = useState("todas");
-
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const status = params.get("status") || "todos";
     const tag = params.get("tag") || "todas";
-    setUrlStatus(status);
-    setUrlTag(tag);
+    setFilters(prev => ({ ...prev, status, tag }));
   }, []);
 
   useEffect(() => {
