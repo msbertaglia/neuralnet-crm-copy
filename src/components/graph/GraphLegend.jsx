@@ -5,12 +5,12 @@ export default function GraphLegend() {
   const [open, setOpen] = useState(false);
 
   const statuses = [
-    { label: "Ativo", color: "#22c55e" },
     { label: "Prospect", color: "#f59e0b" },
-    { label: "Parceiro", color: "#3b82f6" },
-    { label: "Cliente", color: "#8b5cf6" },
-    { label: "Investidor", color: "#ec4899" },
-    { label: "Inativo", color: "#94a3b8" },
+    { label: "Desconhecidos", color: "#94a3b8" },
+    { label: "Empresas", color: "#3b82f6" },
+    { label: "Família", color: "#ec4899" },
+    { label: "Profissional", color: "#22c55e" },
+    { label: "Outros", color: "#8b5cf6" },
   ];
 
   const nextSteps = [

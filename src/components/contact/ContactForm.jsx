@@ -120,7 +120,7 @@ export default function ContactForm({ contact, contacts, onSave, onClose }) {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-slate-800 border-slate-700">
-                      {["prospect","ativo","inativo","parceiro","cliente","investidor"].map(s => (
+                      {["prospect","desconhecidos","empresas","familia","profissional","outros"].map(s => (
                         <SelectItem key={s} value={s} className="text-slate-200">{s}</SelectItem>
                       ))}
                     </SelectContent>

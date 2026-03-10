@@ -14,12 +14,12 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 const STATUS_COLORS = {
-  ativo: "bg-green-500/20 text-green-400 border-green-500/30",
-  inativo: "bg-slate-500/20 text-slate-400 border-slate-500/30",
-  prospect: "bg-amber-500/20 text-amber-400 border-amber-500/30",
-  parceiro: "bg-blue-500/20 text-blue-400 border-blue-500/30",
-  cliente: "bg-purple-500/20 text-purple-400 border-purple-500/30",
-  investidor: "bg-pink-500/20 text-pink-400 border-pink-500/30",
+  prospect:      "bg-amber-500/20 text-amber-400 border-amber-500/30",
+  desconhecidos: "bg-slate-500/20 text-slate-400 border-slate-500/30",
+  empresas:      "bg-blue-500/20 text-blue-400 border-blue-500/30",
+  familia:       "bg-pink-500/20 text-pink-400 border-pink-500/30",
+  profissional:  "bg-green-500/20 text-green-400 border-green-500/30",
+  outros:        "bg-purple-500/20 text-purple-400 border-purple-500/30",
 };
 
 const NEXT_STEP_ICONS = {
@@ -457,12 +457,12 @@ function ContactCard({ contact, onClick, onEdit, onDelete, canEdit, fmtDate }) {
 }
 
 const STATUS_TAB_COLORS = {
-  ativo:     { active: "border-b-2 border-green-400 text-green-300",  count: "text-green-500" },
-  inativo:   { active: "border-b-2 border-slate-400 text-slate-300",  count: "text-slate-500" },
-  prospect:  { active: "border-b-2 border-amber-400 text-amber-300",  count: "text-amber-500" },
-  parceiro:  { active: "border-b-2 border-blue-400 text-blue-300",    count: "text-blue-500" },
-  cliente:   { active: "border-b-2 border-purple-400 text-purple-300",count: "text-purple-500" },
-  investidor:{ active: "border-b-2 border-pink-400 text-pink-300",    count: "text-pink-500" },
+  prospect:      { active: "border-b-2 border-amber-400 text-amber-300",   count: "text-amber-500" },
+  desconhecidos: { active: "border-b-2 border-slate-400 text-slate-300",   count: "text-slate-500" },
+  empresas:      { active: "border-b-2 border-blue-400 text-blue-300",     count: "text-blue-500" },
+  familia:       { active: "border-b-2 border-pink-400 text-pink-300",     count: "text-pink-500" },
+  profissional:  { active: "border-b-2 border-green-400 text-green-300",   count: "text-green-500" },
+  outros:        { active: "border-b-2 border-purple-400 text-purple-300", count: "text-purple-500" },
 };
 
 function StatusTab({ label, count, active, onClick, status }) {

@@ -3,15 +3,15 @@ import { Filter, X, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
-const STATUS_OPTIONS = ["ativo", "inativo", "prospect", "parceiro", "cliente", "investidor"];
+const STATUS_OPTIONS = ["prospect", "desconhecidos", "empresas", "familia", "profissional", "outros"];
 
 const STATUS_COLORS = {
-  ativo:      { active: "bg-green-500/20 border-green-500/50 text-green-300",    dot: "bg-green-400" },
-  inativo:    { active: "bg-slate-500/20 border-slate-400/50 text-slate-300",    dot: "bg-slate-400" },
-  prospect:   { active: "bg-amber-500/20 border-amber-500/50 text-amber-300",    dot: "bg-amber-400" },
-  parceiro:   { active: "bg-blue-500/20 border-blue-500/50 text-blue-300",       dot: "bg-blue-400" },
-  cliente:    { active: "bg-purple-500/20 border-purple-500/50 text-purple-300", dot: "bg-purple-400" },
-  investidor: { active: "bg-pink-500/20 border-pink-500/50 text-pink-300",       dot: "bg-pink-400" },
+  prospect:      { active: "bg-amber-500/20 border-amber-500/50 text-amber-300",    dot: "bg-amber-400" },
+  desconhecidos: { active: "bg-slate-500/20 border-slate-400/50 text-slate-300",    dot: "bg-slate-400" },
+  empresas:      { active: "bg-blue-500/20 border-blue-500/50 text-blue-300",       dot: "bg-blue-400" },
+  familia:       { active: "bg-pink-500/20 border-pink-500/50 text-pink-300",       dot: "bg-pink-400" },
+  profissional:  { active: "bg-green-500/20 border-green-500/50 text-green-300",    dot: "bg-green-400" },
+  outros:        { active: "bg-purple-500/20 border-purple-500/50 text-purple-300", dot: "bg-purple-400" },
 };
 
 export default function GraphFilters({ filters, onChange, contacts = [] }) {
