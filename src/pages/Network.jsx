@@ -164,7 +164,7 @@ export default function Network() {
         <div className="flex-1" />
 
         {/* Filters */}
-        <GraphFilters filters={filters} onChange={setFilters} projects={projects} />
+        <GraphFilters filters={filters} onChange={setFilters} tags={availableTags} />
 
         {/* Actions */}
         {canEdit && (
