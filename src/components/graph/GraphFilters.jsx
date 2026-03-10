@@ -154,6 +154,33 @@ export default function GraphFilters({ filters, onChange, contacts = [] }) {
             </div>
           )}
 
+          {/* Mode toggle */}
+          <div className="px-4 py-3 border-t border-slate-800">
+            <p className="text-slate-400 text-xs uppercase tracking-wide mb-2">Modo de exibição</p>
+            <div className="flex rounded-lg overflow-hidden border border-slate-700">
+              <button
+                onClick={() => setPending(prev => ({ ...prev, filterMode: "completo" }))}
+                className={`flex-1 py-1.5 text-xs font-semibold transition-all ${
+                  pending.filterMode === "completo"
+                    ? "bg-blue-600 text-white"
+                    : "bg-slate-800 text-slate-400 hover:text-slate-200"
+                }`}
+              >
+                Completo
+              </button>
+              <button
+                onClick={() => setPending(prev => ({ ...prev, filterMode: "parcial" }))}
+                className={`flex-1 py-1.5 text-xs font-semibold transition-all ${
+                  pending.filterMode === "parcial"
+                    ? "bg-blue-600 text-white"
+                    : "bg-slate-800 text-slate-400 hover:text-slate-200"
+                }`}
+              >
+                Parcial
+              </button>
+            </div>
+          </div>
+
           {/* Footer */}
           <div className="px-4 py-3 border-t border-slate-800">
             <Button
