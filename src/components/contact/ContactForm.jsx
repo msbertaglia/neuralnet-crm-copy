@@ -48,7 +48,10 @@ export default function ContactForm({ contact, contacts, onSave, onClose }) {
       introducedByName = found?.name || "";
     }
     
-    await onSave({ ...form, introduced_by_id: introducedById, introduced_by_name: introducedByName });
+    // Format phone number before saving
+    const formattedPhone = form.phone ? formatPhoneNumber(form.phone) : "";
+    
+    await onSave({ ...form, phone: formattedPhone, introduced_by_id: introducedById, introduced_by_name: introducedByName });
     setLoading(false);
   };
 
