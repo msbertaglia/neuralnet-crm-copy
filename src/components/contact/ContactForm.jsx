@@ -142,8 +142,14 @@ export default function ContactForm({ contact, contacts, onSave, onClose }) {
                   <Input value={form.email} onChange={e => set("email", e.target.value)} className="bg-slate-800 border-slate-600 text-white" />
                 </Field>
                 <Field label="Telefone">
-                  <Input value={form.phone} onChange={e => set("phone", e.target.value)} className="bg-slate-800 border-slate-600 text-white" />
-                </Field>
+                   <Input 
+                     value={form.phone} 
+                     onChange={e => set("phone", e.target.value)}
+                     onBlur={e => set("phone", formatPhoneNumber(e.target.value))}
+                     placeholder="+xx xx xxxxx-xxxx"
+                     className="bg-slate-800 border-slate-600 text-white" 
+                   />
+                 </Field>
               </div>
               <Field label="Visibilidade">
                 <Select value={form.visibility} onValueChange={v => set("visibility", v)}>
