@@ -199,7 +199,7 @@ export default function GraphFilters({ filters, onChange, contacts = [] }) {
               onClick={applyFilters}
               className="w-full bg-blue-600 hover:bg-blue-500 text-white"
             >
-              {pendingCount > 0 ? `Filtrar (${pendingCount} selecionado${pendingCount > 1 ? "s" : ""})` : "Filtrar"}
+              {pendingCount > 0 ? `Filtrar (${pendingMatchCount} contato${pendingMatchCount !== 1 ? "s" : ""})` : "Filtrar"}
             </Button>
           </div>
         </div>
