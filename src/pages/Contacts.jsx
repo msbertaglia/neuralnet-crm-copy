@@ -234,6 +234,17 @@ export default function Contacts() {
             >
               <Tags className="w-4 h-4" /> Tags {selectedIds.size > 0 && `(${selectedIds.size})`}
             </button>
+            <button
+              onClick={() => setShowBulkIndicador(true)}
+              disabled={selectedIds.size === 0}
+              className={`px-3 h-9 flex items-center gap-2 rounded-lg transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed ${
+                selectedIds.size > 0
+                  ? "bg-green-600 hover:bg-green-700 text-white"
+                  : "bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300"
+              }`}
+            >
+              <Link2 className="w-4 h-4" /> Indicador {selectedIds.size > 0 && `(${selectedIds.size})`}
+            </button>
             <a
               href={createPageUrl(`Network?status=${statusFilter}&tag=${tagFilter}`)}
               className="px-3 h-9 flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium"
