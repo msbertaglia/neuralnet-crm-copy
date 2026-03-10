@@ -3,33 +3,22 @@ import { base44 } from "@/api/base44Client";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const STATUS_COLORS = {
-  prospect:      "bg-amber-500/20 text-amber-400 border-amber-500/30",
-  desconhecidos: "bg-slate-500/20 text-slate-400 border-slate-500/30",
-  empresas:      "bg-blue-500/20 text-blue-400 border-blue-500/30",
-  familia:       "bg-pink-500/20 text-pink-400 border-pink-500/30",
-  profissional:  "bg-green-500/20 text-green-400 border-green-500/30",
-  outros:        "bg-purple-500/20 text-purple-400 border-purple-500/30",
-};
-
-const STATUSES = [
-  { value: "prospect",      label: "Prospect" },
-  { value: "desconhecidos", label: "Desconhecidos" },
-  { value: "empresas",      label: "Empresas" },
-  { value: "familia",       label: "Família" },
-  { value: "profissional",  label: "Profissional" },
-  { value: "outros",        label: "Outros" },
-];
+const DEFAULT_COLOR = "bg-slate-700 text-slate-300 border-slate-600";
 
 export default function BulkStatusModal({ selectedContacts, onClose, onDone }) {
+  const [statuses, setStatuses] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    base44.entities.ContactStatus.list("label").then(setStatuses);
+  }, []);
 
   const handleMigrate = async () => {
     if (!selectedStatus) return;
     setLoading(true);
     await Promise.all(
-      selectedContacts.map(c => base44.entities.Contact.update(c.id, { status: selectedStatus.value }))
+      selectedContacts.map(c => base44.entities.Contact.update(c.id, { status: selectedStatus.label }))
     );
     setLoading(false);
     onDone();
@@ -51,23 +40,23 @@ export default function BulkStatusModal({ selectedContacts, onClose, onDone }) {
           <span className="text-white font-semibold">{count} contato{count !== 1 ? "s" : ""}</span> selecionado{count !== 1 ? "s" : ""}. Escolha o novo status:
         </p>
 
-        <div className="space-y-2 mb-5">
-          {STATUSES.map(s => (
+        <div className="space-y-2 mb-5 max-h-64 overflow-y-auto">
+          {statuses.map(s => (
             <label
-              key={s.value}
+              key={s.id}
               className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-                selectedStatus?.value === s.value
+                selectedStatus?.id === s.id
                   ? "border-blue-500 bg-blue-500/10"
                   : "border-slate-700 hover:border-slate-500 hover:bg-slate-800"
               }`}
             >
               <input
                 type="checkbox"
-                checked={selectedStatus?.value === s.value}
-                onChange={() => setSelectedStatus(prev => prev?.value === s.value ? null : s)}
+                checked={selectedStatus?.id === s.id}
+                onChange={() => setSelectedStatus(prev => prev?.id === s.id ? null : s)}
                 className="accent-blue-500 w-4 h-4"
               />
-              <span className={`text-xs font-semibold px-2 py-0.5 rounded border ${STATUS_COLORS[s.value] || "bg-slate-700 text-slate-300 border-slate-600"}`}>
+              <span className={`text-xs font-semibold px-2 py-0.5 rounded border capitalize ${DEFAULT_COLOR}`}>
                 {s.label}
               </span>
             </label>
