@@ -170,33 +170,45 @@ export default function Dashboard() {
               Distribuição por Status
             </h2>
             <div className="space-y-2.5">
-              {[
-                { key: "prospect", label: "Prospect", color: "#f59e0b" },
-                { key: "ativo", label: "Ativo", color: "#22c55e" },
-                { key: "cliente", label: "Cliente", color: "#8b5cf6" },
-                { key: "parceiro", label: "Parceiro", color: "#3b82f6" },
-                { key: "investidor", label: "Investidor", color: "#ec4899" },
-                { key: "inativo", label: "Inativo", color: "#94a3b8" },
-              ]
-                .map(s => {
-                  const count = contacts.filter(c => c.status === s.key).length;
-                  const pct = contacts.length ? Math.round((count / contacts.length) * 100) : 0;
-                  return { ...s, count, pct };
-                })
-                .sort((a, b) => b.pct - a.pct)
-                .map(s => (
-                  <div key={s.key}>
-                    <div className="flex justify-between text-xs mb-1">
-                      <span className="text-slate-300">{s.label}</span>
-                      <span className="text-slate-500">{s.count} ({s.pct}%)</span>
-                    </div>
-                    <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                      <div className="h-full rounded-full transition-all" style={{ width: `${s.pct}%`, background: s.color }} />
-                    </div>
+              {statusDistribution.map(s => (
+                <div key={s.label}>
+                  <div className="flex justify-between text-xs mb-1">
+                    <span className="text-slate-300">{s.label}</span>
+                    <span className="text-slate-500">{s.count} ({s.pct}%)</span>
                   </div>
-                ))}
+                  <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                    <div className="h-full rounded-full transition-all" style={{ width: `${s.pct}%`, background: s.color }} />
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
+
+          {/* Distribuição de tags */}
+          {allTags.length > 0 && (
+            <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
+              <h2 className="text-white font-semibold mb-4 flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-purple-400" />
+                Distribuição por Tags
+              </h2>
+              <div className="space-y-2.5">
+                {allTags.map(t => {
+                  const pct = contacts.length ? Math.round((t.count / contacts.length) * 100) : 0;
+                  return (
+                    <div key={t.tag}>
+                      <div className="flex justify-between text-xs mb-1">
+                        <span className="text-slate-300">{t.tag}</span>
+                        <span className="text-slate-500">{t.count} ({pct}%)</span>
+                      </div>
+                      <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                        <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: "#a78bfa" }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
