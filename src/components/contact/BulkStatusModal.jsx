@@ -37,7 +37,7 @@ export default function BulkStatusModal({ selectedContacts, onClose, onDone }) {
   return (
     <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
       <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 w-full max-w-sm shadow-2xl">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-5">
           <h2 className="text-white font-bold text-lg">Alterar Status</h2>
           <button onClick={onClose} className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors">
             <X className="w-4 h-4" />
@@ -48,30 +48,23 @@ export default function BulkStatusModal({ selectedContacts, onClose, onDone }) {
           <span className="text-white font-semibold">{count} contato{count !== 1 ? "s" : ""}</span> selecionado{count !== 1 ? "s" : ""}. Escolha o novo status:
         </p>
 
-        <div className="space-y-2 mb-5 max-h-64 overflow-y-auto">
+        <div className="space-y-2 mb-4 max-h-[60vh] overflow-y-auto">
           {statuses.map(s => (
-            <label
-              key={s.id}
-              className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-                selectedStatus?.id === s.id
-                  ? "border-blue-500 bg-blue-500/10"
-                  : "border-slate-700 hover:border-slate-500 hover:bg-slate-800"
-              }`}
-            >
+            <div key={s.id} className="flex items-center gap-3 bg-slate-800 rounded-lg px-3 py-2.5">
               <input
                 type="checkbox"
                 checked={selectedStatus?.id === s.id}
                 onChange={() => setSelectedStatus(prev => prev?.id === s.id ? null : s)}
-                className="accent-blue-500 w-4 h-4"
+                className="accent-blue-500 w-4 h-4 flex-shrink-0"
               />
-              <span className={`text-xs font-semibold px-2 py-0.5 rounded border capitalize ${DEFAULT_COLOR}`}>
+              <span className={`text-xs font-semibold px-2.5 py-1 rounded border capitalize flex-shrink-0 ${STATUS_COLORS[s.label.toLowerCase()] || DEFAULT_COLOR}`}>
                 {s.label}
               </span>
-            </label>
+            </div>
           ))}
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex gap-2">
           <Button variant="outline" onClick={onClose} className="flex-1 border-slate-600 text-slate-300 hover:bg-slate-800">
             Cancelar
           </Button>
