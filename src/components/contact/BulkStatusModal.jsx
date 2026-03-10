@@ -51,30 +51,27 @@ export default function BulkStatusModal({ selectedContacts, onClose, onDone }) {
           <span className="text-white font-semibold">{count} contato{count !== 1 ? "s" : ""}</span> selecionado{count !== 1 ? "s" : ""}. Escolha o novo status:
         </p>
 
-        <div className="space-y-2 mb-5 max-h-64 overflow-y-auto">
-          {statuses.map(s => (
+        <div className="space-y-2 mb-5">
+          {STATUSES.map(s => (
             <label
-              key={s.id}
+              key={s.value}
               className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-                selectedStatus === s.label
+                selectedStatus?.value === s.value
                   ? "border-blue-500 bg-blue-500/10"
                   : "border-slate-700 hover:border-slate-500 hover:bg-slate-800"
               }`}
             >
               <input
                 type="checkbox"
-                checked={selectedStatus === s.label}
-                onChange={() => setSelectedStatus(prev => prev === s.label ? null : s.label)}
+                checked={selectedStatus?.value === s.value}
+                onChange={() => setSelectedStatus(prev => prev?.value === s.value ? null : s)}
                 className="accent-blue-500 w-4 h-4"
               />
-              <span className={`text-xs font-semibold px-2 py-0.5 rounded border ${STATUS_COLORS[s.label] || "bg-slate-700 text-slate-300 border-slate-600"}`}>
+              <span className={`text-xs font-semibold px-2 py-0.5 rounded border ${STATUS_COLORS[s.value] || "bg-slate-700 text-slate-300 border-slate-600"}`}>
                 {s.label}
               </span>
             </label>
           ))}
-          {statuses.length === 0 && (
-            <p className="text-slate-500 text-sm text-center py-4">Nenhum status cadastrado.</p>
-          )}
         </div>
 
         <div className="flex gap-3">
