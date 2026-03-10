@@ -185,6 +185,8 @@ export default function ContactTable({ contacts, canEdit, onView, onEdit, onDele
               onView={() => onView(contact)}
               onEdit={() => onEdit(contact)}
               onDelete={() => onDelete(contact)}
+              userEmail={userEmail}
+              userContact={userContact}
             />
           ))}
           {sorted.length === 0 && (
