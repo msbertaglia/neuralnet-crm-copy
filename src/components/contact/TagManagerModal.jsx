@@ -11,6 +11,10 @@ export default function TagManagerModal({ contacts, onClose, onTagsChanged }) {
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [selected, setSelected] = useState(new Set());
 
+  const truncateTag = (tag, maxLength = 25) => {
+    return tag.length > maxLength ? tag.slice(0, maxLength) + "..." : tag;
+  };
+
   const toggleSelect = (tag) => setSelected(prev => {
     const next = new Set(prev);
     next.has(tag) ? next.delete(tag) : next.add(tag);
@@ -81,8 +85,8 @@ export default function TagManagerModal({ contacts, onClose, onTagsChanged }) {
                       onChange={() => toggleSelect(tag)}
                       className="accent-blue-500 w-4 h-4 flex-shrink-0"
                     />
-                    <span className="text-xs font-semibold px-2.5 py-1 rounded bg-slate-700 text-slate-300 flex-shrink-0">
-                      {tag}
+                    <span className="text-xs font-semibold px-2.5 py-1 rounded bg-slate-700 text-slate-300 flex-shrink-0" title={tag}>
+                      {truncateTag(tag)}
                     </span>
                     <span className="text-slate-400 text-sm ml-auto">{count} contato{count !== 1 ? "s" : ""}</span>
                     <button
