@@ -26,6 +26,10 @@ export default function ContactForm({ contact, contacts, onSave, onClose }) {
   });
   const [tagInput, setTagInput] = useState("");
 
+  useEffect(() => {
+    base44.entities.ContactStatus.list("label").then(setStatusOptions);
+  }, []);
+
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   const handleSubmit = async () => {
