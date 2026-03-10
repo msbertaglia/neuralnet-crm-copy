@@ -178,14 +178,6 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
        const minFromPrev = prevOrbitR + nRadius * 2 + 40;
        const orbitR = Math.max(baseR, neededR, minFromPrev);
 
-       // Group by parent
-       const byParent = new Map();
-       group.forEach(c => {
-         const pid = parentOf.get(c.id) || "__center__";
-         if (!byParent.has(pid)) byParent.set(pid, []);
-         byParent.get(pid).push(c);
-       });
-
        // Sort group by parent angle so siblings stay clustered, then assign evenly spaced angles
        const sortedGroup = [...group].sort((a, b) => {
          const pidA = parentOf.get(a.id) || centralContactId;
