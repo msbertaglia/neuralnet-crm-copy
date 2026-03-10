@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { Users, Link2, FolderOpen, AlertCircle, Timer, Clock, TrendingUp, CalendarDays } from "lucide-react";
 import { createPageUrl } from "@/utils";
@@ -9,20 +9,23 @@ export default function Dashboard() {
   const [contacts, setContacts] = useState([]);
   const [connections, setConnections] = useState([]);
   const [projects, setProjects] = useState([]);
+  const [statusOptions, setStatusOptions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => { loadAll(); }, []);
 
   const loadAll = async () => {
     setLoading(true);
-    const [c, conn, p] = await Promise.all([
+    const [c, conn, p, statuses] = await Promise.all([
       base44.entities.Contact.list("-created_date", 500),
       base44.entities.Connection.list(),
       base44.entities.Project.list(),
+      base44.entities.ContactStatus.list(),
     ]);
     setContacts(c);
     setConnections(conn);
     setProjects(p);
+    setStatusOptions(statuses);
     setLoading(false);
   };
 
@@ -47,6 +50,29 @@ export default function Dashboard() {
     if (!d) return false;
     return differenceInDays(new Date(), new Date(d)) > 0;
   };
+
+  // Get all tags with counts
+  const allTags = useMemo(() => {
+    const tagSet = new Map();
+    contacts.forEach(c => {
+      (c.tags || []).forEach(tag => {
+        tagSet.set(tag, (tagSet.get(tag) || 0) + 1);
+      });
+    });
+    return Array.from(tagSet.entries())
+      .map(([tag, count]) => ({ tag, count }))
+      .sort((a, b) => b.count - a.count);
+  }, [contacts]);
+
+  // Get status distribution from database
+  const statusDistribution = useMemo(() => {
+    const distribution = statusOptions.map(s => {
+      const count = contacts.filter(c => c.status === s.label).length;
+      const pct = contacts.length ? Math.round((count / contacts.length) * 100) : 0;
+      return { label: s.label, count, pct, color: s.color };
+    }).sort((a, b) => b.pct - a.pct);
+    return distribution;
+  }, [contacts, statusOptions]);
 
   return (
     <div className="min-h-screen bg-slate-950 text-white p-6">
