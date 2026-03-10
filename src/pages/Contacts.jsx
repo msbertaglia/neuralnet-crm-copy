@@ -100,12 +100,6 @@ export default function Contacts() {
   }, [contacts, search, statusFilter, tagFilter, user?.email]);
 
   const handleSaveContact = async (data) => {
-    const newImplied = detectImpliedConnections(data, editingContact?.id, connections, contacts);
-    if (newImplied.length > 0) {
-      setPendingSave({ contactData: data, editingId: editingContact?.id, newImplied });
-      setShowImpliedModal(true);
-      return;
-    }
     await doSaveContact(data, editingContact?.id);
   };
 
