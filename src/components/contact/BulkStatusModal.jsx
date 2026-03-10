@@ -29,7 +29,7 @@ export default function BulkStatusModal({ selectedContacts, onClose, onDone }) {
     if (!selectedStatus) return;
     setLoading(true);
     await Promise.all(
-      selectedContacts.map(c => base44.entities.Contact.update(c.id, { status: selectedStatus }))
+      selectedContacts.map(c => base44.entities.Contact.update(c.id, { status: selectedStatus.value }))
     );
     setLoading(false);
     onDone();
