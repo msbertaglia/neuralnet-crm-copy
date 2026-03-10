@@ -404,6 +404,15 @@ export default function Contacts() {
         />
       )}
 
+      {showBulkIndicador && (
+        <BulkIndicadorModal
+          selectedContacts={contacts.filter(c => selectedIds.has(c.id))}
+          allContacts={contacts}
+          onClose={() => setShowBulkIndicador(false)}
+          onDone={() => { setShowBulkIndicador(false); setSelectedIds(new Set()); loadAll(); }}
+        />
+      )}
+
       {deleteConfirm && (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 max-w-sm w-full shadow-2xl">
