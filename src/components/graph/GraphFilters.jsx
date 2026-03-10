@@ -66,9 +66,9 @@ export default function GraphFilters({ filters, onChange, tags = [] }) {
           <div className="flex justify-between items-center px-4 py-3 border-b border-slate-800">
             <span className="text-slate-200 font-semibold text-sm">Filtros</span>
             <div className="flex gap-3 items-center">
-              {activeCount > 0 && (
+              {(status !== "todos" || tag !== "todas") && (
                 <button
-                  onClick={() => onChange({ status: "todos", tag: "todas" })}
+                  onClick={clearFilters}
                   className="text-xs text-red-400 hover:text-red-300"
                 >
                   Limpar
