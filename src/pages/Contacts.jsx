@@ -9,7 +9,6 @@ import { Badge } from "@/components/ui/badge";
 import ContactForm from "@/components/contact/ContactForm";
 import ContactSidebar from "@/components/contact/ContactSidebar";
 import MeetingLogForm from "@/components/contact/MeetingLogForm";
-import ImpliedConnectionsModal from "@/components/contact/ImpliedConnectionsModal";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
