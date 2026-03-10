@@ -396,6 +396,13 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
     const W = canvas.width;
     const H = canvas.height;
 
+    // Determine which node IDs are "dimmed" (not in highlighted set)
+    const isDimmed = (nodeContactId) => {
+      if (!highlightedIds) return false;
+      if (!nodeContactId) return false;
+      return !highlightedIds.has(nodeContactId);
+    };
+
     ctx.clearRect(0, 0, W, H);
     ctx.save();
     ctx.translate(tx, ty);
