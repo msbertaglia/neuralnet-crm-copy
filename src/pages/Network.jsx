@@ -222,7 +222,9 @@ export default function Network() {
         ) : (
           <NetworkGraph
             contacts={contacts}
-            highlightedIds={hasActiveFilters ? new Set(filteredContacts.map(c => c.id)) : null}
+            highlightedIds={highlightedIds}
+            ancestorIds={ancestorIds}
+            filterMode={filters.filterMode || "completo"}
             onNodeClick={setSelectedContact}
             onNodeDoubleClick={(c) => { setEditingContact(c); setShowContactForm(true); }}
             centralContactId={centralContactId}
