@@ -348,6 +348,14 @@ export default function Contacts() {
       )}
 
 
+      {showBulkStatus && (
+        <BulkStatusModal
+          selectedContacts={contacts.filter(c => selectedIds.has(c.id))}
+          onClose={() => setShowBulkStatus(false)}
+          onDone={() => { setShowBulkStatus(false); setSelectedIds(new Set()); loadAll(); }}
+        />
+      )}
+
       {showStatusManager && (
         <StatusManagerModal
           contacts={contacts}
