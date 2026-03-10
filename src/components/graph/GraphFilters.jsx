@@ -64,7 +64,7 @@ export default function GraphFilters({ filters, onChange, contacts = [] }) {
   const pendingCount = (pending.statuses?.length || 0) + (pending.tags?.length || 0);
 
   return (
-    <div className="relative">
+    <div className="relative z-50">
       <Button
         variant="outline"
         size="sm"
