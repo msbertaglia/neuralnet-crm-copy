@@ -76,6 +76,33 @@ export default function Network() {
     return (filters.statuses?.length > 0) || (filters.tags?.length > 0) || !!search;
   }, [filters, search]);
 
+  // Build ancestor set: for each matched contact, walk up introduced_by chain
+  const { highlightedIds, ancestorIds } = useMemo(() => {
+    if (!hasActiveFilters) return { highlightedIds: null, ancestorIds: null };
+
+    const matchedIds = new Set(filteredContacts.map(c => c.id));
+    const ancestors = new Set();
+
+    // Build a map: contactId -> introducerId
+    const parentOf = {};
+    contacts.forEach(c => {
+      if (c.introduced_by_id && c.introduced_by_id !== "sem_informacao") {
+        parentOf[c.id] = c.introduced_by_id === "direto" ? centralContactId : c.introduced_by_id;
+      }
+    });
+
+    matchedIds.forEach(id => {
+      let current = parentOf[id];
+      while (current) {
+        if (matchedIds.has(current)) break; // already highlighted
+        ancestors.add(current);
+        current = parentOf[current];
+      }
+    });
+
+    return { highlightedIds: matchedIds, ancestorIds: ancestors };
+  }, [hasActiveFilters, filteredContacts, contacts, centralContactId]);
+
   const handleSaveContact = async (data) => {
     await doSaveContact(data, editingContact?.id);
   };
