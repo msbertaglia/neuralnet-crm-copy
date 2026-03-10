@@ -11,6 +11,7 @@ const navItems = [
   { label: "Rede Visual", page: "Network", icon: Share2 },
   { label: "Projetos", page: "Projects", icon: FolderOpen },
   { label: "Dashboard", page: "Dashboard", icon: LayoutDashboard },
+  { label: "Importar DEX", page: "ImportContacts", icon: Upload },
 ];
 
 export default function Layout({ children, currentPageName }) {
