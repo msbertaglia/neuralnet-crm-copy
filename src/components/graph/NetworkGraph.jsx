@@ -396,11 +396,16 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
     const W = canvas.width;
     const H = canvas.height;
 
-    // Determine which node IDs are "dimmed" (not in highlighted set)
-    const isDimmed = (nodeContactId) => {
-      if (!highlightedIds) return false;
-      if (!nodeContactId) return false;
-      return !highlightedIds.has(nodeContactId);
+    // Determine node render state
+    // "highlight" = matches filter (full color)
+    // "ancestor"  = parent of a match (visible grey)
+    // "ghost"     = everything else when filters active
+    const getNodeState = (nodeContactId) => {
+      if (!highlightedIds) return "highlight";
+      if (!nodeContactId) return "highlight";
+      if (highlightedIds.has(nodeContactId)) return "highlight";
+      if (ancestorIds && ancestorIds.has(nodeContactId)) return "ancestor";
+      return "ghost";
     };
 
     ctx.clearRect(0, 0, W, H);
