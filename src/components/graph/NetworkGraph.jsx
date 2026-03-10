@@ -165,7 +165,18 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
      // Group children by parent so we can spread them around parent's angle
      for (let lvl = 1; lvl <= MAX_LEVEL; lvl++) {
        const group = contacts.filter(c => levelMap.get(c.id) === lvl);
-       const orbitR = ORBIT_RADII[lvl] || lvl * 180;
+       if (group.length === 0) continue;
+
+       // Node radius for this level
+       const nRadius = lvl === 1 ? 26 : lvl === 2 ? 21 : 17;
+       // Base orbit radius (minimum preset)
+       const baseR = BASE_ORBIT_RADII[lvl] || lvl * 180;
+       // Minimum radius needed to avoid overlap
+       const neededR = minOrbitRadius(group.length, nRadius);
+       // Previous level's orbit radius (to avoid nesting inside inner orbit)
+       const prevOrbitR = lvl === 1 ? 0 : (nodes.find(n => n.level === lvl - 1)?.orbitRadius || (BASE_ORBIT_RADII[lvl - 1] || (lvl - 1) * 180));
+       const minFromPrev = prevOrbitR + nRadius * 2 + 40;
+       const orbitR = Math.max(baseR, neededR, minFromPrev);
 
        // Group by parent
        const byParent = new Map();
