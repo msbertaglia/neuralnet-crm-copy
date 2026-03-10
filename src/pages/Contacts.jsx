@@ -215,7 +215,7 @@ export default function Contacts() {
 
         {/* Status tabs (row 1) */}
         <div className="flex gap-1 mt-3 flex-wrap border-b border-slate-800 pb-0">
-          <StatusTab label="Todos" count={contacts.length} active={statusFilter === "todos"} onClick={() => { setStatusFilter("todos"); setTagFilter("todas"); }} />
+          <StatusTab label="Todos" count={searchFiltered.length} active={statusFilter === "todos"} onClick={() => { setStatusFilter("todos"); setTagFilter("todas"); }} />
           {Object.entries(statusCounts).map(([s, count]) => (
             <StatusTab key={s} label={s} count={count} active={statusFilter === s} onClick={() => { setStatusFilter(s); setTagFilter("todas"); }} status={s} />
           ))}
