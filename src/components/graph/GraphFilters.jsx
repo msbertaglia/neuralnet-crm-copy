@@ -16,14 +16,33 @@ const STATUS_COLORS = {
 
 export default function GraphFilters({ filters, onChange, tags = [] }) {
   const [open, setOpen] = useState(false);
+  const [pending, setPending] = useState({ status: filters.status || "todos", tag: filters.tag || "todas" });
 
-  const status = filters.status || "todos";
-  const tag = filters.tag || "todas";
+  // Sync pending when filters change externally
+  const applied = filters;
+  const activeCount = (applied.status && applied.status !== "todos" ? 1 : 0) + (applied.tag && applied.tag !== "todas" ? 1 : 0);
 
-  const setStatus = (s) => onChange({ ...filters, status: s, tag: "todas" });
-  const setTag = (t) => onChange({ ...filters, tag: t });
+  const toggleStatus = (s) => {
+    setPending(prev => ({ ...prev, status: prev.status === s ? "todos" : s, tag: "todas" }));
+  };
 
-  const activeCount = (status !== "todos" ? 1 : 0) + (tag !== "todas" ? 1 : 0);
+  const toggleTag = (t) => {
+    setPending(prev => ({ ...prev, tag: prev.tag === t ? "todas" : t }));
+  };
+
+  const applyFilters = () => {
+    onChange(pending);
+    setOpen(false);
+  };
+
+  const clearFilters = () => {
+    const cleared = { status: "todos", tag: "todas" };
+    setPending(cleared);
+    onChange(cleared);
+  };
+
+  const status = pending.status || "todos";
+  const tag = pending.tag || "todas";
 
   return (
     <div className="relative">
