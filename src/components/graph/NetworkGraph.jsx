@@ -259,8 +259,15 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
         continue;
       }
 
-      // Pull towards target position on orbit
-      if (n.targetX !== undefined && n.targetY !== undefined) {
+      // Pull towards target position on orbit (slow return after drag)
+      if (n.returning && n.targetX !== undefined && n.targetY !== undefined) {
+        const dtx = n.targetX - n.x;
+        const dty = n.targetY - n.y;
+        const distToTarget = Math.sqrt(dtx * dtx + dty * dty);
+        n.vx += dtx * TARGET_STRENGTH * 0.4; // slow return speed
+        n.vy += dty * TARGET_STRENGTH * 0.4;
+        if (distToTarget < 2) n.returning = false;
+      } else if (!n.returning && n.targetX !== undefined && n.targetY !== undefined) {
         const dtx = n.targetX - n.x;
         const dty = n.targetY - n.y;
         n.vx += dtx * TARGET_STRENGTH;
