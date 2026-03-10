@@ -76,6 +76,7 @@ export default function GraphFilters({ filters, onChange, contacts = [] }) {
   };
 
   const pendingCount = (pending.statuses?.length || 0) + (pending.tags?.length || 0);
+  const pendingMatchCount = countMatchingContacts(pending.statuses || [], pending.tags || []);
 
   return (
     <div className="relative z-50">
