@@ -26,14 +26,7 @@ export default function Network() {
 
   const [showLogForm, setShowLogForm] = useState(false);
   const [search, setSearch] = useState("");
-  const [filters, setFilters] = useState({ status: "todos", tag: "todas" });
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const status = params.get("status") || "todos";
-    const tag = params.get("tag") || "todas";
-    setFilters(prev => ({ ...prev, status, tag }));
-  }, []);
+  const [filters, setFilters] = useState({ statuses: [], tags: [] });
 
   useEffect(() => {
     loadAll();
