@@ -437,21 +437,26 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
       const s = CONNECTION_STRENGTH[e.strength] || CONNECTION_STRENGTH.media;
       const isCenterEdge = e.isCenterEdge || src.isCenter || tgt.isCenter;
 
+      // Dim edge if both endpoints are dimmed
+      const srcDimmed = isDimmed(src.contactId);
+      const tgtDimmed = isDimmed(tgt.contactId);
+      const edgeDimmed = highlightedIds && srcDimmed && tgtDimmed;
+      const edgeFade = edgeDimmed ? 0.08 : 1;
+
       ctx.beginPath();
       ctx.moveTo(src.x, src.y);
       ctx.lineTo(tgt.x, tgt.y);
 
       if (e.isIntroduced) {
-        // Introduced: dashed, softer
-        ctx.strokeStyle = `rgba(148,163,184,${s.opacity * 0.7})`;
+        ctx.strokeStyle = `rgba(148,163,184,${s.opacity * 0.7 * edgeFade})`;
         ctx.lineWidth = s.width * 0.8;
         ctx.setLineDash([4, 6]);
       } else if (isCenterEdge) {
-        ctx.strokeStyle = `rgba(99,102,241,${s.opacity})`;
+        ctx.strokeStyle = `rgba(99,102,241,${s.opacity * edgeFade})`;
         ctx.lineWidth = s.width + 0.5;
         ctx.setLineDash([]);
       } else {
-        ctx.strokeStyle = `rgba(148,163,184,${s.opacity})`;
+        ctx.strokeStyle = `rgba(148,163,184,${s.opacity * edgeFade})`;
         ctx.lineWidth = s.width;
         ctx.setLineDash([]);
       }
