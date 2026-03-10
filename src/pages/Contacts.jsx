@@ -66,67 +66,6 @@ export default function Contacts() {
     setLoading(false);
   };
 
-  // Detect new implied connections that would be created for a contact
-  const detectImpliedConnections = (contactData, editingId, currentConnections, currentContacts) => {
-    // Only detect implicit connections if introduced_by is an actual contact ID
-    // Skip if "Direto" or "Sem informação" are selected
-    if (!contactData.introduced_by_id || contactData.introduced_by_id === "direto" || contactData.introduced_by_id === "sem_informacao") {
-      return [];
-    }
-
-    // Find all connections where this contact is an introducer
-    const asIntroducer = currentConnections.filter(c => c.introduced_by_id === editingId);
-    // Find all connections where this contact is involved and has an introducer
-    const asParty = currentConnections.filter(c =>
-      (c.contact_a_id === editingId || c.contact_b_id === editingId) && c.introduced_by_id && c.introduced_by_id !== "direto" && c.introduced_by_id !== "sem_informacao"
-    );
-    
-    const newImplied = [];
-    const usedPairs = new Set();
-
-    // For connections involving this contact with an introducer, check introducer↔otherParty
-    [...asIntroducer, ...asParty].forEach(conn => {
-      if (!conn.introduced_by_id || conn.introduced_by_id === "direto" || conn.introduced_by_id === "sem_informacao") return;
-      const intId = conn.introduced_by_id;
-      const intName = conn.introduced_by_name;
-      const pairs = [
-        { id: conn.contact_a_id, name: conn.contact_a_name },
-        { id: conn.contact_b_id, name: conn.contact_b_name },
-      ];
-      pairs.forEach(({ id: otherId, name: otherName }) => {
-        if (otherId === intId) return;
-        const pairKey = [intId, otherId].sort().join("|");
-        if (usedPairs.has(pairKey)) return;
-        const alreadyExists = currentConnections.find(c =>
-          (c.contact_a_id === intId && c.contact_b_id === otherId) ||
-          (c.contact_b_id === intId && c.contact_a_id === otherId)
-        );
-        if (!alreadyExists) {
-          usedPairs.add(pairKey);
-          newImplied.push({ contact_a_id: intId, contact_a_name: intName, contact_b_id: otherId, contact_b_name: otherName });
-        }
-      });
-    });
-
-    // If this contact has an introduced_by set with an actual contact
-    const intId = contactData.introduced_by_id;
-    const intName = contactData.introduced_by_name;
-    const contactId = editingId || "__new__";
-    const contactName = contactData.name;
-    const pairKey = [intId, contactId].sort().join("|");
-    if (!usedPairs.has(pairKey)) {
-      const alreadyExists = currentConnections.find(c =>
-        (c.contact_a_id === intId && c.contact_b_id === editingId) ||
-        (c.contact_b_id === intId && c.contact_a_id === editingId)
-      );
-      if (!alreadyExists && editingId) {
-        usedPairs.add(pairKey);
-        newImplied.push({ contact_a_id: intId, contact_a_name: intName, contact_b_id: editingId, contact_b_name: contactName });
-      }
-    }
-
-    return newImplied;
-  };
 
   const canEdit = user?.role === "admin" || user?.role === "editor";
 
