@@ -144,7 +144,7 @@ export default function ContactTable({ contacts, canEdit, onView, onEdit, onDele
                  checked={allSelected}
                  ref={el => { if (el) el.indeterminate = !allSelected && someSelected; }}
                  onChange={() => onToggleAll && onToggleAll(sorted)}
-                 className="accent-blue-500 w-4 h-4 cursor-pointer"
+                 className="w-4 h-4 cursor-pointer accent-blue-500 bg-slate-800 border border-slate-700 rounded checked:bg-blue-600 checked:border-blue-600"
                />
              </div>
              {/* Connection indicator header */}
