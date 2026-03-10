@@ -85,17 +85,23 @@ export default function StatusManagerModal({ contacts, onClose, onStatusesChange
             {statuses.map(s => {
               const count = contacts.filter(c => c.status === s.label).length;
               return (
-                <div key={s.id} className="flex items-center justify-between bg-slate-800 rounded-lg px-3 py-2.5">
-                  <span className="text-white text-sm font-medium capitalize">{s.label}</span>
-                  <div className="flex items-center gap-3">
-                    <span className="text-slate-400 text-sm">{count} contato{count !== 1 ? "s" : ""}</span>
-                    <button
-                      onClick={() => setConfirmDelete(s)}
-                      className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-slate-700 rounded-lg transition-colors"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
+                <div key={s.id} className="flex items-center gap-3 bg-slate-800 rounded-lg px-3 py-2.5">
+                  <input
+                    type="checkbox"
+                    checked={selected.has(s.id)}
+                    onChange={() => toggleSelect(s.id)}
+                    className="accent-blue-500 w-4 h-4 flex-shrink-0"
+                  />
+                  <span className={`text-xs font-semibold px-2.5 py-1 rounded border capitalize flex-shrink-0 ${STATUS_COLORS[s.label.toLowerCase()] || DEFAULT_COLOR}`}>
+                    {s.label}
+                  </span>
+                  <span className="text-slate-400 text-sm ml-auto">{count} contato{count !== 1 ? "s" : ""}</span>
+                  <button
+                    onClick={() => setConfirmDelete(s)}
+                    className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-slate-700 rounded-lg transition-colors flex-shrink-0"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               );
             })}
