@@ -75,7 +75,7 @@ export default function Dashboard() {
   }, [contacts, statusOptions]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white p-6">
+    <div className="h-screen bg-slate-950 text-white p-6 overflow-y-auto">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Header */}
         <div>
@@ -148,7 +148,7 @@ export default function Dashboard() {
                     <span className="text-slate-500">{s.count} ({s.pct}%)</span>
                   </div>
                   <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                    <div className="h-full rounded-full transition-all" style={{ width: `${s.pct}%`, background: s.color }} />
+                    <div className="h-full rounded-full transition-all" style={{ width: `${s.pct}%`, background: "#22c55e" }} />
                   </div>
                 </div>
               ))}
