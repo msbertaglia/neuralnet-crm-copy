@@ -219,7 +219,7 @@ export default function Contacts() {
   }, [contacts]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
+    <div className="h-full flex flex-col bg-slate-950 text-white overflow-hidden">
       {/* Header */}
       <div className="bg-slate-900 border-b border-slate-800 px-6 py-4">
         <div className="flex items-center justify-between gap-4">
