@@ -374,7 +374,7 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
         ctx.beginPath();
         ctx.arc(centerNode.x, centerNode.y, r, 0, 2 * Math.PI);
         ctx.strokeStyle = `rgba(99,102,241,${ringOpacity[Math.min(lvl, ringOpacity.length - 1)] || 0.03})`;
-        ctx.lineWidth = 0.6; // Very thin line
+        ctx.lineWidth = 0.6;
         ctx.stroke();
         ctx.fillStyle = "rgba(99,102,241,0.18)";
         ctx.font = "10px Inter, sans-serif";
