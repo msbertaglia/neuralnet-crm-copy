@@ -50,6 +50,7 @@ function TwitterIcon({ active }) {
   );
 }
 
+const CHECKBOX_WIDTH = 44;
 const CONNECTION_INDICATOR_WIDTH = 50;
 
 const COLUMNS = [
@@ -74,7 +75,7 @@ function SortIcon({ col, sortKey, sortDir }) {
     : <ChevronDown className="w-3 h-3 text-blue-400 ml-1 inline flex-shrink-0" />;
 }
 
-export default function ContactTable({ contacts, canEdit, onView, onEdit, onDelete }) {
+export default function ContactTable({ contacts, canEdit, onView, onEdit, onDelete, selectedIds, onToggleSelect, onToggleAll }) {
   const [sortKey, setSortKey] = useState("met_date");
   const [sortDir, setSortDir] = useState("asc");
 
@@ -125,7 +126,9 @@ export default function ContactTable({ contacts, canEdit, onView, onEdit, onDele
   }, [contacts, sortKey, sortDir]);
 
   const actionsWidth = canEdit ? 72 : 0;
-  const totalWidth = COLUMNS.reduce((acc, c) => acc + c.width, 0) + actionsWidth + CONNECTION_INDICATOR_WIDTH;
+  const allSelected = sorted.length > 0 && sorted.every(c => selectedIds?.has(c.id));
+  const someSelected = sorted.some(c => selectedIds?.has(c.id));
+  const totalWidth = COLUMNS.reduce((acc, c) => acc + c.width, 0) + actionsWidth + CONNECTION_INDICATOR_WIDTH + CHECKBOX_WIDTH;
 
   return (
     <div className="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
@@ -133,6 +136,16 @@ export default function ContactTable({ contacts, canEdit, onView, onEdit, onDele
         <div style={{ minWidth: totalWidth }}>
           {/* Header */}
           <div className="flex items-center border-b border-slate-800 bg-slate-900/80 sticky top-0 z-10">
+             {/* Checkbox all */}
+             <div style={{ width: CHECKBOX_WIDTH, minWidth: CHECKBOX_WIDTH }} className="flex-shrink-0 px-3 py-2.5 flex items-center justify-center">
+               <input
+                 type="checkbox"
+                 checked={allSelected}
+                 ref={el => { if (el) el.indeterminate = !allSelected && someSelected; }}
+                 onChange={() => onToggleAll && onToggleAll(sorted)}
+                 className="accent-blue-500 w-4 h-4 cursor-pointer"
+               />
+             </div>
              {/* Connection indicator header */}
              <div style={{ width: CONNECTION_INDICATOR_WIDTH, minWidth: CONNECTION_INDICATOR_WIDTH }} className="flex-shrink-0 px-3 py-2.5" title="Status da conexão">
                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Conexão</span>
@@ -166,6 +179,8 @@ export default function ContactTable({ contacts, canEdit, onView, onEdit, onDele
               canEdit={canEdit}
               actionsWidth={actionsWidth}
               isLast={i === sorted.length - 1}
+              isSelected={selectedIds?.has(contact.id)}
+              onToggleSelect={() => onToggleSelect && onToggleSelect(contact.id)}
               onView={() => onView(contact)}
               onEdit={() => onEdit(contact)}
               onDelete={() => onDelete(contact)}
@@ -180,7 +195,7 @@ export default function ContactTable({ contacts, canEdit, onView, onEdit, onDele
   );
 }
 
-function ContactRow({ contact, columns, canEdit, actionsWidth, isLast, onView, onEdit, onDelete }) {
+function ContactRow({ contact, columns, canEdit, actionsWidth, isLast, isSelected, onToggleSelect, onView, onEdit, onDelete }) {
   const ns = NEXT_STEP_STATUS_CONFIG[contact.next_step_status] || NEXT_STEP_STATUS_CONFIG.sem_proximo_passo;
   const NsIcon = ns.icon;
 
@@ -293,9 +308,23 @@ function ContactRow({ contact, columns, canEdit, actionsWidth, isLast, onView, o
 
   return (
     <div
-      className={`flex items-center hover:bg-slate-800/50 transition-colors cursor-pointer whitespace-nowrap ${!isLast ? "border-b border-slate-800" : ""}`}
+      className={`flex items-center hover:bg-slate-800/50 transition-colors cursor-pointer whitespace-nowrap ${!isLast ? "border-b border-slate-800" : ""} ${isSelected ? "bg-blue-500/5" : ""}`}
       onClick={onView}
     >
+      {/* Checkbox */}
+      <div
+        style={{ width: CHECKBOX_WIDTH, minWidth: CHECKBOX_WIDTH }}
+        className="flex-shrink-0 px-3 py-3 flex items-center justify-center"
+        onClick={e => { e.stopPropagation(); onToggleSelect(); }}
+      >
+        <input
+          type="checkbox"
+          checked={!!isSelected}
+          onChange={onToggleSelect}
+          className="accent-blue-500 w-4 h-4 cursor-pointer"
+          onClick={e => e.stopPropagation()}
+        />
+      </div>
       {/* Connection indicator */}
       <div
         style={{ width: CONNECTION_INDICATOR_WIDTH, minWidth: CONNECTION_INDICATOR_WIDTH }}
