@@ -134,35 +134,6 @@ export default function Dashboard() {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Contatos recentes */}
-          <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
-            <h2 className="text-white font-semibold mb-4 flex items-center gap-2">
-              <CalendarDays className="w-4 h-4 text-blue-400" />
-              Contatos Recentes
-            </h2>
-            <div className="space-y-2">
-              {recentContacts.map(c => (
-                <div key={c.id} className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold text-slate-300 flex-shrink-0 overflow-hidden">
-                    {c.photo_url
-                      ? <img src={c.photo_url} alt="" className="w-full h-full object-cover" />
-                      : c.name.split(" ").map(w => w[0]).slice(0,2).join("").toUpperCase()
-                    }
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-white text-sm truncate">{c.name}</p>
-                    {c.company && <p className="text-slate-500 text-xs truncate">{c.company}</p>}
-                  </div>
-                  <span className="text-slate-600 text-xs flex-shrink-0">{fmtDate(c.created_date)}</span>
-                </div>
-              ))}
-              {contacts.length === 0 && <p className="text-slate-500 text-sm">Nenhum contato ainda</p>}
-            </div>
-            <a href={createPageUrl("Contacts")} className="text-blue-400 text-xs hover:text-blue-300 mt-3 block">
-              Ver todos →
-            </a>
-          </div>
-
           {/* Distribuição de status */}
           <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
             <h2 className="text-white font-semibold mb-4 flex items-center gap-2">
@@ -209,6 +180,35 @@ export default function Dashboard() {
               </div>
             </div>
           )}
+        </div>
+
+        {/* Contatos recentes */}
+        <div className="bg-slate-900 border border-slate-800 rounded-xl p-5">
+          <h2 className="text-white font-semibold mb-4 flex items-center gap-2">
+            <CalendarDays className="w-4 h-4 text-blue-400" />
+            Contatos Recentes
+          </h2>
+          <div className="space-y-2">
+            {recentContacts.map(c => (
+              <div key={c.id} className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold text-slate-300 flex-shrink-0 overflow-hidden">
+                  {c.photo_url
+                    ? <img src={c.photo_url} alt="" className="w-full h-full object-cover" />
+                    : c.name.split(" ").map(w => w[0]).slice(0,2).join("").toUpperCase()
+                  }
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-white text-sm truncate">{c.name}</p>
+                  {c.company && <p className="text-slate-500 text-xs truncate">{c.company}</p>}
+                </div>
+                <span className="text-slate-600 text-xs flex-shrink-0">{fmtDate(c.created_date)}</span>
+              </div>
+            ))}
+            {contacts.length === 0 && <p className="text-slate-500 text-sm">Nenhum contato ainda</p>}
+          </div>
+          <a href={createPageUrl("Contacts")} className="text-blue-400 text-xs hover:text-blue-300 mt-3 block">
+            Ver todos →
+          </a>
         </div>
       </div>
     </div>
