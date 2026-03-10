@@ -364,11 +364,13 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
 
     const centerNode = nodesRef.current.find(n => n.isCenter);
 
-    // Orbit rings
+    // Orbit rings - use actual computed orbit radii from nodes
     if (centerNode) {
       const ringOpacity = [0, 0.15, 0.12, 0.10, 0.08, 0.06];
-      for (let lvl = 1; lvl <= MAX_LEVEL; lvl++) {
-        const r = ORBIT_RADII[lvl] || lvl * 180;
+      const levelsPresent = [...new Set(nodesRef.current.filter(n => !n.isCenter && n.orbitRadius).map(n => n.level))].sort((a,b)=>a-b);
+      for (const lvl of levelsPresent) {
+        const sample = nodesRef.current.find(n => n.level === lvl);
+        const r = sample?.orbitRadius || (BASE_ORBIT_RADII[lvl] || lvl * 180);
         ctx.beginPath();
         ctx.arc(centerNode.x, centerNode.y, r, 0, 2 * Math.PI);
         ctx.strokeStyle = `rgba(99,102,241,${ringOpacity[Math.min(lvl, ringOpacity.length - 1)] || 0.03})`;
