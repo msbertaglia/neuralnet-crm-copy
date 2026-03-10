@@ -479,11 +479,14 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
     const sorted = [...nodesRef.current].sort((a, b) => (a.isCenter ? 1 : 0) - (b.isCenter ? 1 : 0));
     sorted.forEach(n => {
       const isHovered = hoveredRef.current === n.id;
-      const dimmed = !n.isCenter && isDimmed(n.contactId);
+      const nodeState = n.isCenter ? "highlight" : getNodeState(n.contactId);
 
-      // Dimmed nodes: render ghost version and skip rest
-      if (dimmed) {
-        ctx.globalAlpha = 0.12;
+      // Parcial mode: skip ghost nodes entirely
+      if (filterMode === "parcial" && nodeState === "ghost") return;
+
+      // Ghost nodes (completo mode): render faded
+      if (nodeState === "ghost") {
+        ctx.globalAlpha = 0.10;
         ctx.beginPath();
         ctx.arc(n.x, n.y, n.radius, 0, 2 * Math.PI);
         ctx.fillStyle = "#1e293b";
@@ -491,7 +494,6 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
         ctx.strokeStyle = "#475569";
         ctx.lineWidth = 1;
         ctx.stroke();
-        // tiny initials
         const initials = n.label.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
         ctx.fillStyle = "#64748b";
         ctx.font = `${Math.round(n.radius * 0.45)}px Inter, sans-serif`;
@@ -499,6 +501,31 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
         ctx.textBaseline = "middle";
         ctx.fillText(initials, n.x, n.y);
         ctx.textBaseline = "alphabetic";
+        ctx.globalAlpha = 1;
+        return;
+      }
+
+      // Ancestor nodes: visible grey with label
+      if (nodeState === "ancestor") {
+        ctx.globalAlpha = 0.55;
+        ctx.beginPath();
+        ctx.arc(n.x, n.y, n.radius, 0, 2 * Math.PI);
+        ctx.fillStyle = "#1e293b";
+        ctx.fill();
+        ctx.strokeStyle = "#64748b";
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+        const initials = n.label.split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
+        ctx.fillStyle = "#94a3b8";
+        ctx.font = `bold ${Math.round(n.radius * 0.52)}px Inter, sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(initials, n.x, n.y);
+        ctx.textBaseline = "alphabetic";
+        ctx.fillStyle = "#64748b";
+        ctx.font = `${n.level >= 3 ? "9" : n.level === 2 ? "10" : "11"}px Inter, sans-serif`;
+        ctx.textAlign = "center";
+        ctx.fillText(n.label.split(" ").slice(0, 2).join(" "), n.x, n.y + n.radius + 14);
         ctx.globalAlpha = 1;
         return;
       }
