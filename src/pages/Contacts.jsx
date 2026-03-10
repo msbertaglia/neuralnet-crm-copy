@@ -3,6 +3,7 @@ import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
 import { Plus, Search, Building2, Clock, AlertCircle, Timer, CheckCircle2, Users, Pencil, Trash2, LayoutList, LayoutGrid, Share2, Tags } from "lucide-react";
 import StatusManagerModal from "@/components/contact/StatusManagerModal";
+import BulkStatusModal from "@/components/contact/BulkStatusModal";
 import ContactTable from "@/components/contact/ContactTable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -47,6 +48,8 @@ export default function Contacts() {
   const [deleteConfirm, setDeleteConfirm] = useState(null);
   const [connections, setConnections] = useState([]);
   const [showStatusManager, setShowStatusManager] = useState(false);
+  const [selectedIds, setSelectedIds] = useState(new Set());
+  const [showBulkStatus, setShowBulkStatus] = useState(false);
 
 
   useEffect(() => { loadAll(); }, []);
