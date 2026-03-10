@@ -125,8 +125,8 @@ export default function ContactForm({ contact, contacts, onSave, onClose }) {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="bg-slate-800 border-slate-700">
-                      {["prospect","desconhecidos","empresas","familia","profissional","outros"].map(s => (
-                        <SelectItem key={s} value={s} className="text-slate-200">{s}</SelectItem>
+                      {statusOptions.map(s => (
+                        <SelectItem key={s.id} value={s.label} className="text-slate-200">{s.label}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
