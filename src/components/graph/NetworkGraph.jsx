@@ -23,7 +23,7 @@ const CONNECTION_STRENGTH = {
   forte: { width: 3, opacity: 0.85 },
 };
 
-const BASE_ORBIT_RADII = [0, 280, 650, 1050, 1000, 1250]; // nivel 0, 1, 2, 3, 4, 5 (mínimos base)
+const BASE_ORBIT_RADII = [0, 280, 650, 1050, 1350, 1700]; // nivel 0, 1, 2, 3, 4, 5 (mínimos base)
 const MAX_LEVEL = 20; // Allow up to 20 levels of hierarchy
 const NODE_MIN_GAP = 18; // minimum pixel gap between node edges on same orbit
 
