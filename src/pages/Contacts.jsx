@@ -114,13 +114,6 @@ export default function Contacts() {
     await loadAll();
   };
 
-  const handleConfirmImplied = async () => {
-    if (!pendingSave) return;
-    setPendingSave(prev => ({ ...prev, saving: true }));
-    await doSaveContact(pendingSave.contactData, pendingSave.editingId);
-    setShowImpliedModal(false);
-    setPendingSave(null);
-  };
 
   const handleDelete = async (id) => {
     await base44.entities.Contact.delete(id);
