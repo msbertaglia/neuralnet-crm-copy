@@ -8,6 +8,7 @@ import TagManagerModal from "@/components/contact/TagManagerModal";
 import BulkTagsModal from "@/components/contact/BulkTagsModal";
 import BulkIndicadorModal from "@/components/contact/BulkIndicadorModal";
 import ContactTable from "@/components/contact/ContactTable";
+import ConnectionHelpModal from "@/components/contact/ConnectionHelpModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
