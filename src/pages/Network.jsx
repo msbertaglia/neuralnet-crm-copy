@@ -26,7 +26,7 @@ export default function Network() {
 
   const [showLogForm, setShowLogForm] = useState(false);
   const [search, setSearch] = useState("");
-  const [filters, setFilters] = useState({ statuses: [], tags: [] });
+  const [filters, setFilters] = useState({ statuses: [], tags: [], filterMode: "completo" });
 
   useEffect(() => {
     loadAll();
