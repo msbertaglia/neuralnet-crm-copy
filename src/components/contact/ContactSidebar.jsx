@@ -126,10 +126,10 @@ export default function ContactSidebar({ contact, onClose, onEdit, logs, documen
         {tab === "info" && (
           <>
             <Section title="Contato">
-              <InfoRow icon={<Mail className="w-3.5 h-3.5" />} label="Email" value={contact.email} link={contact.email ? `mailto:${contact.email}` : null} />
-              <InfoRow icon={<Phone className="w-3.5 h-3.5" />} label="Telefone" value={contact.phone} link={contact.phone ? `tel:${contact.phone}` : null} />
-              <InfoRow icon={<MapPin className="w-3.5 h-3.5" />} label="Cidade" value={[contact.city, contact.state, contact.country].filter(Boolean).join(", ")} />
-            </Section>
+               <InfoRow icon={<Mail className="w-3.5 h-3.5" />} label="Email" value={contact.email} link={contact.email ? `mailto:${contact.email}` : null} />
+               <InfoRow icon={<Phone className="w-3.5 h-3.5" />} label="Telefone" value={contact.phone ? formatPhoneNumber(contact.phone) : null} link={contact.phone ? `tel:${contact.phone.replace(/[^\d+]/g, "")}` : null} />
+               <InfoRow icon={<MapPin className="w-3.5 h-3.5" />} label="Cidade" value={[contact.city, contact.state, contact.country].filter(Boolean).join(", ")} />
+             </Section>
 
             <Section title="Redes Sociais">
               <InfoRow icon={<Linkedin className="w-3.5 h-3.5" />} label="LinkedIn" value={contact.linkedin_url ? "Ver perfil" : null} link={contact.linkedin_url} />
