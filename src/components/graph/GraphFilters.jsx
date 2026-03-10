@@ -86,7 +86,7 @@ export default function GraphFilters({ filters, onChange, tags = [] }) {
             <div className="flex flex-wrap gap-1.5">
               {/* Todos */}
               <button
-                onClick={() => setStatus("todos")}
+                onClick={() => toggleStatus("todos")}
                 className={`px-3 py-1 rounded-md text-xs font-semibold border transition-all ${
                   status === "todos"
                     ? "bg-slate-700/60 border-slate-400 text-white"
@@ -101,7 +101,7 @@ export default function GraphFilters({ filters, onChange, tags = [] }) {
                 return (
                   <button
                     key={s}
-                    onClick={() => setStatus(s)}
+                    onClick={() => toggleStatus(s)}
                     className={`px-3 py-1 rounded-md text-xs font-semibold border transition-all flex items-center gap-1.5 ${
                       isActive
                         ? colors.active
