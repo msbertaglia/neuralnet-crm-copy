@@ -64,7 +64,7 @@ export default function StatusManagerModal({ contacts, onClose, onStatusesChange
             <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : (
-          <div className="space-y-2 mb-4 max-h-64 overflow-y-auto">
+          <div className="space-y-2 mb-4 max-h-[60vh] overflow-y-auto">
             {statuses.map(s => {
               const count = contacts.filter(c => c.status === s.label).length;
               return (
