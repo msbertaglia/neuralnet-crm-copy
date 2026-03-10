@@ -116,7 +116,7 @@ export default function Network() {
   return (
     <div className="h-screen w-full bg-slate-950 flex flex-col">
       {/* Top bar */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-800 bg-slate-900/80 backdrop-blur-sm flex-shrink-0">
+      <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-800 bg-slate-900/80 backdrop-blur-sm flex-shrink-0 relative z-50">
         {/* Logo */}
         <div className="flex items-center gap-2 mr-2">
           <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
