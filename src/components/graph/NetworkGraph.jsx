@@ -132,36 +132,66 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
       contact: centerContact,
     });
 
-    // Level 1..MAX_LEVEL nodes
-    for (let lvl = 1; lvl <= MAX_LEVEL; lvl++) {
-      const group = contacts.filter(c => levelMap.get(c.id) === lvl);
-      const orbitR = ORBIT_RADII[lvl] || lvl * 180;
-      group.forEach((c, i) => {
-        // Distribute evenly on orbit
-        const angle = (2 * Math.PI * i) / (group.length || 1) - Math.PI / 2;
-        const x = W / 2 + orbitR * Math.cos(angle);
-        const y = H / 2 + orbitR * Math.sin(angle);
-        const existing = nodesRef.current.find(n => n.id === c.id);
-        nodes.push({
-          id: c.id,
-          contactId: c.id,
-          label: c.nickname || c.name,
-          company: c.company || "",
-          status: c.status || "prospect",
-          nextStepStatus: c.next_step_status || "sem_proximo_passo",
-          photoUrl: c.photo_url || null,
-          x: existing ? existing.x : x,
-          y: existing ? existing.y : y,
-          vx: 0, vy: 0,
-          radius: lvl === 1 ? 26 : lvl === 2 ? 21 : 17,
-          level: lvl,
-          orbitRadius: orbitR,
-          targetX: x,
-          targetY: y,
-          contact: c,
-        });
-      });
-    }
+    // Build parent lookup: contactId -> parentId
+     const parentOf = new Map();
+     contacts.forEach(c => {
+       if (!c.introduced_by_id || c.introduced_by_id === "sem_informacao") return;
+       const pid = c.introduced_by_id === "direto" ? centralContactId : c.introduced_by_id;
+       parentOf.set(c.id, pid);
+     });
+
+     // Helper: get angle of a node relative to canvas center
+     const getNodeAngle = (nodeId) => {
+       const n = nodesRef.current.find(nd => nd.id === nodeId || nd.contactId === nodeId);
+       if (!n) return -Math.PI / 2;
+       return Math.atan2(n.y - H / 2, n.x - W / 2);
+     };
+
+     // Level 1..MAX_LEVEL nodes
+     // Group children by parent so we can spread them around parent's angle
+     for (let lvl = 1; lvl <= MAX_LEVEL; lvl++) {
+       const group = contacts.filter(c => levelMap.get(c.id) === lvl);
+       const orbitR = ORBIT_RADII[lvl] || lvl * 180;
+
+       // Group by parent
+       const byParent = new Map();
+       group.forEach(c => {
+         const pid = parentOf.get(c.id) || "__center__";
+         if (!byParent.has(pid)) byParent.set(pid, []);
+         byParent.get(pid).push(c);
+       });
+
+       byParent.forEach((children, pid) => {
+         const parentAngle = getNodeAngle(pid === centralContactId ? "__center__" : pid);
+         const spread = Math.min(Math.PI * 0.8, (2 * Math.PI) / (group.length || 1) * children.length);
+         children.forEach((c, i) => {
+           const offset = children.length === 1 ? 0 : (i / (children.length - 1) - 0.5) * spread;
+           const angle = parentAngle + offset;
+           const x = W / 2 + orbitR * Math.cos(angle);
+           const y = H / 2 + orbitR * Math.sin(angle);
+           // Only reuse existing position if same level (avoid keeping wrong-orbit positions)
+           const existing = nodesRef.current.find(n => n.id === c.id && n.level === lvl);
+           nodes.push({
+             id: c.id,
+             contactId: c.id,
+             label: c.nickname || c.name,
+             company: c.company || "",
+             status: c.status || "prospect",
+             nextStepStatus: c.next_step_status || "sem_proximo_passo",
+             photoUrl: c.photo_url || null,
+             x: existing ? existing.x : x,
+             y: existing ? existing.y : y,
+             vx: 0, vy: 0,
+             radius: lvl === 1 ? 26 : lvl === 2 ? 21 : 17,
+             level: lvl,
+             orbitRadius: orbitR,
+             targetX: x,
+             targetY: y,
+             contact: c,
+           });
+         });
+       });
+     }
 
     const visibleIds = new Set(nodes.map(n => n.contactId || n.id));
     const edges = [];
