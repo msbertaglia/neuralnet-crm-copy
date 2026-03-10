@@ -104,6 +104,31 @@ export default function Contacts() {
     return list;
   }, [contacts, search, statusFilter, tagFilter, user?.email]);
 
+  const toggleSelect = (id) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const toggleAll = (contacts) => {
+    const allSelected = contacts.every(c => selectedIds.has(c.id));
+    if (allSelected) {
+      setSelectedIds(prev => {
+        const next = new Set(prev);
+        contacts.forEach(c => next.delete(c.id));
+        return next;
+      });
+    } else {
+      setSelectedIds(prev => {
+        const next = new Set(prev);
+        contacts.forEach(c => next.add(c.id));
+        return next;
+      });
+    }
+  };
+
   const handleSaveContact = async (data) => {
     await doSaveContact(data, editingContact?.id);
   };
