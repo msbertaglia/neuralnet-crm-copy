@@ -297,8 +297,23 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
       n.vy *= DAMPING;
       n.x += n.vx;
       n.y += n.vy;
-      n.x = Math.max(n.radius + 4, Math.min(W - n.radius - 4, n.x));
-      n.y = Math.max(n.radius + 4, Math.min(H - n.radius - 4, n.y));
+
+      // Hard-constrain non-center nodes to their orbit radius
+      if (!n.isCenter && centerNode && n.orbitRadius) {
+        const dcx = n.x - centerNode.x;
+        const dcy = n.y - centerNode.y;
+        const dist = Math.sqrt(dcx * dcx + dcy * dcy) || 1;
+        // Snap radial distance to orbitRadius
+        n.x = centerNode.x + (dcx / dist) * n.orbitRadius;
+        n.y = centerNode.y + (dcy / dist) * n.orbitRadius;
+        // Remove radial velocity component
+        const radialVel = n.vx * (dcx / dist) + n.vy * (dcy / dist);
+        n.vx -= radialVel * (dcx / dist);
+        n.vy -= radialVel * (dcy / dist);
+      } else {
+        n.x = Math.max(n.radius + 4, Math.min(W - n.radius - 4, n.x));
+        n.y = Math.max(n.radius + 4, Math.min(H - n.radius - 4, n.y));
+      }
     });
   }, []);
 
