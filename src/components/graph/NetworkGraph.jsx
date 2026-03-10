@@ -307,8 +307,8 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
       n.x += n.vx;
       n.y += n.vy;
 
-      // Hard-constrain non-center nodes to their orbit radius
-      if (!n.isCenter && centerNode && n.orbitRadius) {
+      // Hard-constrain non-center nodes to their orbit radius (skip while returning, orbit force handles it)
+      if (!n.isCenter && !n.returning && centerNode && n.orbitRadius) {
         const dcx = n.x - centerNode.x;
         const dcy = n.y - centerNode.y;
         const dist = Math.sqrt(dcx * dcx + dcy * dcy) || 1;
