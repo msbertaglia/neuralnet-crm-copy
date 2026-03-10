@@ -58,7 +58,7 @@ const COLUMNS = [
   { key: "name", label: "Nome", width: 280, type: "alpha" },
   { key: "status", label: "Status", width: 120, type: "alpha" },
   { key: "nickname", label: "Apelido", width: 160, type: "alpha" },
-  { key: "tags", label: "Tags", width: 220, type: "alpha" },
+  { key: "tags", label: "Tags", width: 350, type: "alpha" },
   { key: "company", label: "Empresa", width: 200, type: "alpha" },
   { key: "social", label: "Redes Sociais", width: 120, sortable: false },
   { key: "met_date", label: "Relacionamento", width: 200, type: "date" },
@@ -240,9 +240,9 @@ function ContactRow({ contact, columns, canEdit, actionsWidth, isLast, isSelecte
         return <span className="text-slate-300 text-sm whitespace-nowrap">{contact.nickname || <span className="text-slate-700">—</span>}</span>;
       case "tags":
         return contact.tags?.length
-          ? <div className="flex gap-1 flex-wrap">
+          ? <div className="flex gap-1 flex-nowrap overflow-hidden">
               {contact.tags.map(t => (
-                <span key={t} className="bg-slate-700 text-slate-300 text-xs px-1.5 py-0.5 rounded whitespace-nowrap">{t}</span>
+                <span key={t} className="bg-slate-700 text-slate-300 text-xs px-1.5 py-0.5 rounded whitespace-nowrap flex-shrink-0" title={t}>{t}</span>
               ))}
             </div>
           : <span className="text-slate-700">—</span>;
