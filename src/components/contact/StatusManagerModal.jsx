@@ -4,6 +4,16 @@ import { X, Plus, Trash2, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+const STATUS_COLORS = {
+  prospect:      "bg-amber-500/20 text-amber-300 border-amber-500/40",
+  desconhecidos: "bg-slate-500/20 text-slate-300 border-slate-500/40",
+  empresas:      "bg-blue-500/20 text-blue-300 border-blue-500/40",
+  familia:       "bg-pink-500/20 text-pink-300 border-pink-500/40",
+  profissional:  "bg-green-500/20 text-green-300 border-green-500/40",
+  outros:        "bg-purple-500/20 text-purple-300 border-purple-500/40",
+};
+const DEFAULT_COLOR = "bg-cyan-500/20 text-cyan-300 border-cyan-500/40";
+
 const DEFAULT_STATUSES = [
   { label: "prospect" },
   { label: "desconhecidos" },
