@@ -27,7 +27,14 @@ export default function StatusManagerModal({ contacts, onClose, onStatusesChange
   const [statuses, setStatuses] = useState([]);
   const [newLabel, setNewLabel] = useState("");
   const [loading, setLoading] = useState(true);
-  const [confirmDelete, setConfirmDelete] = useState(null); // status object to delete
+  const [confirmDelete, setConfirmDelete] = useState(null);
+  const [selected, setSelected] = useState(new Set());
+
+  const toggleSelect = (id) => setSelected(prev => {
+    const next = new Set(prev);
+    next.has(id) ? next.delete(id) : next.add(id);
+    return next;
+  });
 
   useEffect(() => { loadStatuses(); }, []);
 
