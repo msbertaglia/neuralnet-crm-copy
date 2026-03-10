@@ -83,7 +83,7 @@ export default function BulkStatusModal({ selectedContacts, onClose, onDone }) {
             disabled={!selectedStatus || loading}
             className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50"
           >
-            {loading ? "Migrando..." : `Migrar ${count} contato${count !== 1 ? "s" : ""} para "${selectedStatus || "..."}"`}
+            {loading ? "Migrando..." : `Migrar ${count} contato${count !== 1 ? "s" : ""} para "${selectedStatus?.label || "..."}"`}
           </Button>
         </div>
       </div>
