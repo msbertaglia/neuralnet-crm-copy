@@ -1,5 +1,5 @@
 /**
- * Formata um número de telefone para o padrão mundial: +xx xx xxxxx-xxxx
+ * Formata um número de telefone para o padrão mundial: +xx (xx) xxxx-xxxx
  * @param {string} phone - Número de telefone sem formatação (apenas números e +)
  * @returns {string} Número formatado ou string vazia se inválido
  */
@@ -32,21 +32,20 @@ export function formatPhoneNumber(phone) {
   const countryCode = match[1];
   const number = match[2];
   
-  // Formata conforme o comprimento: +xx xx xxxxx-xxxx
-  // Se o número tem 9 dígitos (sem o 9º), formata como +xx xxxxxxxxx
+  // Formata conforme o comprimento: +xx (xx) xxxx-xxxx
+  // Se o número tem menos de 9 dígitos, retorna com formatação básica
   if (number.length <= 9) {
     // Formato genérico: +xx seguido dos dígitos
-    const spaced = number.slice(0, 2) + " " + number.slice(2);
-    return "+" + countryCode + " " + spaced.trim();
+    return "+" + countryCode + " " + number;
   }
   
-  // Formato padrão: +xx xx xxxxx-xxxx
-  // Toma os 2 primeiros dígitos, depois 5, depois o resto
-  const part1 = number.slice(0, 2);
-  const part2 = number.slice(2, 7);
-  const part3 = number.slice(7, 11);
+  // Formato padrão: +xx (xx) xxxx-xxxx
+  // Toma os 2 primeiros dígitos (área), depois 4, depois o resto
+  const areaCode = number.slice(0, 2);
+  const part1 = number.slice(2, 6);
+  const part2 = number.slice(6, 10);
   
-  return `+${countryCode} ${part1} ${part2}-${part3}`;
+  return `+${countryCode} (${areaCode}) ${part1}-${part2}`;
 }
 
 /**
