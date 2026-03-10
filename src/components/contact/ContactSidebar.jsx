@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { formatPhoneNumber } from "@/components/lib/phoneFormatter";
 
 const STATUS_COLORS = {
   ativo: "bg-green-500/20 text-green-400 border-green-500/30",
