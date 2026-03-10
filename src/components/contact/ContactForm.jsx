@@ -146,7 +146,7 @@ export default function ContactForm({ contact, contacts, onSave, onClose }) {
                      value={form.phone} 
                      onChange={e => set("phone", e.target.value)}
                      onBlur={e => set("phone", formatPhoneNumber(e.target.value))}
-                     placeholder="+xx xx xxxxx-xxxx"
+                     placeholder="+xx (xx) xxxx-xxxx"
                      className="bg-slate-800 border-slate-600 text-white" 
                    />
                  </Field>
