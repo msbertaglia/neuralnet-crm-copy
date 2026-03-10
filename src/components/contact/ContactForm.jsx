@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { base44 } from "@/api/base44Client";
+import { formatPhoneNumber, cleanPhoneNumber } from "@/components/lib/phoneFormatter";
 
 const TABS = ["Básico", "Empresa", "Redes", "Relacionamento", "Próximo Passo"];
 
