@@ -147,6 +147,17 @@ export default function GraphFilters({ filters, onChange, tags = [] }) {
               </div>
             </div>
           )}
+
+          {/* Footer */}
+          <div className="px-4 py-3 border-t border-slate-800">
+            <Button
+              size="sm"
+              onClick={applyFilters}
+              className="w-full bg-blue-600 hover:bg-blue-500 text-white"
+            >
+              Filtrar
+            </Button>
+          </div>
         </div>
       )}
     </div>
