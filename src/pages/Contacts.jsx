@@ -285,15 +285,6 @@ export default function Contacts() {
         />
       )}
 
-      {showImpliedModal && pendingSave && (
-        <ImpliedConnectionsModal
-          newImplied={pendingSave.newImplied}
-          updatedConnections={[]}
-          onConfirm={handleConfirmImplied}
-          onCancel={() => { setShowImpliedModal(false); setPendingSave(null); }}
-          saving={pendingSave.saving}
-        />
-      )}
 
       {deleteConfirm && (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
