@@ -550,55 +550,74 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
   }, [loop]);
 
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    let clickTimeout = null;
+     const canvas = canvasRef.current;
+     if (!canvas) return;
+     let lastClickTime = 0;
 
-    const onMouseDown = (e) => {
-      const node = getNodeAtPos(e.clientX, e.clientY);
-      if (node) {
-        dragRef.current = node;
-      } else {
-        isPanningRef.current = true;
-        panStartRef.current = { x: e.clientX - transformRef.current.x, y: e.clientY - transformRef.current.y };
-      }
-    };
+     const onMouseDown = (e) => {
+       const node = getNodeAtPos(e.clientX, e.clientY);
+       if (node) {
+         dragRef.current = node;
+         dragMovedRef.current = false;
+         // Cancel any pending return
+         if (returnTimerRef.current) {
+           clearTimeout(returnTimerRef.current);
+           returnTimerRef.current = null;
+         }
+         node.returning = false;
+       } else {
+         isPanningRef.current = true;
+         panStartRef.current = { x: e.clientX - transformRef.current.x, y: e.clientY - transformRef.current.y };
+       }
+     };
 
-    const onMouseMove = (e) => {
-      const node = getNodeAtPos(e.clientX, e.clientY);
-      hoveredRef.current = node ? node.id : null;
-      canvas.style.cursor = node ? "pointer" : (isPanningRef.current ? "grabbing" : "grab");
-      if (dragRef.current) {
-        const rect = canvas.getBoundingClientRect();
-        const { x: tx, y: ty, scale } = transformRef.current;
-        dragRef.current.x = (e.clientX - rect.left - tx) / scale;
-        dragRef.current.y = (e.clientY - rect.top - ty) / scale;
-        dragRef.current.vx = 0;
-        dragRef.current.vy = 0;
-      } else if (isPanningRef.current && panStartRef.current) {
-        transformRef.current.x = e.clientX - panStartRef.current.x;
-        transformRef.current.y = e.clientY - panStartRef.current.y;
-      }
-    };
+     const onMouseMove = (e) => {
+       const node = getNodeAtPos(e.clientX, e.clientY);
+       hoveredRef.current = node ? node.id : null;
+       canvas.style.cursor = node ? "pointer" : (isPanningRef.current ? "grabbing" : "grab");
+       if (dragRef.current) {
+         dragMovedRef.current = true;
+         const rect = canvas.getBoundingClientRect();
+         const { x: tx, y: ty, scale } = transformRef.current;
+         dragRef.current.x = (e.clientX - rect.left - tx) / scale;
+         dragRef.current.y = (e.clientY - rect.top - ty) / scale;
+         dragRef.current.vx = 0;
+         dragRef.current.vy = 0;
+       } else if (isPanningRef.current && panStartRef.current) {
+         transformRef.current.x = e.clientX - panStartRef.current.x;
+         transformRef.current.y = e.clientY - panStartRef.current.y;
+       }
+     };
 
-    const onMouseUp = (e) => {
-      if (dragRef.current) {
-        const node = dragRef.current;
-        dragRef.current = null;
-        if (clickTimeout) {
-          clearTimeout(clickTimeout);
-          clickTimeout = null;
-          if (onNodeDoubleClick) onNodeDoubleClick(node.contact);
-        } else {
-          clickTimeout = setTimeout(() => {
-            clickTimeout = null;
-            if (onNodeClick && !node.isCenter) onNodeClick(node.contact);
-          }, 250);
-        }
-      }
-      isPanningRef.current = false;
-      panStartRef.current = null;
-    };
+     const onMouseUp = (e) => {
+       if (dragRef.current) {
+         const node = dragRef.current;
+         const moved = dragMovedRef.current;
+         dragRef.current = null;
+         dragMovedRef.current = false;
+
+         if (!moved) {
+           // It was a click - check for double click
+           const now = Date.now();
+           if (now - lastClickTime < 350) {
+             // Double click → open ficha
+             lastClickTime = 0;
+             if (onNodeDoubleClick) onNodeDoubleClick(node.contact);
+             else if (onNodeClick && !node.isCenter) onNodeClick(node.contact);
+           } else {
+             lastClickTime = now;
+           }
+         } else {
+           // Was dragged - wait 1s then return to orbit
+           returnTimerRef.current = setTimeout(() => {
+             returnTimerRef.current = null;
+             node.returning = true;
+           }, 1000);
+         }
+       }
+       isPanningRef.current = false;
+       panStartRef.current = null;
+     };
 
     const onWheel = (e) => {
       e.preventDefault();
