@@ -4,6 +4,8 @@ import { createPageUrl } from "@/utils";
 import { Plus, Search, Building2, Clock, AlertCircle, Timer, CheckCircle2, Users, Pencil, Trash2, LayoutList, LayoutGrid, Share2, Tags } from "lucide-react";
 import StatusManagerModal from "@/components/contact/StatusManagerModal";
 import BulkStatusModal from "@/components/contact/BulkStatusModal";
+import TagManagerModal from "@/components/contact/TagManagerModal";
+import BulkTagsModal from "@/components/contact/BulkTagsModal";
 import ContactTable from "@/components/contact/ContactTable";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -50,6 +52,8 @@ export default function Contacts() {
   const [showStatusManager, setShowStatusManager] = useState(false);
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [showBulkStatus, setShowBulkStatus] = useState(false);
+  const [showTagManager, setShowTagManager] = useState(false);
+  const [showBulkTags, setShowBulkTags] = useState(false);
 
 
   useEffect(() => { loadAll(); }, []);
@@ -209,18 +213,32 @@ export default function Contacts() {
               />
             </div>
             {selectedIds.size > 0 && (
-              <button
-                onClick={() => setShowBulkStatus(true)}
-                className="px-3 h-9 flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-colors text-sm font-medium"
-              >
-                <Tags className="w-4 h-4" /> Status ({selectedIds.size})
-              </button>
+              <>
+                <button
+                  onClick={() => setShowBulkStatus(true)}
+                  className="px-3 h-9 flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-colors text-sm font-medium"
+                >
+                  <Tags className="w-4 h-4" /> Status ({selectedIds.size})
+                </button>
+                <button
+                  onClick={() => setShowBulkTags(true)}
+                  className="px-3 h-9 flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors text-sm font-medium"
+                >
+                  <Tags className="w-4 h-4" /> Tags ({selectedIds.size})
+                </button>
+              </>
             )}
             <button
               onClick={() => setShowStatusManager(true)}
               className="px-3 h-9 flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded-lg transition-colors text-sm font-medium"
             >
               <Tags className="w-4 h-4" /> Status
+            </button>
+            <button
+              onClick={() => setShowTagManager(true)}
+              className="px-3 h-9 flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded-lg transition-colors text-sm font-medium"
+            >
+              <Tags className="w-4 h-4" /> Tags
             </button>
             <a
               href={createPageUrl(`Network?status=${statusFilter}&tag=${tagFilter}`)}
@@ -361,6 +379,23 @@ export default function Contacts() {
           contacts={contacts}
           onClose={() => setShowStatusManager(false)}
           onStatusesChanged={loadAll}
+        />
+      )}
+
+      {showTagManager && (
+        <TagManagerModal
+          contacts={contacts}
+          onClose={() => setShowTagManager(false)}
+          onTagsChanged={loadAll}
+        />
+      )}
+
+      {showBulkTags && (
+        <BulkTagsModal
+          selectedContacts={contacts.filter(c => selectedIds.has(c.id))}
+          allContacts={contacts}
+          onClose={() => setShowBulkTags(false)}
+          onDone={() => { setShowBulkTags(false); setSelectedIds(new Set()); loadAll(); }}
         />
       )}
 
