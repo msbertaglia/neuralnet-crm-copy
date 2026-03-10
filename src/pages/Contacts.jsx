@@ -277,11 +277,22 @@ export default function Contacts() {
         </div>
 
         {/* Status tabs (row 1) */}
-        <div className="flex gap-1 mt-3 flex-wrap border-b border-slate-800 pb-0">
-          <StatusTab label="Todos" count={searchFiltered.length} active={statusFilter === "todos"} onClick={() => { setStatusFilter("todos"); setTagFilter("todas"); }} />
-          {Object.entries(statusCounts).map(([s, count]) => (
-            <StatusTab key={s} label={s} count={count} active={statusFilter === s} onClick={() => { setStatusFilter(s); setTagFilter("todas"); }} status={s} />
-          ))}
+        <div className="flex gap-1 mt-3 flex-wrap border-b border-slate-800 pb-0 items-center">
+          <div className="flex gap-1 flex-wrap">
+            <StatusTab label="Todos" count={searchFiltered.length} active={statusFilter === "todos"} onClick={() => { setStatusFilter("todos"); setTagFilter("todas"); }} />
+            {Object.entries(statusCounts).map(([s, count]) => (
+              <StatusTab key={s} label={s} count={count} active={statusFilter === s} onClick={() => { setStatusFilter(s); setTagFilter("todas"); }} status={s} />
+            ))}
+          </div>
+          <div className="ml-auto">
+            <button
+              onClick={() => setShowConnectionHelp(true)}
+              title="Ver índice de cores"
+              className="p-1.5 text-slate-500 hover:text-blue-400 hover:bg-slate-800 rounded-lg transition-colors flex items-center justify-center"
+            >
+              <Info className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* Tag sub-tabs (row 2) */}
