@@ -95,6 +95,8 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
   const isPanningRef = useRef(false);
   const panStartRef = useRef(null);
   const hoveredRef = useRef(null);
+  const dragMovedRef = useRef(false); // track if mouse actually moved while dragging
+  const returnTimerRef = useRef(null); // timer before snapping back
 
   const buildGraph = useCallback(() => {
     const canvas = canvasRef.current;
