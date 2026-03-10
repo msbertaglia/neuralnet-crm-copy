@@ -78,13 +78,15 @@ export default function ContactSidebar({ contact, onClose, onEdit, logs, documen
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2 mt-3">
-          <Badge className={`text-xs border ${STATUS_COLORS[contact.status] || STATUS_COLORS.prospect}`}>
+        <div className="flex flex-col gap-2 mt-3">
+          <Badge className={`text-xs border w-fit ${STATUS_COLORS[contact.status] || STATUS_COLORS.prospect}`}>
             {contact.status}
           </Badge>
-          {contact.tags?.map(t => (
-            <Badge key={t} variant="outline" className="text-xs border-slate-600 text-slate-400">{t}</Badge>
-          ))}
+          <div className="flex flex-col gap-2">
+            {contact.tags?.map(t => (
+              <Badge key={t} variant="outline" className="text-xs border-slate-600 text-slate-400 w-fit whitespace-nowrap">{t}</Badge>
+            ))}
+          </div>
         </div>
 
         {/* Next step */}
