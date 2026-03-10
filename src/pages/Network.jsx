@@ -63,6 +63,15 @@ export default function Network() {
 
   const canEdit = user?.role === "admin" || user?.role === "editor";
 
+  const availableTags = useMemo(() => {
+    const tagSet = new Set();
+    const baseList = (filters.status && filters.status !== "todos")
+      ? contacts.filter(c => c.status === filters.status)
+      : contacts;
+    baseList.forEach(c => (c.tags || []).forEach(t => tagSet.add(t)));
+    return Array.from(tagSet).sort();
+  }, [contacts, filters.status]);
+
   const filteredContacts = useMemo(() => {
     let list = contacts;
     if (search) {
@@ -74,25 +83,10 @@ export default function Network() {
         c.tags?.some(t => t.toLowerCase().includes(s))
       );
     }
-    // Apply status filter from URL or GraphFilters
-    if (urlStatus !== "todos") {
-      list = list.filter(c => c.status === urlStatus);
-    }
-    if (filters.statuses?.length) list = list.filter(c => filters.statuses.includes(c.status));
-    // Apply tag filter from URL
-    if (urlTag !== "todas") {
-      list = list.filter(c => (c.tags || []).includes(urlTag));
-    }
-    if (filters.nextSteps?.length) list = list.filter(c => filters.nextSteps.includes(c.next_step_status));
-    if (filters.projectIds?.length) {
-      const projectContacts = new Set();
-      projects.filter(p => filters.projectIds.includes(p.id)).forEach(p => {
-        p.contact_ids?.forEach(id => projectContacts.add(id));
-      });
-      list = list.filter(c => projectContacts.has(c.id));
-    }
+    if (filters.status && filters.status !== "todos") list = list.filter(c => c.status === filters.status);
+    if (filters.tag && filters.tag !== "todas") list = list.filter(c => (c.tags || []).includes(filters.tag));
     return list;
-  }, [contacts, search, filters, projects, urlStatus, urlTag]);
+  }, [contacts, search, filters]);
 
   const filteredConnections = useMemo(() => {
     const ids = new Set(filteredContacts.map(c => c.id));
