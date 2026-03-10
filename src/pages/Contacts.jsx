@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { base44 } from "@/api/base44Client";
 import { createPageUrl } from "@/utils";
-import { Plus, Search, Building2, Clock, AlertCircle, Timer, CheckCircle2, Users, Pencil, Trash2, LayoutList, LayoutGrid, Share2, Tags, Link2 } from "lucide-react";
+import { Plus, Search, Building2, Clock, AlertCircle, Timer, CheckCircle2, Users, Pencil, Trash2, LayoutList, LayoutGrid, Tags, Link2 } from "lucide-react";
 import StatusManagerModal from "@/components/contact/StatusManagerModal";
 import BulkStatusModal from "@/components/contact/BulkStatusModal";
 import TagManagerModal from "@/components/contact/TagManagerModal";
