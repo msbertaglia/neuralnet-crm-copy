@@ -56,6 +56,7 @@ export default function Contacts() {
   const [showTagManager, setShowTagManager] = useState(false);
   const [showBulkTags, setShowBulkTags] = useState(false);
   const [showBulkIndicador, setShowBulkIndicador] = useState(false);
+  const [showConnectionHelp, setShowConnectionHelp] = useState(false);
 
 
   useEffect(() => { loadAll(); }, []);
