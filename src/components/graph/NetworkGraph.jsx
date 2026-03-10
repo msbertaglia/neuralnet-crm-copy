@@ -187,8 +187,6 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
          return angA - angB;
        });
 
-       // Minimum angular gap between nodes to avoid overlap
-       const minAngGap = (2 * nRadius + NODE_MIN_GAP) / orbitR; // radians
        const totalCount = sortedGroup.length;
        // Evenly space all nodes around full circle, starting from parent-sorted order
        sortedGroup.forEach((c, i) => {
