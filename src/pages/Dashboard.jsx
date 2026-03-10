@@ -151,21 +151,24 @@ export default function Dashboard() {
                 { key: "parceiro", label: "Parceiro", color: "#3b82f6" },
                 { key: "investidor", label: "Investidor", color: "#ec4899" },
                 { key: "inativo", label: "Inativo", color: "#94a3b8" },
-              ].map(s => {
-                const count = contacts.filter(c => c.status === s.key).length;
-                const pct = contacts.length ? Math.round((count / contacts.length) * 100) : 0;
-                return (
+              ]
+                .map(s => {
+                  const count = contacts.filter(c => c.status === s.key).length;
+                  const pct = contacts.length ? Math.round((count / contacts.length) * 100) : 0;
+                  return { ...s, count, pct };
+                })
+                .sort((a, b) => b.pct - a.pct)
+                .map(s => (
                   <div key={s.key}>
                     <div className="flex justify-between text-xs mb-1">
                       <span className="text-slate-300">{s.label}</span>
-                      <span className="text-slate-500">{count} ({pct}%)</span>
+                      <span className="text-slate-500">{s.count} ({s.pct}%)</span>
                     </div>
                     <div className="h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                      <div className="h-full rounded-full transition-all" style={{ width: `${pct}%`, background: s.color }} />
+                      <div className="h-full rounded-full transition-all" style={{ width: `${s.pct}%`, background: s.color }} />
                     </div>
                   </div>
-                );
-              })}
+                ))}
             </div>
           </div>
         </div>
