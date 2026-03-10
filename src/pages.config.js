@@ -53,6 +53,7 @@ import Dashboard from './pages/Dashboard';
 import Network from './pages/Network';
 import Profile from './pages/Profile';
 import Projects from './pages/Projects';
+import ImportContacts from './pages/ImportContacts';
 import __Layout from './Layout.jsx';
 
 
@@ -63,6 +64,7 @@ export const PAGES = {
     "Network": Network,
     "Profile": Profile,
     "Projects": Projects,
+    "ImportContacts": ImportContacts,
 }
 
 export const pagesConfig = {
