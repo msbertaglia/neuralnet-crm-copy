@@ -55,7 +55,7 @@ export default function BulkStatusModal({ selectedContacts, onClose, onDone }) {
                 type="checkbox"
                 checked={selectedStatus?.id === s.id}
                 onChange={() => setSelectedStatus(prev => prev?.id === s.id ? null : s)}
-                className="accent-blue-500 w-4 h-4 flex-shrink-0"
+                className="accent-blue-500 w-4 h-4 flex-shrink-0 bg-slate-700 border border-slate-600 rounded cursor-pointer"
               />
               <span className={`text-xs font-semibold px-2.5 py-1 rounded border capitalize flex-shrink-0 ${STATUS_COLORS[s.label.toLowerCase()] || DEFAULT_COLOR}`}>
                 {s.label}
