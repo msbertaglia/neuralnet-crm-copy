@@ -180,6 +180,12 @@ export default function Contacts() {
                 className="pl-9 h-9 bg-slate-800 border-slate-700 text-slate-200 text-sm w-48"
               />
             </div>
+            <button
+              onClick={() => setShowStatusManager(true)}
+              className="px-3 h-9 flex items-center gap-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 rounded-lg transition-colors text-sm font-medium"
+            >
+              <Tags className="w-4 h-4" /> Status
+            </button>
             <a
               href={createPageUrl(`Network?status=${statusFilter}&tag=${tagFilter}`)}
               className="px-3 h-9 flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium"
