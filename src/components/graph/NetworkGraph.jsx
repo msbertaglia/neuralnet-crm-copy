@@ -55,24 +55,30 @@ function computeOrbits(centralContactId, contacts) {
 
   levels.set(centralContactId, 0);
 
+  // Build a map: contactId -> introducerId (direct parent)
+  const parentOf = new Map();
+  contacts.forEach(contact => {
+   if (!contact.introduced_by_id || contact.introduced_by_id === "sem_informacao") {
+     return; // Skip contacts with no introducer
+   }
+
+   let introducerId = contact.introduced_by_id;
+
+   // If "direto", treat as directly linked to central contact
+   if (contact.introduced_by_id === "direto") {
+     introducerId = centralContactId;
+   }
+
+   parentOf.set(contact.id, introducerId);
+  });
+
   // Build a map of introducer -> contacts they introduced
   const introducedMap = new Map();
-  contacts.forEach(contact => {
-    if (!contact.introduced_by_id || contact.introduced_by_id === "sem_informacao") {
-      return; // Skip contacts with no introducer or empty introducer
-    }
-    
-    let introducerId = contact.introduced_by_id;
-    
-    // If "direto", treat as directly linked to central contact
-    if (contact.introduced_by_id === "direto") {
-      introducerId = centralContactId;
-    }
-    
-    if (!introducedMap.has(introducerId)) {
-      introducedMap.set(introducerId, []);
-    }
-    introducedMap.get(introducerId).push(contact.id);
+  parentOf.forEach((parentId, contactId) => {
+   if (!introducedMap.has(parentId)) {
+     introducedMap.set(parentId, []);
+   }
+   introducedMap.get(parentId).push(contactId);
   });
 
   // BFS to assign levels based on introducer hierarchy
@@ -80,24 +86,24 @@ function computeOrbits(centralContactId, contacts) {
   const visited = new Set([centralContactId]);
 
   while (queue.length > 0) {
-    const current = queue.shift();
-    const currentLevel = levels.get(current);
-    
-    // Get all contacts introduced by current contact
-    const introduced = introducedMap.get(current) || [];
-    introduced.forEach(contactId => {
-      if (!visited.has(contactId) && currentLevel < MAX_LEVEL) {
-        levels.set(contactId, currentLevel + 1);
-        visited.add(contactId);
-        queue.push(contactId);
-      }
-    });
+   const current = queue.shift();
+   const currentLevel = levels.get(current);
+
+   // Get all contacts introduced by current contact
+   const introduced = introducedMap.get(current) || [];
+   introduced.forEach(contactId => {
+     if (!visited.has(contactId) && currentLevel < MAX_LEVEL) {
+       levels.set(contactId, currentLevel + 1);
+       visited.add(contactId);
+       queue.push(contactId);
+     }
+   });
   }
 
   return levels;
 }
 
-export default function NetworkGraph({ contacts, connections = [], onNodeClick, onNodeDoubleClick, centralContactId, highlightedIds, ancestorIds, filterMode = "completo" }) {
+export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick, centralContactId, highlightedIds, ancestorIds, filterMode = "completo" }) {
   const canvasRef = useRef(null);
   const nodesRef = useRef([]);
   const edgesRef = useRef([]);
@@ -161,10 +167,13 @@ export default function NetworkGraph({ contacts, connections = [], onNodeClick, 
        return Math.atan2(n.y - H / 2, n.x - W / 2);
      };
 
-     // Level 1..MAX_LEVEL nodes
-     for (let lvl = 1; lvl <= MAX_LEVEL; lvl++) {
-       const group = contacts.filter(c => levelMap.get(c.id) === lvl);
-       if (group.length === 0) continue;
+     // Filter: only include contacts that are in the hierarchy (have a parent in levelMap)
+      const hierarchyContacts = contacts.filter(c => levelMap.has(c.id));
+
+      // Level 1..MAX_LEVEL nodes
+      for (let lvl = 1; lvl <= MAX_LEVEL; lvl++) {
+        const group = hierarchyContacts.filter(c => levelMap.get(c.id) === lvl);
+        if (group.length === 0) continue;
 
        const nRadius = lvl === 1 ? 26 : lvl === 2 ? 21 : 17;
        const baseR = BASE_ORBIT_RADII[lvl] || lvl * 180;
@@ -258,68 +267,47 @@ export default function NetworkGraph({ contacts, connections = [], onNodeClick, 
      }
 
     const visibleIds = new Set(nodes.map(n => n.contactId || n.id));
-     const edges = [];
-     const addedEdges = new Set();
+    const edges = [];
+    const addedEdges = new Set();
 
-     // Create edges based on introduced_by_id hierarchy
-     contacts.forEach(contact => {
-       if (!contact.introduced_by_id || contact.introduced_by_id === "sem_informacao") {
-         return; // Skip contacts with no introducer
-       }
+    // Create edges based on introduced_by_id hierarchy
+    contacts.forEach(contact => {
+      if (!contact.introduced_by_id || contact.introduced_by_id === "sem_informacao") {
+        return; // Skip contacts with no introducer
+      }
 
-       let introducerId = contact.introduced_by_id;
+      let introducerId = contact.introduced_by_id;
 
-       // If "direto", draw edge from center
-       if (contact.introduced_by_id === "direto") {
-         introducerId = centralContactId;
-       }
+      // If "direto", draw edge from center
+      if (contact.introduced_by_id === "direto") {
+        introducerId = centralContactId;
+      }
 
-       if (!visibleIds.has(introducerId) || !visibleIds.has(contact.id)) {
-         return;
-       }
+      if (!visibleIds.has(introducerId) || !visibleIds.has(contact.id)) {
+        return;
+      }
 
-       const srcNodeId = introducerId === centralContactId ? "__center__" : introducerId;
-       const tgtNodeId = contact.id;
-       const key = [srcNodeId, tgtNodeId].sort().join("|");
+      const srcNodeId = introducerId === centralContactId ? "__center__" : introducerId;
+      const tgtNodeId = contact.id;
+      const key = [srcNodeId, tgtNodeId].sort().join("|");
 
-       if (!addedEdges.has(key)) {
-         addedEdges.add(key);
-         edges.push({
-           id: `intro-${contact.id}`,
-           sourceId: srcNodeId,
-           targetId: tgtNodeId,
-           strength: "media",
-           type: "hierarquica",
-           isCenterEdge: srcNodeId === "__center__",
-           isIntroduced: true,
-         });
-       }
-     });
-
-     // Create edges from Connection table
-     connections.forEach(conn => {
-       if (!conn.contact_a_id || !conn.contact_b_id) return;
-       if (!visibleIds.has(conn.contact_a_id) || !visibleIds.has(conn.contact_b_id)) return;
-
-       const key = [conn.contact_a_id, conn.contact_b_id].sort().join("|");
-
-       if (!addedEdges.has(key)) {
-         addedEdges.add(key);
-         edges.push({
-           id: `conn-${conn.id}`,
-           sourceId: conn.contact_a_id,
-           targetId: conn.contact_b_id,
-           strength: conn.strength || "media",
-           type: "connection",
-           connectionType: conn.connection_type || "profissional",
-           isIntroduced: false,
-         });
-       }
-     });
+      if (!addedEdges.has(key)) {
+        addedEdges.add(key);
+        edges.push({
+          id: `intro-${contact.id}`,
+          sourceId: srcNodeId,
+          targetId: tgtNodeId,
+          strength: "media",
+          type: "hierarquica",
+          isCenterEdge: srcNodeId === "__center__",
+          isIntroduced: true,
+        });
+      }
+    });
 
     nodesRef.current = nodes;
      edgesRef.current = edges;
-    }, [contacts, connections, centralContactId]);
+    }, [contacts, centralContactId]);
 
   const simulate = useCallback(() => {
     const nodes = nodesRef.current;
@@ -483,10 +471,6 @@ export default function NetworkGraph({ contacts, connections = [], onNodeClick, 
         ctx.strokeStyle = `rgba(148,163,184,${s.opacity * 0.7 * edgeFade})`;
         ctx.lineWidth = s.width * 0.8;
         ctx.setLineDash([4, 6]);
-      } else if (e.type === "connection") {
-        ctx.strokeStyle = `rgba(34,197,94,${s.opacity * 0.6 * edgeFade})`;
-        ctx.lineWidth = s.width;
-        ctx.setLineDash([2, 4]);
       } else if (isCenterEdge) {
         ctx.strokeStyle = `rgba(99,102,241,${s.opacity * edgeFade})`;
         ctx.lineWidth = s.width + 0.5;
