@@ -211,7 +211,8 @@ export default function Network() {
           </div>
         ) : (
           <NetworkGraph
-            contacts={filteredContacts}
+            contacts={contacts}
+            highlightedIds={hasActiveFilters ? new Set(filteredContacts.map(c => c.id)) : null}
             onNodeClick={setSelectedContact}
             onNodeDoubleClick={(c) => { setEditingContact(c); setShowContactForm(true); }}
             centralContactId={centralContactId}
