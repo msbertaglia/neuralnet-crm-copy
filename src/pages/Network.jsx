@@ -114,7 +114,7 @@ export default function Network() {
   }, [contacts]);
 
   return (
-    <div className="h-screen w-full bg-slate-950 flex flex-col overflow-hidden">
+    <div className="h-screen w-full bg-slate-950 flex flex-col">
       {/* Top bar */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-slate-800 bg-slate-900/80 backdrop-blur-sm flex-shrink-0">
         {/* Logo */}
