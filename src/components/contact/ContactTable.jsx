@@ -76,7 +76,7 @@ function SortIcon({ col, sortKey, sortDir }) {
     : <ChevronDown className="w-3 h-3 text-blue-400 ml-1 inline flex-shrink-0" />;
 }
 
-export default function ContactTable({ contacts, canEdit, onView, onEdit, onDelete, selectedIds, onToggleSelect, onToggleAll }) {
+export default function ContactTable({ contacts, canEdit, onView, onEdit, onDelete, selectedIds, onToggleSelect, onToggleAll, userEmail, userContact }) {
   const [sortKey, setSortKey] = useState("met_date");
   const [sortDir, setSortDir] = useState("asc");
 
