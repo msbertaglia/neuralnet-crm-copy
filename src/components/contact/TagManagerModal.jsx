@@ -9,6 +9,13 @@ export default function TagManagerModal({ contacts, onClose, onTagsChanged }) {
   const [newTag, setNewTag] = useState("");
   const [loading, setLoading] = useState(true);
   const [confirmDelete, setConfirmDelete] = useState(null);
+  const [selected, setSelected] = useState(new Set());
+
+  const toggleSelect = (tag) => setSelected(prev => {
+    const next = new Set(prev);
+    next.has(tag) ? next.delete(tag) : next.add(tag);
+    return next;
+  });
 
   useEffect(() => { loadTags(); }, []);
 
@@ -68,6 +75,12 @@ export default function TagManagerModal({ contacts, onClose, onTagsChanged }) {
                 const count = contacts.filter(c => (c.tags || []).includes(tag)).length;
                 return (
                   <div key={tag} className="flex items-center gap-3 bg-slate-800 rounded-lg px-3 py-2.5">
+                    <input
+                      type="checkbox"
+                      checked={selected.has(tag)}
+                      onChange={() => toggleSelect(tag)}
+                      className="accent-blue-500 w-4 h-4 flex-shrink-0"
+                    />
                     <span className="text-xs font-semibold px-2.5 py-1 rounded bg-slate-700 text-slate-300 flex-shrink-0">
                       {tag}
                     </span>
