@@ -44,9 +44,7 @@ export default function Contacts() {
   const [showLogForm, setShowLogForm] = useState(false);
   const [viewMode, setViewMode] = useState("list"); // "list" | "grid"
   const [deleteConfirm, setDeleteConfirm] = useState(null);
-  const [connections, setConnections] = useState([]);
-  const [pendingSave, setPendingSave] = useState(null); // { contactData, editingId, newImplied, saving }
-  const [showImpliedModal, setShowImpliedModal] = useState(false);
+
 
   useEffect(() => { loadAll(); }, []);
 
