@@ -56,15 +56,6 @@ export default function Network() {
 
   const canEdit = user?.role === "admin" || user?.role === "editor";
 
-  const availableTags = useMemo(() => {
-    const tagSet = new Set();
-    const baseList = (filters.status && filters.status !== "todos")
-      ? contacts.filter(c => c.status === filters.status)
-      : contacts;
-    baseList.forEach(c => (c.tags || []).forEach(t => tagSet.add(t)));
-    return Array.from(tagSet).sort();
-  }, [contacts, filters.status]);
-
   const filteredContacts = useMemo(() => {
     let list = contacts;
     if (search) {
@@ -76,15 +67,13 @@ export default function Network() {
         c.tags?.some(t => t.toLowerCase().includes(s))
       );
     }
-    if (filters.status && filters.status !== "todos") list = list.filter(c => c.status === filters.status);
-    if (filters.tag && filters.tag !== "todas") list = list.filter(c => (c.tags || []).includes(filters.tag));
+    if (filters.statuses?.length > 0) list = list.filter(c => filters.statuses.includes(c.status));
+    if (filters.tags?.length > 0) list = list.filter(c => filters.tags.some(t => (c.tags || []).includes(t)));
     return list;
   }, [contacts, search, filters]);
 
   const hasActiveFilters = useMemo(() => {
-    return (filters.status && filters.status !== "todos") ||
-           (filters.tag && filters.tag !== "todas") ||
-           !!search;
+    return (filters.statuses?.length > 0) || (filters.tags?.length > 0) || !!search;
   }, [filters, search]);
 
   const handleSaveContact = async (data) => {
