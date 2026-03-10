@@ -97,7 +97,7 @@ function computeOrbits(centralContactId, contacts) {
   return levels;
 }
 
-export default function NetworkGraph({ contacts, connections, onNodeClick, onNodeDoubleClick, centralContactId, highlightedIds }) {
+export default function NetworkGraph({ contacts, connections, onNodeClick, onNodeDoubleClick, centralContactId, highlightedIds, ancestorIds, filterMode = "completo" }) {
   const canvasRef = useRef(null);
   const nodesRef = useRef([]);
   const edgesRef = useRef([]);
