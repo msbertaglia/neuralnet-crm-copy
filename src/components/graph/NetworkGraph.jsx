@@ -23,8 +23,20 @@ const CONNECTION_STRENGTH = {
   forte: { width: 3, opacity: 0.85 },
 };
 
-const ORBIT_RADII = [0, 200, 370, 540, 700, 850]; // nivel 0, 1, 2, 3, 4, 5
+const BASE_ORBIT_RADII = [0, 200, 370, 540, 700, 850]; // nivel 0, 1, 2, 3, 4, 5 (mínimos base)
 const MAX_LEVEL = 20; // Allow up to 20 levels of hierarchy
+const NODE_MIN_GAP = 18; // minimum pixel gap between node edges on same orbit
+
+/**
+ * Compute the minimum orbit radius for a given level so that
+ * `count` nodes of `nodeRadius` each don't overlap.
+ * Circumference needed = count * (2*nodeRadius + gap)
+ * radius = circumference / (2 * PI)
+ */
+function minOrbitRadius(count, nodeRadius, gap = NODE_MIN_GAP) {
+  if (count <= 1) return 0;
+  return (count * (2 * nodeRadius + gap)) / (2 * Math.PI);
+}
 
 /**
  * Compute orbital levels based on "introduced_by_id" field:
