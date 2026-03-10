@@ -58,12 +58,10 @@ export default function BulkStatusModal({ selectedContacts, onClose, onDone }) {
               }`}
             >
               <input
-                type="radio"
-                name="bulk_status"
-                value={s.label}
+                type="checkbox"
                 checked={selectedStatus === s.label}
-                onChange={() => setSelectedStatus(s.label)}
-                className="accent-blue-500"
+                onChange={() => setSelectedStatus(prev => prev === s.label ? null : s.label)}
+                className="accent-blue-500 w-4 h-4"
               />
               <span className={`text-xs font-semibold px-2 py-0.5 rounded border ${STATUS_COLORS[s.label] || "bg-slate-700 text-slate-300 border-slate-600"}`}>
                 {s.label}
