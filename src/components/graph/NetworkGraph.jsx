@@ -162,35 +162,77 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
      };
 
      // Level 1..MAX_LEVEL nodes
-     // Group children by parent so we can spread them around parent's angle
      for (let lvl = 1; lvl <= MAX_LEVEL; lvl++) {
        const group = contacts.filter(c => levelMap.get(c.id) === lvl);
        if (group.length === 0) continue;
 
-       // Node radius for this level
        const nRadius = lvl === 1 ? 26 : lvl === 2 ? 21 : 17;
-       // Base orbit radius (minimum preset)
        const baseR = BASE_ORBIT_RADII[lvl] || lvl * 180;
-       // Minimum radius needed to avoid overlap
        const neededR = minOrbitRadius(group.length, nRadius);
-       // Previous level's orbit radius (to avoid nesting inside inner orbit)
        const prevOrbitR = lvl === 1 ? 0 : (nodes.find(n => n.level === lvl - 1)?.orbitRadius || (BASE_ORBIT_RADII[lvl - 1] || (lvl - 1) * 180));
        const minFromPrev = prevOrbitR + nRadius * 2 + 40;
        const orbitR = Math.max(baseR, neededR, minFromPrev);
 
-       // Sort group by parent angle so siblings stay clustered, then assign evenly spaced angles
-       const sortedGroup = [...group].sort((a, b) => {
-         const pidA = parentOf.get(a.id) || centralContactId;
-         const pidB = parentOf.get(b.id) || centralContactId;
-         const angA = getNodeAngle(pidA === centralContactId ? "__center__" : pidA);
-         const angB = getNodeAngle(pidB === centralContactId ? "__center__" : pidB);
-         return angA - angB;
+       // Angular step = minimum spacing in radians to avoid overlap
+       const angStep = (2 * nRadius + NODE_MIN_GAP) / orbitR;
+
+       // Group children by parent, preserving DB creation order within each group
+       const byParent = new Map();
+       group.forEach(c => {
+         const pid = parentOf.get(c.id) || centralContactId;
+         const nodeId = pid === centralContactId ? "__center__" : pid;
+         if (!byParent.has(nodeId)) byParent.set(nodeId, []);
+         byParent.get(nodeId).push(c);
        });
 
-       const totalCount = sortedGroup.length;
-       // Evenly space all nodes around full circle, starting from parent-sorted order
-       sortedGroup.forEach((c, i) => {
-         const angle = (2 * Math.PI * i) / totalCount - Math.PI / 2;
+       // Assign angles: first child at parent angle, then alternate left/right in creation order
+       const angleMap = new Map();
+       byParent.forEach((children, parentNodeId) => {
+         // Sort by creation order (index in contacts array = DB order)
+         const sorted = [...children].sort((a, b) => contacts.indexOf(a) - contacts.indexOf(b));
+
+         // Determine base angle from parent's position
+         let baseAngle = -Math.PI / 2; // default (top) for center parent
+         if (parentNodeId !== "__center__") {
+           const parentNode = nodes.find(n => n.id === parentNodeId || n.contactId === parentNodeId);
+           if (parentNode && parentNode.targetX !== undefined) {
+             baseAngle = Math.atan2(parentNode.targetY - H / 2, parentNode.targetX - W / 2);
+           }
+         } else if (lvl === 1) {
+           // Level 1: distribute evenly from top using equal spacing (2π/N)
+           // but assign in creation-order alternation so first registered = top
+           const step = (2 * Math.PI) / sorted.length;
+           sorted.forEach((c, i) => {
+             let angle;
+             if (i === 0) {
+               angle = -Math.PI / 2;
+             } else {
+               const side = i % 2 === 1 ? -1 : 1;
+               const steps = Math.ceil(i / 2);
+               angle = -Math.PI / 2 + side * steps * step;
+             }
+             angleMap.set(c.id, angle);
+           });
+           return; // skip the generic assignment below
+         }
+
+         // Generic: first = baseAngle, then alternate left/right with fixed angular step
+         sorted.forEach((c, i) => {
+           let angle;
+           if (i === 0) {
+             angle = baseAngle;
+           } else {
+             const side = i % 2 === 1 ? -1 : 1;
+             const steps = Math.ceil(i / 2);
+             angle = baseAngle + side * steps * angStep;
+           }
+           angleMap.set(c.id, angle);
+         });
+       });
+
+       // Place nodes using computed angles
+       group.forEach(c => {
+         const angle = angleMap.get(c.id) ?? -Math.PI / 2;
          const x = W / 2 + orbitR * Math.cos(angle);
          const y = H / 2 + orbitR * Math.sin(angle);
          const existing = nodesRef.current.find(n => n.id === c.id && n.level === lvl);
