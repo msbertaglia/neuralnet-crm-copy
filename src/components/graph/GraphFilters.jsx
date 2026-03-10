@@ -60,7 +60,7 @@ export default function GraphFilters({ filters, onChange, contacts = [] }) {
   };
 
   const clearFilters = () => {
-    const cleared = { statuses: [], tags: [] };
+    const cleared = { statuses: [], tags: [], filterMode: pending.filterMode };
     setPending(cleared);
     onChange(cleared);
   };
