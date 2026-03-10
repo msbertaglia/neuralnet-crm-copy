@@ -7,7 +7,7 @@ import { User } from "lucide-react";
 
 const navItems = [
   { label: "Perfil", page: "Profile", icon: User },
-  { label: "Contatos", page: "Contacts", icon: Users },
+  { label: "Contatos", page: "Contacts", icon: Users, default: true },
   { label: "Rede Visual", page: "Network", icon: Share2 },
   { label: "Projetos", page: "Projects", icon: FolderOpen },
   { label: "Dashboard", page: "Dashboard", icon: LayoutDashboard },
