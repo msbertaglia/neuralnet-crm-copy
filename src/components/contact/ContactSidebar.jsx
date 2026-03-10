@@ -132,7 +132,7 @@ export default function ContactSidebar({ contact, onClose, onEdit, logs, documen
 
             <Section title="Redes Sociais">
               <InfoRow icon={<Linkedin className="w-3.5 h-3.5" />} label="LinkedIn" value={contact.linkedin_url ? "Ver perfil" : null} link={contact.linkedin_url} />
-              <InfoRow icon={<Instagram className="w-3.5 h-3.5" />} label="Instagram" value={contact.instagram_url ? "Ver perfil" : null} link={contact.instagram_url} />
+              <InfoRow icon={<Instagram className="w-3.5 h-3.5" />} label="Instagram" value={contact.instagram_url ? `@${contact.instagram_url.replace(/^@/, "")}` : null} link={contact.instagram_url ? `https://instagram.com/${contact.instagram_url.replace(/^@/, "")}` : null} />
               <InfoRow icon={<Twitter className="w-3.5 h-3.5" />} label="Twitter" value={contact.twitter_url ? "Ver perfil" : null} link={contact.twitter_url} />
             </Section>
 
