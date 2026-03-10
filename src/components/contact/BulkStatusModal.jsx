@@ -12,14 +12,18 @@ const STATUS_COLORS = {
   outros:        "bg-purple-500/20 text-purple-400 border-purple-500/30",
 };
 
+const STATUSES = [
+  { value: "prospect",      label: "Prospect" },
+  { value: "desconhecidos", label: "Desconhecidos" },
+  { value: "empresas",      label: "Empresas" },
+  { value: "familia",       label: "Família" },
+  { value: "profissional",  label: "Profissional" },
+  { value: "outros",        label: "Outros" },
+];
+
 export default function BulkStatusModal({ selectedContacts, onClose, onDone }) {
-  const [statuses, setStatuses] = useState([]);
   const [selectedStatus, setSelectedStatus] = useState(null);
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    base44.entities.ContactStatus.list("label").then(setStatuses);
-  }, []);
 
   const handleMigrate = async () => {
     if (!selectedStatus) return;
