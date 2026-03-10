@@ -12,6 +12,7 @@ const TABS = ["Básico", "Empresa", "Redes", "Relacionamento", "Próximo Passo"]
 export default function ContactForm({ contact, contacts, onSave, onClose }) {
   const [tab, setTab] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [statusOptions, setStatusOptions] = useState([]);
   const [form, setForm] = useState({
     name: "", nickname: "", photo_url: "", birth_date: "",
     company: "", company_logo_url: "", position: "", sector: "", status: "prospect",
