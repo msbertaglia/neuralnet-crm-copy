@@ -442,11 +442,17 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
       const s = CONNECTION_STRENGTH[e.strength] || CONNECTION_STRENGTH.media;
       const isCenterEdge = e.isCenterEdge || src.isCenter || tgt.isCenter;
 
-      // Dim edge if both endpoints are dimmed
-      const srcDimmed = isDimmed(src.contactId);
-      const tgtDimmed = isDimmed(tgt.contactId);
-      const edgeDimmed = highlightedIds && srcDimmed && tgtDimmed;
-      const edgeFade = edgeDimmed ? 0.08 : 1;
+      // Edge visibility based on node states
+      const srcState = getNodeState(src.contactId);
+      const tgtState = getNodeState(tgt.contactId);
+
+      // In parcial mode: skip edges where both endpoints are ghost
+      if (filterMode === "parcial" && srcState === "ghost" && tgtState === "ghost") return;
+      // In parcial mode: skip edges where one side is ghost (not ancestor/highlighted)
+      if (filterMode === "parcial" && (srcState === "ghost" || tgtState === "ghost")) return;
+
+      const edgeDimmed = highlightedIds && srcState === "ghost" && tgtState === "ghost";
+      const edgeFade = edgeDimmed ? 0.05 : (srcState === "ancestor" || tgtState === "ancestor") ? 0.35 : 1;
 
       ctx.beginPath();
       ctx.moveTo(src.x, src.y);
