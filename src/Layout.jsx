@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { LayoutDashboard, Users, Share2, FolderOpen, Menu, X, ChevronRight } from "lucide-react";
+import { LayoutDashboard, Users, Share2, FolderOpen, Menu, X, ChevronRight, Upload } from "lucide-react";
 
 import { User } from "lucide-react";
 
