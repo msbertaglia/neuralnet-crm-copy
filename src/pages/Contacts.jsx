@@ -245,12 +245,6 @@ export default function Contacts() {
             >
               <Link2 className="w-4 h-4" /> Indicador {selectedIds.size > 0 && `(${selectedIds.size})`}
             </button>
-            <a
-              href={createPageUrl(`Network?status=${statusFilter}&tag=${tagFilter}`)}
-              className="px-3 h-9 flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium"
-            >
-              <Share2 className="w-4 h-4" /> Rede Visual
-            </a>
             {/* View toggle */}
             <div className="flex bg-slate-800 border border-slate-700 rounded-lg overflow-hidden">
               <button
