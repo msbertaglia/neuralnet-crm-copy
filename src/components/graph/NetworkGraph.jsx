@@ -207,7 +207,7 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
              x: existing ? existing.x : x,
              y: existing ? existing.y : y,
              vx: 0, vy: 0,
-             radius: lvl === 1 ? 26 : lvl === 2 ? 21 : 17,
+             radius: nRadius,
              level: lvl,
              orbitRadius: orbitR,
              targetX: x,
