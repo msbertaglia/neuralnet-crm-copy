@@ -186,34 +186,41 @@ export default function NetworkGraph({ contacts, connections, onNodeClick, onNod
          byParent.get(pid).push(c);
        });
 
-       byParent.forEach((children, pid) => {
-         const parentAngle = getNodeAngle(pid === centralContactId ? "__center__" : pid);
-         const spread = Math.min(Math.PI * 0.8, (2 * Math.PI) / (group.length || 1) * children.length);
-         children.forEach((c, i) => {
-           const offset = children.length === 1 ? 0 : (i / (children.length - 1) - 0.5) * spread;
-           const angle = parentAngle + offset;
-           const x = W / 2 + orbitR * Math.cos(angle);
-           const y = H / 2 + orbitR * Math.sin(angle);
-           // Only reuse existing position if same level (avoid keeping wrong-orbit positions)
-           const existing = nodesRef.current.find(n => n.id === c.id && n.level === lvl);
-           nodes.push({
-             id: c.id,
-             contactId: c.id,
-             label: c.nickname || c.name,
-             company: c.company || "",
-             status: c.status || "prospect",
-             nextStepStatus: c.next_step_status || "sem_proximo_passo",
-             photoUrl: c.photo_url || null,
-             x: existing ? existing.x : x,
-             y: existing ? existing.y : y,
-             vx: 0, vy: 0,
-             radius: nRadius,
-             level: lvl,
-             orbitRadius: orbitR,
-             targetX: x,
-             targetY: y,
-             contact: c,
-           });
+       // Sort group by parent angle so siblings stay clustered, then assign evenly spaced angles
+       const sortedGroup = [...group].sort((a, b) => {
+         const pidA = parentOf.get(a.id) || centralContactId;
+         const pidB = parentOf.get(b.id) || centralContactId;
+         const angA = getNodeAngle(pidA === centralContactId ? "__center__" : pidA);
+         const angB = getNodeAngle(pidB === centralContactId ? "__center__" : pidB);
+         return angA - angB;
+       });
+
+       // Minimum angular gap between nodes to avoid overlap
+       const minAngGap = (2 * nRadius + NODE_MIN_GAP) / orbitR; // radians
+       const totalCount = sortedGroup.length;
+       // Evenly space all nodes around full circle, starting from parent-sorted order
+       sortedGroup.forEach((c, i) => {
+         const angle = (2 * Math.PI * i) / totalCount - Math.PI / 2;
+         const x = W / 2 + orbitR * Math.cos(angle);
+         const y = H / 2 + orbitR * Math.sin(angle);
+         const existing = nodesRef.current.find(n => n.id === c.id && n.level === lvl);
+         nodes.push({
+           id: c.id,
+           contactId: c.id,
+           label: c.nickname || c.name,
+           company: c.company || "",
+           status: c.status || "prospect",
+           nextStepStatus: c.next_step_status || "sem_proximo_passo",
+           photoUrl: c.photo_url || null,
+           x: existing ? existing.x : x,
+           y: existing ? existing.y : y,
+           vx: 0, vy: 0,
+           radius: nRadius,
+           level: lvl,
+           orbitRadius: orbitR,
+           targetX: x,
+           targetY: y,
+           contact: c,
          });
        });
      }
