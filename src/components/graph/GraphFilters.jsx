@@ -22,7 +22,17 @@ export default function GraphFilters({ filters, onChange, contacts = [] }) {
     filterMode: filters.filterMode || "completo",
   });
 
-  const activeCount = (filters.statuses?.length || 0) + (filters.tags?.length || 0);
+  // Count contacts matching the APPLIED filters (not the number of filter criteria)
+  const countMatchingContacts = (statuses, tags) => {
+    if (!statuses.length && !tags.length) return 0;
+    return contacts.filter(c => {
+      const statusMatch = !statuses.length || statuses.includes(c.status);
+      const tagMatch = !tags.length || tags.some(t => (c.tags || []).includes(t));
+      return statusMatch && tagMatch;
+    }).length;
+  };
+
+  const activeCount = countMatchingContacts(filters.statuses || [], filters.tags || []);
 
   // Compute counts from all contacts
   const statusCounts = STATUS_OPTIONS.reduce((acc, s) => {
