@@ -1,12 +1,12 @@
 import { useEffect, useRef, useCallback } from "react";
 
 const STATUS_COLORS = {
-  ativo: "#22c55e",
-  inativo: "#94a3b8",
-  prospect: "#f59e0b",
-  parceiro: "#3b82f6",
-  cliente: "#8b5cf6",
-  investidor: "#ec4899",
+  prospect:      "#f59e0b",
+  desconhecidos: "#94a3b8",
+  empresas:      "#3b82f6",
+  familia:       "#ec4899",
+  profissional:  "#22c55e",
+  outros:        "#8b5cf6",
 };
 
 const NEXT_STEP_COLORS = {
