@@ -88,10 +88,11 @@ export default function Network() {
     return list;
   }, [contacts, search, filters]);
 
-  const filteredConnections = useMemo(() => {
-    const ids = new Set(filteredContacts.map(c => c.id));
-    return connections.filter(conn => ids.has(conn.contact_a_id) && ids.has(conn.contact_b_id));
-  }, [connections, filteredContacts]);
+  const hasActiveFilters = useMemo(() => {
+    return (filters.status && filters.status !== "todos") ||
+           (filters.tag && filters.tag !== "todas") ||
+           !!search;
+  }, [filters, search]);
 
   const handleSaveContact = async (data) => {
     await doSaveContact(data, editingContact?.id);
