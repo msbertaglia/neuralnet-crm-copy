@@ -16,7 +16,11 @@ const STATUS_COLORS = {
 
 export default function GraphFilters({ filters, onChange, contacts = [] }) {
   const [open, setOpen] = useState(false);
-  const [pending, setPending] = useState({ statuses: filters.statuses || [], tags: filters.tags || [] });
+  const [pending, setPending] = useState({
+    statuses: filters.statuses || [],
+    tags: filters.tags || [],
+    filterMode: filters.filterMode || "completo",
+  });
 
   const activeCount = (filters.statuses?.length || 0) + (filters.tags?.length || 0);
 
