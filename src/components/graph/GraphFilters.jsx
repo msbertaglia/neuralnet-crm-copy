@@ -122,7 +122,7 @@ export default function GraphFilters({ filters, onChange, tags = [] }) {
               <p className="text-slate-400 text-xs uppercase tracking-wide mb-2.5">Tag</p>
               <div className="flex flex-wrap gap-1.5">
                 <button
-                  onClick={() => setTag("todas")}
+                  onClick={() => toggleTag("todas")}
                   className={`px-3 py-1 rounded-md text-xs font-semibold border transition-all ${
                     tag === "todas"
                       ? "bg-amber-500/20 border-amber-500/50 text-amber-300"
@@ -134,7 +134,7 @@ export default function GraphFilters({ filters, onChange, tags = [] }) {
                 {tags.map(t => (
                   <button
                     key={t}
-                    onClick={() => setTag(t)}
+                    onClick={() => toggleTag(t)}
                     className={`px-3 py-1 rounded-md text-xs font-semibold border transition-all ${
                       tag === t
                         ? "bg-amber-500/20 border-amber-500/50 text-amber-300"
