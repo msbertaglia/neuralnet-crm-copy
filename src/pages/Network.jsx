@@ -26,7 +26,7 @@ export default function Network() {
 
   const [showLogForm, setShowLogForm] = useState(false);
   const [search, setSearch] = useState("");
-  const [filters, setFilters] = useState({ statuses: [], nextSteps: [], projectIds: [] });
+  const [filters, setFilters] = useState({ status: "todos", tag: "todas" });
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
