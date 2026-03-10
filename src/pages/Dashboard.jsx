@@ -117,8 +117,11 @@ export default function Dashboard() {
             <div className="space-y-2">
               {recentContacts.map(c => (
                 <div key={c.id} className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold text-slate-300 flex-shrink-0">
-                    {c.name.split(" ").map(w => w[0]).slice(0,2).join("").toUpperCase()}
+                  <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center text-xs font-bold text-slate-300 flex-shrink-0 overflow-hidden">
+                    {c.photo_url
+                      ? <img src={c.photo_url} alt="" className="w-full h-full object-cover" />
+                      : c.name.split(" ").map(w => w[0]).slice(0,2).join("").toUpperCase()
+                    }
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-white text-sm truncate">{c.name}</p>

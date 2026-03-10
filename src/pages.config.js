@@ -50,10 +50,10 @@
 import Connections from './pages/Connections';
 import Contacts from './pages/Contacts';
 import Dashboard from './pages/Dashboard';
+import ImportContacts from './pages/ImportContacts';
 import Network from './pages/Network';
 import Profile from './pages/Profile';
 import Projects from './pages/Projects';
-import ImportContacts from './pages/ImportContacts';
 import __Layout from './Layout.jsx';
 
 
@@ -61,10 +61,10 @@ export const PAGES = {
     "Connections": Connections,
     "Contacts": Contacts,
     "Dashboard": Dashboard,
+    "ImportContacts": ImportContacts,
     "Network": Network,
     "Profile": Profile,
     "Projects": Projects,
-    "ImportContacts": ImportContacts,
 }
 
 export const pagesConfig = {
