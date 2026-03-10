@@ -136,11 +136,26 @@ export default function Contacts() {
     try { return format(new Date(d), "dd MMM", { locale: ptBR }); } catch { return d; }
   };
 
+  // Counts based on search (but not status/tag filter) so tabs show accurate numbers
+  const searchFiltered = useMemo(() => {
+    let list = contacts;
+    if (userContact) list = list.filter(c => c.id !== userContact.id);
+    if (search) {
+      const s = search.toLowerCase();
+      list = list.filter(c =>
+        c.name?.toLowerCase().includes(s) ||
+        c.company?.toLowerCase().includes(s) ||
+        c.position?.toLowerCase().includes(s)
+      );
+    }
+    return list;
+  }, [contacts, search, userContact]);
+
   const statusCounts = useMemo(() => {
     const counts = {};
-    contacts.forEach(c => { counts[c.status] = (counts[c.status] || 0) + 1; });
+    searchFiltered.forEach(c => { counts[c.status] = (counts[c.status] || 0) + 1; });
     return counts;
-  }, [contacts]);
+  }, [searchFiltered]);
 
   return (
     <div className="h-full flex flex-col bg-slate-950 text-white overflow-hidden">
