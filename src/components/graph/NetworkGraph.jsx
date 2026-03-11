@@ -490,9 +490,9 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
       // Parcial mode: skip ghost and ancestor nodes
       if (filterMode === "parcial" && (nodeState === "ghost" || nodeState === "ancestor")) return;
 
-      // Ghost and ancestor nodes in completo mode: same visible grey style
+      // Ghost and ancestor nodes in completo mode: grey style
       if (nodeState === "ghost" || nodeState === "ancestor") {
-        ctx.globalAlpha = 0.45;
+        ctx.globalAlpha = nodeState === "ancestor" ? 0.55 : 0.35;
         ctx.beginPath();
         ctx.arc(n.x, n.y, n.radius, 0, 2 * Math.PI);
         ctx.fillStyle = "#1e293b";
