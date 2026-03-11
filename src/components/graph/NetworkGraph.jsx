@@ -457,7 +457,7 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
 
     // Orbit rings - use actual computed orbit radii from nodes
     if (centerNode) {
-      const ringOpacity = [0, 0.15, 0.12, 0.10, 0.08, 0.06];
+      const ringOpacity = [0, 0.55, 0.45, 0.38, 0.30, 0.24];
       const levelsPresent = [...new Set(nodesRef.current.filter(n => !n.isCenter && n.orbitRadius).map(n => n.level))].sort((a,b)=>a-b);
       for (const lvl of levelsPresent) {
         const sample = nodesRef.current.find(n => n.level === lvl);
