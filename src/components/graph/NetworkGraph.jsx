@@ -227,6 +227,9 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
          }
        };
 
+       // actualOrbitR can be expanded by the 'padrao' layout to fit children in bisector sectors
+       let actualOrbitR = orbitR;
+
        if (layoutModel === "voronoi") {
          // Bisector sectors — maximizes spacing between families
          parentEntries.forEach(({ children, angle }, idx) => {
