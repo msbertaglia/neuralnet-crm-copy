@@ -181,7 +181,7 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
        const prevLvlNode = nodes.find(n => n.level === lvl - 1);
        const prevOrbitR = lvl === 1 ? 0 : (prevLvlNode?.orbitRadius || 0);
        const prevNodeRadius = lvl === 1 ? 40 : (prevLvlNode?.radius || nRadius); // nó central tem radius 40
-       const BASE_INTER_GAP = 30; // px mínimos entre bordas de nós de órbitas adjacentes
+       const BASE_INTER_GAP = 100; // px mínimos entre bordas de nós de órbitas adjacentes
        const minFromPrev = prevOrbitR + prevNodeRadius + nRadius + BASE_INTER_GAP;
        const orbitR = Math.max(baseR, neededR, minFromPrev);
 
