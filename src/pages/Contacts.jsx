@@ -112,7 +112,12 @@ export default function Contacts() {
     }
     if (statusFilter !== "todos") list = list.filter(c => c.status === statusFilter);
     if (tagFilter !== "todas") list = list.filter(c => (c.tags || []).includes(tagFilter));
-    if (indicadorFilter.length > 0) list = list.filter(c => indicadorFilter.includes(c.introduced_by_id));
+    if (indicadorFilter.length > 0) {
+      list = list.filter(c => {
+        if (indicadorFilter.includes("__sem_informacao__") && !c.introduced_by_id) return true;
+        return indicadorFilter.includes(c.introduced_by_id);
+      });
+    }
     return list;
   }, [contacts, search, statusFilter, tagFilter, indicadorFilter, user?.email]);
 
