@@ -29,6 +29,8 @@ export default function Network() {
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState({ statuses: [], tags: [], filterMode: "completo" });
   const [layoutModel, setLayoutModel] = useState("padrao");
+  const [orbitDistance, setOrbitDistance] = useState(180);
+  const [orbitInputValue, setOrbitInputValue] = useState("180");
 
   useEffect(() => {
     loadAll();
@@ -174,6 +176,34 @@ export default function Network() {
         </div>
 
         <div className="flex-1" />
+
+        {/* Orbit distance input */}
+        <div className="flex items-center gap-1.5 bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1">
+          <span className="text-slate-400 text-xs whitespace-nowrap">Distância órbitas</span>
+          <Input
+            type="number"
+            min={100}
+            max={2000}
+            value={orbitInputValue}
+            onChange={e => setOrbitInputValue(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === "Enter") {
+                const v = Math.min(2000, Math.max(100, Number(orbitInputValue)));
+                setOrbitDistance(v);
+                setOrbitInputValue(String(v));
+              }
+            }}
+            className="w-16 h-6 text-xs bg-slate-700 border-slate-600 text-slate-200 px-1.5 text-center"
+          />
+          <button
+            onClick={() => {
+              const v = Math.min(2000, Math.max(100, Number(orbitInputValue)));
+              setOrbitDistance(v);
+              setOrbitInputValue(String(v));
+            }}
+            className="text-xs bg-blue-600 hover:bg-blue-700 text-white rounded px-1.5 py-0.5"
+          >OK</button>
+        </div>
 
         {/* Layout models */}
         <LayoutModelToggle value={layoutModel} onChange={setLayoutModel} />
