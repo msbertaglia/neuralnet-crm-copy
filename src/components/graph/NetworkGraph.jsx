@@ -488,8 +488,8 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
       const isHovered = hoveredRef.current === n.id;
       const nodeState = n.isCenter ? "highlight" : getNodeState(n.contactId);
 
-      // Parcial mode: skip ghost nodes entirely
-      if (filterMode === "parcial" && nodeState === "ghost") return;
+      // Parcial mode: skip ghost and ancestor nodes
+      if (filterMode === "parcial" && (nodeState === "ghost" || nodeState === "ancestor")) return;
 
       // Ghost nodes (completo mode): render faded
       if (nodeState === "ghost") {
