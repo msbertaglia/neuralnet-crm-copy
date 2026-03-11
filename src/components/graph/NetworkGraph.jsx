@@ -285,40 +285,62 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
          });
 
        } else if (layoutModel === "padrao") {
-         // Optimal layout: minimal orbits, no crossing edges, no overlap
-         // Each parent gets a sector proportional to its children count
-         // Children placed as close to parent as possible without overlap
-         const total = parentEntries.reduce((s, p) => s + p.children.length, 0);
-         const sectorSizes = parentEntries.map(p => (p.children.length / total) * 2 * Math.PI);
+         // NO-CROSSING guarantee: assign each parent a bisector sector.
+         // Children are packed tightly within that sector.
+         // If the orbit radius is too small to fit them, expand it.
 
-         // Anchor first sector centered on first parent's angle
-         let cursor = (parentEntries[0]?.angle ?? -Math.PI / 2) - sectorSizes[0] / 2;
-         const sectorStarts = sectorSizes.map(s => { const c = cursor; cursor += s; return c; });
+         const total = group.length;
 
-         // Minimum angular gap to avoid node overlap at this orbit radius
-         const minAngStep = (2 * nRadius + NODE_MIN_GAP) / orbitR;
+         // Bisector sectors (same as voronoi) — this is the key to no-crossings
+         const bisectorSectors = parentEntries.map(({ angle }, idx) => {
+           if (numParents === 1) {
+             return { start: angle - Math.PI, end: angle + Math.PI };
+           }
+           const prevAngle = parentEntries[(idx - 1 + numParents) % numParents].angle;
+           const nextAngle = parentEntries[(idx + 1) % numParents].angle;
+           const start = angle - normalizeAngle(angle - prevAngle) / 2;
+           const end   = angle + normalizeAngle(nextAngle - angle) / 2;
+           return { start, end };
+         });
+
+         // Compute minimum orbit radius so all children fit inside their sectors
+         // For each sector: needed arc = count * (2*r + gap), sector arc = sectorSize * orbitR
+         // => orbitR >= count * (2*r + gap) / sectorSize
+         let neededOrbitR = actualOrbitR;
+         parentEntries.forEach(({ children }, i) => {
+           const { start, end } = bisectorSectors[i];
+           let sectorArc = normalizeAngle(end - start);
+           if (sectorArc < 0.001) sectorArc = 0.001;
+           const n = children.length;
+           if (n === 0) return;
+           const minR = (n * (2 * nRadius + NODE_MIN_GAP)) / sectorArc;
+           if (minR > neededOrbitR) neededOrbitR = minR;
+         });
+         actualOrbitR = neededOrbitR;
+
+         // Recompute minAngStep with final orbit radius
+         const minAngStep = (2 * nRadius + NODE_MIN_GAP) / actualOrbitR;
 
          parentEntries.forEach(({ children, angle }, i) => {
            const sorted = [...children].sort((a, b) => a.name.localeCompare(b.name, 'pt'));
            const n = sorted.length;
-           const sectorStart = sectorStarts[i];
-           const sectorEnd = sectorStart + sectorSizes[i];
+           const { start: sectorStart, end: sectorEnd } = bisectorSectors[i];
+           const sectorArc = normalizeAngle(sectorEnd - sectorStart);
 
            if (n === 1) {
-             // Single child: place exactly at parent angle, clamped inside sector
-             const a = Math.max(sectorStart + minAngStep / 2, Math.min(sectorEnd - minAngStep / 2, angle));
-             angleMap.set(sorted[0].id, a);
+             // Place single child at parent angle
+             angleMap.set(sorted[0].id, angle);
              return;
            }
 
-           // Pack children as tightly as allowed (min gap), centered on parent angle
+           // Pack tightly centered on parent angle
            const neededArc = minAngStep * (n - 1);
            const halfPad = minAngStep * 0.5;
-           const availableStart = sectorStart + halfPad;
-           const availableEnd = sectorEnd - halfPad;
+           const availStart = sectorStart + halfPad;
+           const availEnd = sectorStart + sectorArc - halfPad;
 
            let idealStart = angle - neededArc / 2;
-           idealStart = Math.max(availableStart, Math.min(availableEnd - neededArc, idealStart));
+           idealStart = Math.max(availStart, Math.min(availEnd - neededArc, idealStart));
 
            sorted.forEach((c, ci) => angleMap.set(c.id, idealStart + ci * minAngStep));
          });
