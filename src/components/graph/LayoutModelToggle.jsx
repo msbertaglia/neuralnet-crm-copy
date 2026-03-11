@@ -11,7 +11,7 @@ export const LAYOUT_MODELS = [
     id: "proporcional",
     label: "Proporcional",
     icon: "◎",
-    description: "Setor proporcional ao nº de filhos. Famílias grandes ocupam mais espaço.",
+    description: "Setores proporcionais ao nº de filhos, de dentro pra fora. Arestas nunca se cruzam.",
   },
   {
     id: "uniforme",
