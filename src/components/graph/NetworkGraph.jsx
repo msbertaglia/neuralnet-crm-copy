@@ -25,7 +25,7 @@ const CONNECTION_STRENGTH = {
 
 const BASE_ORBIT_RADII = [0, 220]; // nivel 0, 1 — N1 tem mínimo fixo; N2+ são 100% dinâmicos
 const MAX_LEVEL = 20; // Allow up to 20 levels of hierarchy
-const NODE_MIN_GAP = 40; // minimum pixel gap between node edges on same orbit
+const NODE_MIN_GAP = 10; // minimum pixel gap between node edges on same orbit
 
 /**
  * Compute the minimum orbit radius for a given level so that
