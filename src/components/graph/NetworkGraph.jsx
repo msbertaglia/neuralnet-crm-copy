@@ -492,7 +492,7 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
 
       // Ghost and ancestor nodes in completo mode: grey style
       if (nodeState === "ghost" || nodeState === "ancestor") {
-        ctx.globalAlpha = nodeState === "ancestor" ? 0.55 : 0.35;
+        ctx.globalAlpha = nodeState === "ancestor" ? 0.55 : 0.25;
         ctx.beginPath();
         ctx.arc(n.x, n.y, n.radius, 0, 2 * Math.PI);
         ctx.fillStyle = "#1e293b";
