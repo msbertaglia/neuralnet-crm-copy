@@ -26,6 +26,19 @@ export default function ContactForm({ contact, contacts, onSave, onClose }) {
     ...contact,
   });
   const [tagInput, setTagInput] = useState("");
+  const [introducerSearch, setIntroducerSearch] = useState("");
+  const [showIntroducerList, setShowIntroducerList] = useState(false);
+  const introducerRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (introducerRef.current && !introducerRef.current.contains(e.target)) {
+        setShowIntroducerList(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   useEffect(() => {
     base44.entities.ContactStatus.list("label").then(setStatusOptions);
