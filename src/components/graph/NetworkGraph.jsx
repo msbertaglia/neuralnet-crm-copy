@@ -358,18 +358,39 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
          });
 
        } else if (layoutModel === "espiral") {
-         // Asymmetric fan — children offset clockwise from parent
-         // Ensures no overlap: spacing = (2*nRadius + NODE_MIN_GAP) / orbitR
-         const minAngStep = (2 * nRadius + NODE_MIN_GAP) / orbitR;
-         parentEntries.forEach(({ children, angle }) => {
-           const n = children.length;
-           if (n === 1) { angleMap.set(children[0].id, angle + minAngStep * 0.5); return; }
-           // Arc shifted clockwise: starts at angle-fan*0.3, ends at angle+fan*0.7
-           const totalArc = minAngStep * (n - 1);
-           const startAngle = angle - totalArc * 0.3;
-           children.forEach((c, ci) => angleMap.set(c.id, startAngle + ci * minAngStep));
-         });
-       }
+          // Asymmetric fan: arc starts at angle-0.3*arc, ends at angle+0.7*arc
+          // For adjacent families i→j, no overlap requires:
+          //   R * angGap >= rightPx_i + leftPx_j + NODE_MIN_GAP
+          // where rightPx = (n-1)*(2r+gap)*0.7, leftPx = (n-1)*(2r+gap)*0.3
+          const STEP_PX = 2 * nRadius + NODE_MIN_GAP;
+
+          const familyData = parentEntries.map(({ children, angle }) => {
+            const n = children.length;
+            const arcPx = n <= 1 ? 0 : (n - 1) * STEP_PX;
+            return { children, angle, n, rightPx: arcPx * 0.7, leftPx: arcPx * 0.3 };
+          });
+
+          // Expand orbit radius until no adjacent family arcs overlap
+          let computedR = orbitR;
+          if (numParents > 1) {
+            for (let i = 0; i < numParents; i++) {
+              const j = (i + 1) % numParents;
+              const angGap = normalizeAngle(familyData[j].angle - familyData[i].angle);
+              if (angGap < 0.0001) continue;
+              const needed = (familyData[i].rightPx + familyData[j].leftPx + NODE_MIN_GAP) / angGap;
+              if (needed > computedR) computedR = needed;
+            }
+          }
+          actualOrbitR = computedR;
+
+          const minAngStep = STEP_PX / actualOrbitR;
+
+          familyData.forEach(({ children, angle, n }) => {
+            if (n === 1) { angleMap.set(children[0].id, angle); return; }
+            const startAngle = angle - (n - 1) * minAngStep * 0.3;
+            children.forEach((c, ci) => angleMap.set(c.id, startAngle + ci * minAngStep));
+          });
+        }
 
        // Place nodes using computed angles
        group.forEach(c => {
