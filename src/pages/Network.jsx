@@ -29,8 +29,33 @@ export default function Network() {
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState({ statuses: [], tags: [], filterMode: "completo" });
   const [layoutModel, setLayoutModel] = useState("padrao");
-  const [orbitDistance, setOrbitDistance] = useState(180);
+  const [orbitDistances, setOrbitDistances] = useState({});
+  const [selectedOrbit, setSelectedOrbit] = useState(1);
   const [orbitInputValue, setOrbitInputValue] = useState("180");
+
+  const maxLevel = useMemo(() => {
+    if (!centralContactId || !contacts.length) return 5;
+    const parentOf = new Map();
+    contacts.forEach(c => {
+      if (!c.introduced_by_id || c.introduced_by_id === "sem_informacao") return;
+      parentOf.set(c.id, c.introduced_by_id === "direto" ? centralContactId : c.introduced_by_id);
+    });
+    const levels = new Map([[centralContactId, 0]]);
+    const queue = [centralContactId];
+    while (queue.length) {
+      const cur = queue.shift();
+      const curLvl = levels.get(cur);
+      parentOf.forEach((pid, id) => {
+        if (pid === cur && !levels.has(id) && curLvl < 20) {
+          levels.set(id, curLvl + 1);
+          queue.push(id);
+        }
+      });
+    }
+    let max = 1;
+    levels.forEach(v => { if (v > max) max = v; });
+    return Math.max(max, 1);
+  }, [contacts, centralContactId]);
 
   useEffect(() => {
     loadAll();

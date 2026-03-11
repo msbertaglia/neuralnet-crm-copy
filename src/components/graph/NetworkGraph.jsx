@@ -103,7 +103,7 @@ function computeOrbits(centralContactId, contacts) {
   return levels;
 }
 
-export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick, centralContactId, highlightedIds, ancestorIds, filterMode = "completo", layoutModel = "voronoi", orbitDistance = 180 }) {
+export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick, centralContactId, highlightedIds, ancestorIds, filterMode = "completo", layoutModel = "voronoi", orbitDistances = {} }) {
   const canvasRef = useRef(null);
   const nodesRef = useRef([]);
   const edgesRef = useRef([]);
