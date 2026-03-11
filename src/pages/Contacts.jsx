@@ -59,6 +59,8 @@ export default function Contacts() {
   const [showBulkTags, setShowBulkTags] = useState(false);
   const [showBulkIndicador, setShowBulkIndicador] = useState(false);
   const [showConnectionHelp, setShowConnectionHelp] = useState(false);
+  const [showIndicadorFilter, setShowIndicadorFilter] = useState(false);
+  const [indicadorFilter, setIndicadorFilter] = useState([]);
 
 
   useEffect(() => { loadAll(); }, []);
