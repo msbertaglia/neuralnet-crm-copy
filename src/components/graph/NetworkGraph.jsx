@@ -359,14 +359,14 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
         n.vy -= (dcy / dist) * force;
       }
 
-      // Repulsion (softer)
+      // Repulsion (only between nodes on the same level to avoid cross-orbit drifting)
       for (let j = i + 1; j < nodes.length; j++) {
         const m = nodes[j];
+        if (n.level !== m.level) continue; // skip repulsion across levels
         const dx = m.x - n.x;
         const dy = m.y - n.y;
         const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-        const sameLevel = n.level === m.level;
-        const force = (REPULSION * (sameLevel ? 1.2 : 0.8)) / (dist * dist);
+        const force = REPULSION * 1.2 / (dist * dist);
         const fx = (dx / dist) * force;
         const fy = (dy / dist) * force;
         n.vx -= fx; n.vy -= fy;
