@@ -79,6 +79,7 @@ function SortIcon({ col, sortKey, sortDir }) {
 export default function ContactTable({ contacts, canEdit, onView, onEdit, onDelete, selectedIds, onToggleSelect, onToggleAll, userEmail, userContact }) {
   const [sortKey, setSortKey] = useState("met_date");
   const [sortDir, setSortDir] = useState("asc");
+  const [showConnectionLegend, setShowConnectionLegend] = useState(false);
 
   const handleSort = (col) => {
     if (col.sortable === false) return;
