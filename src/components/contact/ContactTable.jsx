@@ -149,8 +149,42 @@ export default function ContactTable({ contacts, canEdit, onView, onEdit, onDele
                />
              </div>
              {/* Connection indicator header */}
-             <div style={{ width: CONNECTION_INDICATOR_WIDTH, minWidth: CONNECTION_INDICATOR_WIDTH }} className="flex-shrink-0 px-3 py-2.5" title="Status da conexão">
-               <span className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Conexão</span>
+             <div style={{ width: CONNECTION_INDICATOR_WIDTH, minWidth: CONNECTION_INDICATOR_WIDTH }} className="flex-shrink-0 px-3 py-2.5 relative flex items-center justify-center">
+               <button
+                 onClick={e => { e.stopPropagation(); setShowConnectionLegend(v => !v); }}
+                 className="text-slate-500 hover:text-blue-400 transition-colors"
+                 title="Ver índice de conexões"
+               >
+                 <Info className="w-4 h-4" />
+               </button>
+               {showConnectionLegend && (
+                 <div
+                   className="absolute top-full left-0 mt-1 z-50 bg-slate-800 border border-slate-700 rounded-xl p-4 shadow-2xl w-56"
+                   onClick={e => e.stopPropagation()}
+                 >
+                   <p className="text-xs font-bold text-slate-300 uppercase tracking-wide mb-3">Índice de Conexões</p>
+                   <div className="space-y-2.5">
+                     <div className="flex items-center gap-2.5">
+                       <Circle className="w-3 h-3 flex-shrink-0" style={{ color: "#ef4444", fill: "#ef4444" }} />
+                       <span className="text-xs text-slate-400">Sem informação de indicação</span>
+                     </div>
+                     <div className="flex items-center gap-2.5">
+                       <Circle className="w-3 h-3 flex-shrink-0" style={{ color: "#eab308", fill: "#eab308" }} />
+                       <span className="text-xs text-slate-400">Conexão direta (por você)</span>
+                     </div>
+                     <div className="flex items-center gap-2.5">
+                       <Circle className="w-3 h-3 flex-shrink-0" style={{ color: "#22c55e", fill: "#22c55e" }} />
+                       <span className="text-xs text-slate-400">Conexão indireta (por outro contato)</span>
+                     </div>
+                   </div>
+                   <button
+                     onClick={() => setShowConnectionLegend(false)}
+                     className="mt-3 w-full text-xs text-slate-500 hover:text-slate-300 transition-colors"
+                   >
+                     Fechar
+                   </button>
+                 </div>
+               )}
              </div>
              {COLUMNS.map(col => (
               <div
