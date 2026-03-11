@@ -320,8 +320,8 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
     const H = canvas.height;
     const REPULSION = 4500;
     const ORBIT_STRENGTH = 0.08; // Stronger to keep on orbit
-    const TARGET_STRENGTH = 0.05; // Pull towards target position
-    const DAMPING = 0.80;
+    const TARGET_STRENGTH = 0.25; // Pull towards target position (strong to prevent crossing)
+    const DAMPING = 0.75;
 
     const centerNode = nodes.find(n => n.isCenter);
 
