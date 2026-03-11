@@ -281,11 +281,43 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
            sorted.forEach((c, ci) => angleMap.set(c.id, idealStart + ci * minAngStep));
          });
 
-       } else if (layoutModel === "uniforme") {
-         // Equal sector per parent, children equidistant, centered on parent angle
-         const sectorSize = (2 * Math.PI) / Math.max(numParents, 1);
-         parentEntries.forEach(({ children, angle }) => {
-           spreadChildren(children, angle - sectorSize / 2, angle + sectorSize / 2, 0.1);
+       } else if (layoutModel === "padrao") {
+         // Optimal layout: minimal orbits, no crossing edges, no overlap
+         // Each parent gets a sector proportional to its children count
+         // Children placed as close to parent as possible without overlap
+         const total = parentEntries.reduce((s, p) => s + p.children.length, 0);
+         const sectorSizes = parentEntries.map(p => (p.children.length / total) * 2 * Math.PI);
+
+         // Anchor first sector centered on first parent's angle
+         let cursor = (parentEntries[0]?.angle ?? -Math.PI / 2) - sectorSizes[0] / 2;
+         const sectorStarts = sectorSizes.map(s => { const c = cursor; cursor += s; return c; });
+
+         // Minimum angular gap to avoid node overlap at this orbit radius
+         const minAngStep = (2 * nRadius + NODE_MIN_GAP) / orbitR;
+
+         parentEntries.forEach(({ children, angle }, i) => {
+           const sorted = [...children].sort((a, b) => a.name.localeCompare(b.name, 'pt'));
+           const n = sorted.length;
+           const sectorStart = sectorStarts[i];
+           const sectorEnd = sectorStart + sectorSizes[i];
+
+           if (n === 1) {
+             // Single child: place exactly at parent angle, clamped inside sector
+             const a = Math.max(sectorStart + minAngStep / 2, Math.min(sectorEnd - minAngStep / 2, angle));
+             angleMap.set(sorted[0].id, a);
+             return;
+           }
+
+           // Pack children as tightly as allowed (min gap), centered on parent angle
+           const neededArc = minAngStep * (n - 1);
+           const halfPad = minAngStep * 0.5;
+           const availableStart = sectorStart + halfPad;
+           const availableEnd = sectorEnd - halfPad;
+
+           let idealStart = angle - neededArc / 2;
+           idealStart = Math.max(availableStart, Math.min(availableEnd - neededArc, idealStart));
+
+           sorted.forEach((c, ci) => angleMap.set(c.id, idealStart + ci * minAngStep));
          });
 
        } else if (layoutModel === "arvore") {

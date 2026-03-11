@@ -28,7 +28,7 @@ export default function Network() {
   const [showLogForm, setShowLogForm] = useState(false);
   const [search, setSearch] = useState("");
   const [filters, setFilters] = useState({ statuses: [], tags: [], filterMode: "completo" });
-  const [layoutModel, setLayoutModel] = useState("voronoi");
+  const [layoutModel, setLayoutModel] = useState("padrao");
 
   useEffect(() => {
     loadAll();
