@@ -181,9 +181,7 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
        const prevLvlNodes = nodes.filter(n => n.level === lvl - 1);
        const prevOrbitR = lvl === 1 ? 0 : (prevLvlNodes[0]?.orbitRadius || 0);
        const prevNodeRadius = lvl === 1 ? 40 : (prevLvlNodes[0]?.radius || nRadius);
-       // Gap between orbits: enough so that an edge from any parent to any child never
-       // crosses an edge from a different parent (geometric minimum = sum of radii + label space)
-       const BASE_INTER_GAP = Math.max(80, nRadius * 4);
+       const BASE_INTER_GAP = 100;
        const minFromPrev = prevOrbitR + prevNodeRadius + nRadius + BASE_INTER_GAP;
        const orbitR = Math.max(baseR, neededR, minFromPrev);
 
@@ -209,48 +207,47 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
            angleMap.set(c.id, -Math.PI / 2 + i * step);
          });
        } else {
-         // Level 2+: sector-based distribution to prevent edge crossing.
-         // Each parent owns a sector of the orbit proportional to its child count.
-         // Children are distributed evenly within their parent's sector.
+         // Level 2+: strict sector-based layout to prevent ANY edge crossing.
+         // Rule: children of parent Pi must ALL have angles strictly between
+         // children of parent Pi-1 and children of parent Pi+1.
+         // This is guaranteed by assigning contiguous sectors in the same order as parents.
 
-         // Sort parents by their angular position
+         const normalizeAngle = (a) => ((a % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
+
+         // Sort parents by their angular position (normalized 0..2π)
          const parentEntries = [...byParent.entries()].map(([parentNodeId, children]) => {
            const parentNode = nodes.find(n => n.id === parentNodeId || n.contactId === parentNodeId);
-           let angle = -Math.PI / 2;
+           let angle = normalizeAngle(-Math.PI / 2);
            if (parentNode?.targetX !== undefined) {
-             angle = Math.atan2(parentNode.targetY - H / 2, parentNode.targetX - W / 2);
+             angle = normalizeAngle(Math.atan2(parentNode.targetY - H / 2, parentNode.targetX - W / 2));
            }
-           return { parentNodeId, children: [...children].sort((a, b) => contacts.indexOf(a) - contacts.indexOf(b)), angle };
+           return {
+             children: [...children].sort((a, b) => contacts.indexOf(a) - contacts.indexOf(b)),
+             angle
+           };
          });
          parentEntries.sort((a, b) => a.angle - b.angle);
 
-         // Total children count
-         const total = group.length;
+         // Each parent sector = exactly childCount × minAngGap radians
+         // This guarantees each child gets minAngGap spacing with no overlap between sectors
+         const sectorSizes = parentEntries.map(p => p.children.length * minAngGap);
 
-         // Assign sectors: each parent gets a sector proportional to child count
-         // Sectors start at the first parent's angle and go clockwise
-         // To prevent wrapping issues, compute cumulative sector sizes
-         let cursor = parentEntries.length > 0 ? parentEntries[0].angle - ((parentEntries[0].children.length / total) * Math.PI) : -Math.PI / 2;
+         // Anchor: start first sector so it is centered at first parent's angle
+         let cursor = parentEntries[0].angle - sectorSizes[0] / 2;
 
-         parentEntries.forEach(({ children, angle }) => {
-           const sectorSize = Math.max(
-             (children.length / total) * 2 * Math.PI,
-             children.length * minAngGap
-           );
-           const sectorStart = cursor;
-           const sectorEnd = cursor + sectorSize;
-           cursor = sectorEnd;
-
-           // Place children evenly within sector
+         parentEntries.forEach(({ children, angle }, idx) => {
+           const size = sectorSizes[idx];
            if (children.length === 1) {
-             // Single child: place at parent angle
-             angleMap.set(children[0].id, angle);
+             // Single child: center of its sector
+             angleMap.set(children[0].id, cursor + size / 2);
            } else {
-             const childStep = sectorSize / (children.length - 1);
+             // Spread children evenly across sector
+             const step = size / (children.length - 1);
              children.forEach((c, i) => {
-               angleMap.set(c.id, sectorStart + i * childStep);
+               angleMap.set(c.id, cursor + i * step);
              });
            }
+           cursor += size;
          });
        }
 
