@@ -9,6 +9,7 @@ import GraphFilters from "@/components/graph/GraphFilters";
 import ContactSidebar from "@/components/contact/ContactSidebar";
 import ContactForm from "@/components/contact/ContactForm";
 import MeetingLogForm from "@/components/contact/MeetingLogForm";
+import LayoutModelToggle from "@/components/graph/LayoutModelToggle";
 
 export default function Network() {
   const [contacts, setContacts] = useState([]);
