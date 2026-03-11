@@ -212,21 +212,37 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
        });
        parentEntries.sort((a, b) => a.angle - b.angle);
 
-       // Each parent gets an EQUAL sector size = 2π / numParents
-       // This guarantees equal spacing between family centers (= equal spacing between parents).
-       // Children are distributed evenly within their parent's sector.
-       // Sectors are contiguous in parent-angle order → no edge crossings.
+       // Each parent's sector spans from the bisector with the previous parent
+       // to the bisector with the next parent (Voronoi on circle).
+       // This maximizes spacing between families while keeping children non-crossing.
        const numParents = parentEntries.length;
-       const sectorSize = (2 * Math.PI) / numParents;
 
        parentEntries.forEach(({ children, angle }, idx) => {
-         // Center this sector at the parent's angle
-         const sectorStart = angle - sectorSize / 2;
-         if (children.length === 1) {
-           angleMap.set(children[0].id, angle); // single child sits directly under parent
+         let sectorStart, sectorEnd;
+
+         if (numParents === 1) {
+           // Single parent: owns the full circle
+           sectorStart = angle - Math.PI;
+           sectorEnd = angle + Math.PI;
          } else {
-           // Spread children evenly within sector, with a small padding so they
-           // don't sit exactly on sector boundaries (avoids overlap with adjacent family)
+           const prevAngle = parentEntries[(idx - 1 + numParents) % numParents].angle;
+           const nextAngle = parentEntries[(idx + 1) % numParents].angle;
+
+           // Arc from prev to current (going forward)
+           let arcPrev = normalizeAngle(angle - prevAngle);
+           // Arc from current to next (going forward)
+           let arcNext = normalizeAngle(nextAngle - angle);
+
+           sectorStart = angle - arcPrev / 2;
+           sectorEnd = angle + arcNext / 2;
+         }
+
+         const sectorSize = sectorEnd - sectorStart;
+
+         if (children.length === 1) {
+           angleMap.set(children[0].id, angle);
+         } else {
+           // Small padding (8%) so children don't sit on sector boundaries
            const padding = sectorSize * 0.08;
            const spread = sectorSize - 2 * padding;
            const childStep = spread / (children.length - 1);
