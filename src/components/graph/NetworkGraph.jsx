@@ -244,19 +244,34 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
          });
 
        } else if (layoutModel === "proporcional") {
-         // Proportional sectors — no edge crossings guaranteed
-         // Sectors are contiguous and ordered by parent angular position.
-         // Each parent gets arc = (childCount / total) * 2π.
-         // Start the first sector centered on the first parent's angle so
-         // the distribution is anchored to the actual parent positions.
+         // Proportional sectors — no edge crossings, children clustered near parent angle
          const total = parentEntries.reduce((s, p) => s + p.children.length, 0);
          const sectorSizes = parentEntries.map(p => (p.children.length / total) * 2 * Math.PI);
-         // Anchor: start the sweep so the first parent's sector is centered on its angle
+         // Anchor: start sweep so first parent's sector is centered on its angle
          let cursor = (parentEntries[0]?.angle ?? -Math.PI / 2) - sectorSizes[0] / 2;
-         parentEntries.forEach(({ children }, i) => {
+         const sectorStarts = sectorSizes.map(s => { const c = cursor; cursor += s; return c; });
+
+         parentEntries.forEach(({ children, angle }, i) => {
            const size = sectorSizes[i];
-           spreadChildren(children, cursor, cursor + size, 0.06);
-           cursor += size;
+           const sectorStart = sectorStarts[i];
+           const sectorEnd = sectorStart + size;
+
+           if (children.length === 1) {
+             // Place exactly at parent angle, clamped to sector
+             angleMap.set(children[0].id, Math.max(sectorStart, Math.min(sectorEnd, angle)));
+             return;
+           }
+
+           const pad = size * 0.04;
+           const minStep = (2 * Math.PI) / Math.max(group.length * 2, 12); // min angular spacing
+           const spreadArc = Math.min(minStep * (children.length - 1), size - 2 * pad);
+           const step = spreadArc / (children.length - 1);
+
+           // Ideal start centered on parent angle, clamped inside sector
+           let idealStart = angle - spreadArc / 2;
+           idealStart = Math.max(sectorStart + pad, Math.min(sectorEnd - pad - spreadArc, idealStart));
+
+           children.forEach((c, ci) => angleMap.set(c.id, idealStart + ci * step));
          });
 
        } else if (layoutModel === "uniforme") {
