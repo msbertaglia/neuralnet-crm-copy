@@ -175,6 +175,9 @@ export default function Network() {
 
         <div className="flex-1" />
 
+        {/* Layout models */}
+        <LayoutModelToggle value={layoutModel} onChange={setLayoutModel} />
+
         {/* Filters */}
         <GraphFilters filters={filters} onChange={setFilters} contacts={contacts} />
 
