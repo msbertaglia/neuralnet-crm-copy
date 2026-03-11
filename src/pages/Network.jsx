@@ -230,6 +230,7 @@ export default function Network() {
             highlightedIds={highlightedIds}
             ancestorIds={ancestorIds}
             filterMode={filters.filterMode || "completo"}
+            layoutModel={layoutModel}
             onNodeClick={setSelectedContact}
             onNodeDoubleClick={(c) => { setEditingContact(c); setShowContactForm(true); }}
             centralContactId={centralContactId}
