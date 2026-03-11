@@ -70,7 +70,43 @@ export default function IndicadorFilterModal({ contacts, activeFilter, onApply, 
 
         {/* List */}
         <div className="flex-1 overflow-y-auto p-3 space-y-1">
-          {filtered.length === 0 ? (
+          {/* "Sem informação" option — contacts with no introducer */}
+          {(() => {
+            const noInfoCount = contacts.filter(c => !c.introduced_by_id).length;
+            const isSelected = selected.has("__sem_informacao__");
+            if (!search || "sem informação".includes(search.toLowerCase())) {
+              return (
+                <button
+                  onClick={() => {
+                    setSelected(prev => {
+                      const next = new Set(prev);
+                      next.has("__sem_informacao__") ? next.delete("__sem_informacao__") : next.add("__sem_informacao__");
+                      return next;
+                    });
+                  }}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
+                    isSelected ? "bg-blue-600/20 border border-blue-500/30" : "hover:bg-slate-800 border border-transparent"
+                  }`}
+                >
+                  <div className={`w-5 h-5 rounded flex items-center justify-center flex-shrink-0 border transition-colors ${
+                    isSelected ? "bg-blue-600 border-blue-600" : "border-slate-600"
+                  }`}>
+                    {isSelected && <Check className="w-3 h-3 text-white" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-slate-400 font-medium italic truncate">Sem informação</p>
+                  </div>
+                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                    isSelected ? "bg-blue-500/30 text-blue-300" : "bg-slate-700 text-slate-400"
+                  }`}>
+                    {noInfoCount} contato{noInfoCount !== 1 ? "s" : ""}
+                  </span>
+                </button>
+              );
+            }
+            return null;
+          })()}
+          {filtered.length === 0 && search && !("sem informação".includes(search.toLowerCase())) ? (
             <div className="text-center py-8 text-slate-500">
               <Users className="w-8 h-8 mx-auto mb-2 opacity-30" />
               <p className="text-sm">Nenhum indicador encontrado</p>
