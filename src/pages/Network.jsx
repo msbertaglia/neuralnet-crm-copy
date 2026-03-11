@@ -261,6 +261,7 @@ export default function Network() {
             ancestorIds={ancestorIds}
             filterMode={filters.filterMode || "completo"}
             layoutModel={layoutModel}
+            orbitDistance={orbitDistance}
             onNodeClick={setSelectedContact}
             onNodeDoubleClick={(c) => { setEditingContact(c); setShowContactForm(true); }}
             centralContactId={centralContactId}
