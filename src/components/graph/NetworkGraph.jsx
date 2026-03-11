@@ -196,15 +196,9 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
 
        const angleMap = new Map();
 
-       // Strategy: sort parents by their angular position, then order all children
-       // accordingly (children of parent 1 first, then parent 2, etc.).
-       // Distribute ALL children with EQUAL angular spacing across the full circle.
-       // This ensures: (1) all nodes on the same orbit are equidistant,
-       // (2) no edge crossing (families are contiguous in angle order).
-
        const normalizeAngle = (a) => ((a % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI);
 
-       // Sort parents by angular position
+       // Sort parents by their angular position
        const parentEntries = [...byParent.entries()].map(([parentNodeId, children]) => {
          const parentNode = nodes.find(n => n.id === parentNodeId || n.contactId === parentNodeId);
          let angle = normalizeAngle(-Math.PI / 2);
@@ -218,19 +212,28 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
        });
        parentEntries.sort((a, b) => a.angle - b.angle);
 
-       // Flatten children in parent-angle order
-       const orderedChildren = parentEntries.flatMap(p => p.children);
-       const total = orderedChildren.length;
-       const step = (2 * Math.PI) / total;
+       // Each parent gets an EQUAL sector size = 2π / numParents
+       // This guarantees equal spacing between family centers (= equal spacing between parents).
+       // Children are distributed evenly within their parent's sector.
+       // Sectors are contiguous in parent-angle order → no edge crossings.
+       const numParents = parentEntries.length;
+       const sectorSize = (2 * Math.PI) / numParents;
 
-       // Anchor: first child of first parent aligns with that parent's angle
-       const firstParentAngle = parentEntries.length > 0 ? parentEntries[0].angle : -Math.PI / 2;
-       const firstParentChildCount = parentEntries.length > 0 ? parentEntries[0].children.length : 1;
-       // Center the first family around the first parent's angle
-       const startAngle = firstParentAngle - ((firstParentChildCount - 1) / 2) * step;
-
-       orderedChildren.forEach((c, i) => {
-         angleMap.set(c.id, startAngle + i * step);
+       parentEntries.forEach(({ children, angle }, idx) => {
+         // Center this sector at the parent's angle
+         const sectorStart = angle - sectorSize / 2;
+         if (children.length === 1) {
+           angleMap.set(children[0].id, angle); // single child sits directly under parent
+         } else {
+           // Spread children evenly within sector, with a small padding so they
+           // don't sit exactly on sector boundaries (avoids overlap with adjacent family)
+           const padding = sectorSize * 0.08;
+           const spread = sectorSize - 2 * padding;
+           const childStep = spread / (children.length - 1);
+           children.forEach((c, i) => {
+             angleMap.set(c.id, sectorStart + padding + i * childStep);
+           });
+         }
        });
 
        // Place nodes using computed angles
