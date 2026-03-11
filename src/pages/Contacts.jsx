@@ -431,6 +431,15 @@ export default function Contacts() {
         <ConnectionHelpModal onClose={() => setShowConnectionHelp(false)} />
       )}
 
+      {showIndicadorFilter && (
+        <IndicadorFilterModal
+          contacts={contacts}
+          activeFilter={indicadorFilter}
+          onApply={setIndicadorFilter}
+          onClose={() => setShowIndicadorFilter(false)}
+        />
+      )}
+
       {deleteConfirm && (
         <div className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 max-w-sm w-full shadow-2xl">
