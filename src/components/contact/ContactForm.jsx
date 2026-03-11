@@ -241,19 +241,71 @@ export default function ContactForm({ contact, contacts, onSave, onClose }) {
                 <Input type="date" value={form.met_date} onChange={e => set("met_date", e.target.value)} className="bg-slate-800 border-slate-600 text-white" />
               </Field>
               <Field label="Apresentado por">
-                <Select value={form.introduced_by_id || "sem_informacao"} onValueChange={v => {
-                  set("introduced_by_id", v);
-                  // Name will be set on submit
-                }}>
-                  <SelectTrigger className="bg-slate-800 border-slate-600 text-white"><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-700">
-                    <SelectItem value="sem_informacao" className="text-slate-400">Sem informação (campo vazio)</SelectItem>
-                    <SelectItem value="direto" className="text-slate-400">Direto (sem intermediário)</SelectItem>
-                    {contacts.filter(c => c.id !== contact?.id).map(c => (
-                      <SelectItem key={c.id} value={c.id} className="text-slate-200">{c.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="relative" ref={introducerRef}>
+                  <button
+                    type="button"
+                    onClick={() => setShowIntroducerList(v => !v)}
+                    className="w-full flex items-center justify-between px-3 py-2 bg-slate-800 border border-slate-600 rounded-md text-sm text-white hover:border-slate-500 transition-colors"
+                  >
+                    <span className={!form.introduced_by_id || form.introduced_by_id === "sem_informacao" ? "text-slate-400" : "text-white"}>
+                      {form.introduced_by_id === "sem_informacao" || !form.introduced_by_id
+                        ? "Sem informação (campo vazio)"
+                        : form.introduced_by_id === "direto"
+                        ? "Direto (sem intermediário)"
+                        : contacts.find(c => c.id === form.introduced_by_id)?.name || "Selecione..."}
+                    </span>
+                    <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
+                  </button>
+                  {showIntroducerList && (
+                    <div className="absolute top-full left-0 right-0 mt-1 z-50 bg-slate-800 border border-slate-700 rounded-lg shadow-2xl overflow-hidden">
+                      <div className="p-2 border-b border-slate-700">
+                        <div className="relative">
+                          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+                          <input
+                            autoFocus
+                            value={introducerSearch}
+                            onChange={e => setIntroducerSearch(e.target.value)}
+                            placeholder="Buscar por nome..."
+                            className="w-full pl-8 pr-3 py-1.5 bg-slate-700 border border-slate-600 rounded-md text-sm text-white placeholder-slate-400 outline-none focus:border-blue-500"
+                          />
+                        </div>
+                      </div>
+                      <div className="max-h-52 overflow-y-auto">
+                        {!introducerSearch && (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => { set("introduced_by_id", "sem_informacao"); setShowIntroducerList(false); setIntroducerSearch(""); }}
+                              className="w-full text-left px-3 py-2 text-sm text-slate-400 hover:bg-slate-700 transition-colors"
+                            >
+                              Sem informação (campo vazio)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => { set("introduced_by_id", "direto"); setShowIntroducerList(false); setIntroducerSearch(""); }}
+                              className="w-full text-left px-3 py-2 text-sm text-slate-400 hover:bg-slate-700 transition-colors"
+                            >
+                              Direto (sem intermediário)
+                            </button>
+                          </>
+                        )}
+                        {contacts
+                          .filter(c => c.id !== contact?.id && c.name?.toLowerCase().includes(introducerSearch.toLowerCase()))
+                          .map(c => (
+                            <button
+                              key={c.id}
+                              type="button"
+                              onClick={() => { set("introduced_by_id", c.id); setShowIntroducerList(false); setIntroducerSearch(""); }}
+                              className={`w-full text-left px-3 py-2 text-sm hover:bg-slate-700 transition-colors ${form.introduced_by_id === c.id ? "bg-blue-600/20 text-blue-300" : "text-slate-200"}`}
+                            >
+                              {c.name}
+                            </button>
+                          ))
+                        }
+                      </div>
+                    </div>
+                  )}
+                </div>
               </Field>
               <Field label="Último contato">
                 <Input type="date" value={form.last_contact_date} onChange={e => set("last_contact_date", e.target.value)} className="bg-slate-800 border-slate-600 text-white" />
