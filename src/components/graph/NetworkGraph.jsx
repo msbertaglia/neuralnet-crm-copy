@@ -181,7 +181,7 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
        const prevLvlNodes = nodes.filter(n => n.level === lvl - 1);
        const prevOrbitR = lvl === 1 ? 0 : (prevLvlNodes[0]?.orbitRadius || 0);
        const prevNodeRadius = lvl === 1 ? 40 : (prevLvlNodes[0]?.radius || nRadius);
-       const BASE_INTER_GAP = 150; // 1.5x original
+       const BASE_INTER_GAP = layoutModel === "padrao" ? 60 : 150;
        const minFromPrev = prevOrbitR + prevNodeRadius + nRadius + BASE_INTER_GAP;
        const orbitR = Math.max(baseR, neededR, minFromPrev);
 
