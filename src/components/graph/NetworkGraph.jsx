@@ -359,11 +359,15 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
 
        } else if (layoutModel === "espiral") {
          // Asymmetric fan — children offset clockwise from parent
-         const fanBase = Math.PI / 3;
+         // Ensures no overlap: spacing = (2*nRadius + NODE_MIN_GAP) / orbitR
+         const minAngStep = (2 * nRadius + NODE_MIN_GAP) / orbitR;
          parentEntries.forEach(({ children, angle }) => {
-           const fan = fanBase * Math.min(children.length, 8) / 4;
-           // Shift slightly clockwise so the arc "flows" from parent
-           spreadChildren(children, angle - fan * 0.3, angle + fan * 0.7, 0.05);
+           const n = children.length;
+           if (n === 1) { angleMap.set(children[0].id, angle + minAngStep * 0.5); return; }
+           // Arc shifted clockwise: starts at angle-fan*0.3, ends at angle+fan*0.7
+           const totalArc = minAngStep * (n - 1);
+           const startAngle = angle - totalArc * 0.3;
+           children.forEach((c, ci) => angleMap.set(c.id, startAngle + ci * minAngStep));
          });
        }
 
