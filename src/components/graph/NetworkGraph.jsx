@@ -285,65 +285,69 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
          });
 
        } else if (layoutModel === "padrao") {
-         // NO-CROSSING guarantee: assign each parent a bisector sector.
-         // Children are packed tightly within that sector.
-         // If the orbit radius is too small to fit them, expand it.
+         // SOLAR SYSTEM - GUARANTEED NO EDGE CROSSINGS
+         //
+         // Algorithm:
+         // 1. Each parent family gets an EXCLUSIVE contiguous zone on the orbit
+         // 2. Zones are ordered clockwise in the same order as their parents
+         //    → this mathematically prevents any edge (parent→child) from crossing another
+         // 3. Each zone is centered on the parent's angle (minimizes parent-child distance)
+         // 4. Orbit radius is expanded until no adjacent zones overlap
+         //
+         // Proof of no-crossing: edges A→Ca and B→Cb cross iff their angular intervals interleave.
+         // Since all Ca are inside zone_A and all Cb are inside zone_B, and zone_A and zone_B
+         // are non-overlapping and in the same angular order as A and B → intervals never interleave.
 
-         const total = group.length;
+         const INTER_FAMILY_PX = 20; // min pixel gap between adjacent family zones
 
-         // Bisector sectors (same as voronoi) — this is the key to no-crossings
-         const bisectorSectors = parentEntries.map(({ angle }, idx) => {
-           if (numParents === 1) {
-             return { start: angle - Math.PI, end: angle + Math.PI };
-           }
-           const prevAngle = parentEntries[(idx - 1 + numParents) % numParents].angle;
-           const nextAngle = parentEntries[(idx + 1) % numParents].angle;
-           const start = angle - normalizeAngle(angle - prevAngle) / 2;
-           const end   = angle + normalizeAngle(nextAngle - angle) / 2;
-           return { start, end };
-         });
-
-         // Compute minimum orbit radius so all children fit inside their sectors
-         // For each sector: needed arc = count * (2*r + gap), sector arc = sectorSize * orbitR
-         // => orbitR >= count * (2*r + gap) / sectorSize
-         let neededOrbitR = actualOrbitR;
-         parentEntries.forEach(({ children }, i) => {
-           const { start, end } = bisectorSectors[i];
-           let sectorArc = normalizeAngle(end - start);
-           if (sectorArc < 0.001) sectorArc = 0.001;
-           const n = children.length;
-           if (n === 0) return;
-           const minR = (n * (2 * nRadius + NODE_MIN_GAP)) / sectorArc;
-           if (minR > neededOrbitR) neededOrbitR = minR;
-         });
-         actualOrbitR = neededOrbitR;
-
-         // Recompute minAngStep with final orbit radius
-         const minAngStep = (2 * nRadius + NODE_MIN_GAP) / actualOrbitR;
-
-         parentEntries.forEach(({ children, angle }, i) => {
+         // Build family data: sorted children + zone half-width in pixels
+         const familyData = parentEntries.map(({ children, angle }) => {
            const sorted = [...children].sort((a, b) => a.name.localeCompare(b.name, 'pt'));
            const n = sorted.length;
-           const { start: sectorStart, end: sectorEnd } = bisectorSectors[i];
-           const sectorArc = normalizeAngle(sectorEnd - sectorStart);
-
-           if (n === 1) {
-             // Place single child at parent angle
-             angleMap.set(sorted[0].id, angle);
-             return;
-           }
-
-           // Pack tightly centered on parent angle
-           const neededArc = minAngStep * (n - 1);
-           const halfPad = minAngStep * 0.5;
-           const availStart = sectorStart + halfPad;
-           const availEnd = sectorStart + sectorArc - halfPad;
-
-           let idealStart = angle - neededArc / 2;
-           idealStart = Math.max(availStart, Math.min(availEnd - neededArc, idealStart));
-
-           sorted.forEach((c, ci) => angleMap.set(c.id, idealStart + ci * minAngStep));
+           // Zone spans: center ± halfWidth, with minAngStep spacing between children
+           // halfWidthPx = (n-1)/2 * (2*nRadius + NODE_MIN_GAP)
+           const halfWidthPx = n <= 1 ? 0 : ((n - 1) / 2) * (2 * nRadius + NODE_MIN_GAP);
+           return { sorted, angle, n, halfWidthPx };
          });
+
+         if (numParents <= 1) {
+           // Single parent (e.g., all N1 from center): spread evenly around full orbit
+           const fam = familyData[0];
+           if (fam && fam.n > 0) {
+             if (fam.n === 1) {
+               angleMap.set(fam.sorted[0].id, -Math.PI / 2);
+             } else {
+               const angStep = (2 * Math.PI) / fam.n;
+               fam.sorted.forEach((c, ci) => angleMap.set(c.id, ci * angStep - Math.PI / 2));
+             }
+           }
+         } else {
+           // Multiple parents: expand orbit R until adjacent zones don't overlap.
+           // Constraint for adjacent pair (i, j):
+           //   halfWidthPx_i + halfWidthPx_j + INTER_FAMILY_PX  ≤  R * angularGap(i→j)
+           //   ⟹  R  ≥  (halfWidthPx_i + halfWidthPx_j + INTER_FAMILY_PX) / angularGap(i→j)
+           let computedR = orbitR;
+           for (let i = 0; i < numParents; i++) {
+             const j = (i + 1) % numParents;
+             const angGap = normalizeAngle(familyData[j].angle - familyData[i].angle);
+             if (angGap < 0.0001) continue;
+             const needed = (familyData[i].halfWidthPx + familyData[j].halfWidthPx + INTER_FAMILY_PX) / angGap;
+             if (needed > computedR) computedR = needed;
+           }
+           actualOrbitR = computedR;
+
+           const minAngStep = (2 * nRadius + NODE_MIN_GAP) / actualOrbitR;
+
+           familyData.forEach(({ sorted, angle, n }) => {
+             if (n === 1) {
+               angleMap.set(sorted[0].id, angle);
+             } else {
+               // Center the arc on the parent's angle — minimizes parent-child distance
+               const startAngle = angle - ((n - 1) / 2) * minAngStep;
+               sorted.forEach((c, ci) => angleMap.set(c.id, startAngle + ci * minAngStep));
+             }
+           });
+         }
 
        } else if (layoutModel === "arvore") {
          // Narrow cone under parent — tree-like
