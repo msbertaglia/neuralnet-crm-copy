@@ -458,8 +458,7 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
       // In parcial mode: only draw edges between two highlighted nodes
       if (filterMode === "parcial" && (srcState !== "highlight" || tgtState !== "highlight")) return;
 
-      const edgeDimmed = highlightedIds && srcState === "ghost" && tgtState === "ghost";
-      const edgeFade = edgeDimmed ? 0.05 : (srcState === "ancestor" || tgtState === "ancestor") ? 0.35 : 1;
+      const edgeFade = (srcState === "ghost" || tgtState === "ghost" || srcState === "ancestor" || tgtState === "ancestor") ? 0.25 : 1;
 
       ctx.beginPath();
       ctx.moveTo(src.x, src.y);
