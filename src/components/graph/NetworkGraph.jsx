@@ -181,14 +181,16 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
        const prevLvlNodes = nodes.filter(n => n.level === lvl - 1);
        const prevOrbitR = lvl === 1 ? 0 : (prevLvlNodes[0]?.orbitRadius || 0);
        const prevNodeRadius = lvl === 1 ? 40 : (prevLvlNodes[0]?.radius || nRadius);
-       const BASE_INTER_GAP = 80; // px mínimos entre bordas de nós de órbitas adjacentes
+       // Gap between orbits: enough so that an edge from any parent to any child never
+       // crosses an edge from a different parent (geometric minimum = sum of radii + label space)
+       const BASE_INTER_GAP = Math.max(80, nRadius * 4);
        const minFromPrev = prevOrbitR + prevNodeRadius + nRadius + BASE_INTER_GAP;
        const orbitR = Math.max(baseR, neededR, minFromPrev);
 
-       // Angular step = minimum spacing in radians to avoid overlap
-       const angStep = (2 * nRadius + NODE_MIN_GAP) / orbitR;
+       // Minimum angular gap between node edges on the same orbit
+       const minAngGap = (2 * nRadius + NODE_MIN_GAP) / orbitR;
 
-       // Group children by parent, preserving DB creation order within each group
+       // Group children by parent (sorted by creation order)
        const byParent = new Map();
        group.forEach(c => {
          const pid = parentOf.get(c.id) || centralContactId;
@@ -197,80 +199,60 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
          byParent.get(nodeId).push(c);
        });
 
-       // Assign angles: first child at parent angle, then alternate left/right in creation order
        const angleMap = new Map();
-       byParent.forEach((children, parentNodeId) => {
-         // Sort by creation order (index in contacts array = DB order)
-         const sorted = [...children].sort((a, b) => contacts.indexOf(a) - contacts.indexOf(b));
 
-         // Determine base angle from parent's position
-         let baseAngle = -Math.PI / 2; // default (top) for center parent
-         if (parentNodeId !== "__center__") {
-           const parentNode = nodes.find(n => n.id === parentNodeId || n.contactId === parentNodeId);
-           if (parentNode && parentNode.targetX !== undefined) {
-             baseAngle = Math.atan2(parentNode.targetY - H / 2, parentNode.targetX - W / 2);
-           }
-         } else if (lvl === 1) {
-           // Level 1: distribute evenly from top using equal spacing (2π/N)
-           // but assign in creation-order alternation so first registered = top
-           const step = (2 * Math.PI) / sorted.length;
-           sorted.forEach((c, i) => {
-             let angle;
-             if (i === 0) {
-               angle = -Math.PI / 2;
-             } else {
-               const side = i % 2 === 1 ? -1 : 1;
-               const steps = Math.ceil(i / 2);
-               angle = -Math.PI / 2 + side * steps * step;
-             }
-             angleMap.set(c.id, angle);
-           });
-           return; // skip the generic assignment below
-         }
-
-         // Generic: first = baseAngle, then alternate left/right with fixed angular step
-         sorted.forEach((c, i) => {
-           let angle;
-           if (i === 0) {
-             angle = baseAngle;
-           } else {
-             const side = i % 2 === 1 ? -1 : 1;
-             const steps = Math.ceil(i / 2);
-             angle = baseAngle + side * steps * angStep;
-           }
-           angleMap.set(c.id, angle);
+       if (lvl === 1) {
+         // Level 1: evenly distribute all nodes around full circle, starting at top
+         const allSorted = [...group].sort((a, b) => contacts.indexOf(a) - contacts.indexOf(b));
+         const step = (2 * Math.PI) / allSorted.length;
+         allSorted.forEach((c, i) => {
+           angleMap.set(c.id, -Math.PI / 2 + i * step);
          });
-       });
+       } else {
+         // Level 2+: sector-based distribution to prevent edge crossing.
+         // Each parent owns a sector of the orbit proportional to its child count.
+         // Children are distributed evenly within their parent's sector.
 
-       // --- Global angular collision resolution for this level ---
-       // Minimum angular gap between node edges on the same orbit
-       const minAngGap = (2 * nRadius + NODE_MIN_GAP) / orbitR;
-
-       // Build array of {id, angle} sorted by angle
-       const angleEntries = group.map(c => ({ id: c.id, angle: angleMap.get(c.id) ?? -Math.PI / 2 }));
-       angleEntries.sort((a, b) => a.angle - b.angle);
-
-       // Iterative spread: push apart nodes that are too close (circular)
-       for (let iter = 0; iter < 50; iter++) {
-         let moved = false;
-         for (let k = 0; k < angleEntries.length; k++) {
-           const curr = angleEntries[k];
-           const next = angleEntries[(k + 1) % angleEntries.length];
-           let diff = next.angle - curr.angle;
-           // Wrap around circle
-           if (k === angleEntries.length - 1) diff += 2 * Math.PI;
-           if (diff < minAngGap) {
-             const push = (minAngGap - diff) / 2;
-             curr.angle -= push;
-             next.angle += push;
-             moved = true;
+         // Sort parents by their angular position
+         const parentEntries = [...byParent.entries()].map(([parentNodeId, children]) => {
+           const parentNode = nodes.find(n => n.id === parentNodeId || n.contactId === parentNodeId);
+           let angle = -Math.PI / 2;
+           if (parentNode?.targetX !== undefined) {
+             angle = Math.atan2(parentNode.targetY - H / 2, parentNode.targetX - W / 2);
            }
-         }
-         if (!moved) break;
-       }
+           return { parentNodeId, children: [...children].sort((a, b) => contacts.indexOf(a) - contacts.indexOf(b)), angle };
+         });
+         parentEntries.sort((a, b) => a.angle - b.angle);
 
-       // Write resolved angles back to angleMap
-       angleEntries.forEach(({ id, angle }) => angleMap.set(id, angle));
+         // Total children count
+         const total = group.length;
+
+         // Assign sectors: each parent gets a sector proportional to child count
+         // Sectors start at the first parent's angle and go clockwise
+         // To prevent wrapping issues, compute cumulative sector sizes
+         let cursor = parentEntries.length > 0 ? parentEntries[0].angle - ((parentEntries[0].children.length / total) * Math.PI) : -Math.PI / 2;
+
+         parentEntries.forEach(({ children, angle }) => {
+           const sectorSize = Math.max(
+             (children.length / total) * 2 * Math.PI,
+             children.length * minAngGap
+           );
+           const sectorStart = cursor;
+           const sectorEnd = cursor + sectorSize;
+           cursor = sectorEnd;
+
+           // Place children evenly within sector
+           if (children.length === 1) {
+             // Single child: place at parent angle
+             angleMap.set(children[0].id, angle);
+           } else {
+             const childStep = sectorSize / (children.length - 1);
+             children.forEach((c, i) => {
+               angleMap.set(c.id, sectorStart + i * childStep);
+             });
+           }
+         });
+       }
 
        // Place nodes using computed angles
        group.forEach(c => {
