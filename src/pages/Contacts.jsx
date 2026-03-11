@@ -9,6 +9,7 @@ import BulkTagsModal from "@/components/contact/BulkTagsModal";
 import BulkIndicadorModal from "@/components/contact/BulkIndicadorModal";
 import ContactTable from "@/components/contact/ContactTable";
 import ConnectionHelpModal from "@/components/contact/ConnectionHelpModal";
+import IndicadorFilterModal from "@/components/contact/IndicadorFilterModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
