@@ -460,7 +460,7 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
 
     nodesRef.current = nodes;
      edgesRef.current = edges;
-    }, [contacts, centralContactId, layoutModel, orbitDistance]);
+    }, [contacts, centralContactId, layoutModel, orbitDistances]);
 
   const simulate = useCallback(() => {
     const nodes = nodesRef.current;
