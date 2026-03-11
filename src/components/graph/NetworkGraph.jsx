@@ -244,34 +244,41 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
          });
 
        } else if (layoutModel === "proporcional") {
-         // Proportional sectors — no edge crossings, children clustered near parent angle
+         // Proportional sectors — strict no-overlap, no-crossing, alphabetical order
          const total = parentEntries.reduce((s, p) => s + p.children.length, 0);
          const sectorSizes = parentEntries.map(p => (p.children.length / total) * 2 * Math.PI);
-         // Anchor: start sweep so first parent's sector is centered on its angle
+
+         // Anchor first sector centered on first parent's angle
          let cursor = (parentEntries[0]?.angle ?? -Math.PI / 2) - sectorSizes[0] / 2;
          const sectorStarts = sectorSizes.map(s => { const c = cursor; cursor += s; return c; });
 
-         parentEntries.forEach(({ children, angle }, i) => {
-           const size = sectorSizes[i];
-           const sectorStart = sectorStarts[i];
-           const sectorEnd = sectorStart + size;
+         // Minimum angular gap to avoid node overlap at this orbit radius
+         const minAngStep = (2 * nRadius + NODE_MIN_GAP) / orbitR;
 
-           if (children.length === 1) {
-             // Place exactly at parent angle, clamped to sector
-             angleMap.set(children[0].id, Math.max(sectorStart, Math.min(sectorEnd, angle)));
+         parentEntries.forEach(({ children, angle }, i) => {
+           // Sort alphabetically (clockwise order within sector)
+           const sorted = [...children].sort((a, b) => a.name.localeCompare(b.name, 'pt'));
+           const n = sorted.length;
+           const sectorStart = sectorStarts[i];
+           const sectorEnd = sectorStart + sectorSizes[i];
+
+           if (n === 1) {
+             const a = Math.max(sectorStart + minAngStep / 2, Math.min(sectorEnd - minAngStep / 2, angle));
+             angleMap.set(sorted[0].id, a);
              return;
            }
 
-           const pad = size * 0.04;
-           const minStep = (2 * Math.PI) / Math.max(group.length * 2, 12); // min angular spacing
-           const spreadArc = Math.min(minStep * (children.length - 1), size - 2 * pad);
-           const step = spreadArc / (children.length - 1);
+           // Arc needed to space children without overlap
+           const neededArc = minAngStep * (n - 1);
+           const halfPad = minAngStep * 0.5;
+           const availableStart = sectorStart + halfPad;
+           const availableEnd = sectorEnd - halfPad;
 
-           // Ideal start centered on parent angle, clamped inside sector
-           let idealStart = angle - spreadArc / 2;
-           idealStart = Math.max(sectorStart + pad, Math.min(sectorEnd - pad - spreadArc, idealStart));
+           // Center arc on parent angle, then clamp inside sector
+           let idealStart = angle - neededArc / 2;
+           idealStart = Math.max(availableStart, Math.min(availableEnd - neededArc, idealStart));
 
-           children.forEach((c, ci) => angleMap.set(c.id, idealStart + ci * step));
+           sorted.forEach((c, ci) => angleMap.set(c.id, idealStart + ci * minAngStep));
          });
 
        } else if (layoutModel === "uniforme") {
