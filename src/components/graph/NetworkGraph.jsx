@@ -318,84 +318,48 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
     if (!canvas || !nodes.length) return;
     const W = canvas.width;
     const H = canvas.height;
-    const REPULSION = 4500;
-    const ORBIT_STRENGTH = 0.08; // Stronger to keep on orbit
-    const TARGET_STRENGTH = 0.25; // Pull towards target position (strong to prevent crossing)
     const DAMPING = 0.75;
 
     const centerNode = nodes.find(n => n.isCenter);
 
-    for (let i = 0; i < nodes.length; i++) {
-      const n = nodes[i];
+    nodes.forEach(n => {
+      // Center node: always snap to canvas center
       if (n.isCenter) {
         n.vx += (W / 2 - n.x) * 0.12;
         n.vy += (H / 2 - n.y) * 0.12;
-        continue;
+        if (dragRef.current?.id !== n.id) {
+          n.vx *= DAMPING;
+          n.vy *= DAMPING;
+          n.x += n.vx;
+          n.y += n.vy;
+        }
+        return;
       }
 
-      // Pull towards target position on orbit (slow return after drag)
-      if (n.returning && n.targetX !== undefined && n.targetY !== undefined) {
+      // Skip physics for node being dragged
+      if (dragRef.current?.id === n.id) return;
+
+      // If returning from drag: animate smoothly back to target
+      if (n.returning && n.targetX !== undefined) {
         const dtx = n.targetX - n.x;
         const dty = n.targetY - n.y;
-        const distToTarget = Math.sqrt(dtx * dtx + dty * dty);
-        n.vx += dtx * TARGET_STRENGTH * 0.4; // slow return speed
-        n.vy += dty * TARGET_STRENGTH * 0.4;
-        if (distToTarget < 2) n.returning = false;
-      } else if (!n.returning && n.targetX !== undefined && n.targetY !== undefined) {
-        const dtx = n.targetX - n.x;
-        const dty = n.targetY - n.y;
-        n.vx += dtx * TARGET_STRENGTH;
-        n.vy += dty * TARGET_STRENGTH;
+        const dist = Math.sqrt(dtx * dtx + dty * dty);
+        n.x += dtx * 0.08;
+        n.y += dty * 0.08;
+        if (dist < 1.5) {
+          n.x = n.targetX;
+          n.y = n.targetY;
+          n.returning = false;
+        }
+        return;
       }
 
-      // Orbit radius maintenance
-      if (centerNode) {
-        const dcx = n.x - centerNode.x;
-        const dcy = n.y - centerNode.y;
-        const dist = Math.sqrt(dcx * dcx + dcy * dcy) || 1;
-        const err = dist - n.orbitRadius;
-        const force = err * ORBIT_STRENGTH;
-        n.vx -= (dcx / dist) * force;
-        n.vy -= (dcy / dist) * force;
-      }
-
-      // Repulsion (only between nodes on the same level to avoid cross-orbit drifting)
-      for (let j = i + 1; j < nodes.length; j++) {
-        const m = nodes[j];
-        if (n.level !== m.level) continue; // skip repulsion across levels
-        const dx = m.x - n.x;
-        const dy = m.y - n.y;
-        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-        const force = REPULSION * 1.2 / (dist * dist);
-        const fx = (dx / dist) * force;
-        const fy = (dy / dist) * force;
-        n.vx -= fx; n.vy -= fy;
-        m.vx += fx; m.vy += fy;
-      }
-    }
-
-    nodes.forEach(n => {
-      if (dragRef.current && dragRef.current.id === n.id) return;
-      n.vx *= DAMPING;
-      n.vy *= DAMPING;
-      n.x += n.vx;
-      n.y += n.vy;
-
-      // Hard-constrain non-center nodes to their orbit radius (skip while returning, orbit force handles it)
-      if (!n.isCenter && !n.returning && centerNode && n.orbitRadius) {
-        const dcx = n.x - centerNode.x;
-        const dcy = n.y - centerNode.y;
-        const dist = Math.sqrt(dcx * dcx + dcy * dcy) || 1;
-        // Snap radial distance to orbitRadius
-        n.x = centerNode.x + (dcx / dist) * n.orbitRadius;
-        n.y = centerNode.y + (dcy / dist) * n.orbitRadius;
-        // Remove radial velocity component
-        const radialVel = n.vx * (dcx / dist) + n.vy * (dcy / dist);
-        n.vx -= radialVel * (dcx / dist);
-        n.vy -= radialVel * (dcy / dist);
-      } else {
-        n.x = Math.max(n.radius + 4, Math.min(W - n.radius - 4, n.x));
-        n.y = Math.max(n.radius + 4, Math.min(H - n.radius - 4, n.y));
+      // Normal mode: hard-lock to target position (no drift allowed)
+      if (n.targetX !== undefined && n.targetY !== undefined) {
+        n.x = n.targetX;
+        n.y = n.targetY;
+        n.vx = 0;
+        n.vy = 0;
       }
     });
   }, []);
