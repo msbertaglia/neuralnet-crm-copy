@@ -2,6 +2,12 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 export const LAYOUT_MODELS = [
   {
+    id: "padrao",
+    label: "Padrão",
+    icon: "◉",
+    description: "Órbitas mínimas com espaçamento variável entre camadas. Planetas mais próximos dos pais sem cruzar arestas.",
+  },
+  {
     id: "voronoi",
     label: "Voronoi",
     icon: "⬡",
@@ -12,12 +18,6 @@ export const LAYOUT_MODELS = [
     label: "Proporcional",
     icon: "◎",
     description: "Setores proporcionais ao nº de filhos, de dentro pra fora. Arestas nunca se cruzam.",
-  },
-  {
-    id: "uniforme",
-    label: "Uniforme",
-    icon: "⊙",
-    description: "Todos os filhos equidistantes na órbita. Famílias centradas no ângulo do pai.",
   },
   {
     id: "arvore",
