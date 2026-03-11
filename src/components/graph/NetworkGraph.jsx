@@ -176,10 +176,11 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
         if (group.length === 0) continue;
 
        const nRadius = lvl === 1 ? 26 : lvl === 2 ? 21 : 17;
-       const baseR = BASE_ORBIT_RADII[lvl] || lvl * 180;
+       const baseR = BASE_ORBIT_RADII[lvl] ?? 0;
        const neededR = minOrbitRadius(group.length, nRadius);
-       const prevOrbitR = lvl === 1 ? 0 : (nodes.find(n => n.level === lvl - 1)?.orbitRadius || (BASE_ORBIT_RADII[lvl - 1] || (lvl - 1) * 180));
-       const minFromPrev = prevOrbitR + nRadius * 2 + 40;
+       const prevOrbitR = lvl === 1 ? 0 : (nodes.find(n => n.level === lvl - 1)?.orbitRadius || 0);
+       const gap = nRadius * 2 + 28; // mínima folga entre órbitas
+       const minFromPrev = prevOrbitR + gap;
        const orbitR = Math.max(baseR, neededR, minFromPrev);
 
        // Angular step = minimum spacing in radians to avoid overlap
