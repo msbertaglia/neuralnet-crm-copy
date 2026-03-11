@@ -242,6 +242,36 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
          });
        });
 
+       // --- Global angular collision resolution for this level ---
+       // Minimum angular gap between node edges on the same orbit
+       const minAngGap = (2 * nRadius + NODE_MIN_GAP) / orbitR;
+
+       // Build array of {id, angle} sorted by angle
+       const angleEntries = group.map(c => ({ id: c.id, angle: angleMap.get(c.id) ?? -Math.PI / 2 }));
+       angleEntries.sort((a, b) => a.angle - b.angle);
+
+       // Iterative spread: push apart nodes that are too close (circular)
+       for (let iter = 0; iter < 50; iter++) {
+         let moved = false;
+         for (let k = 0; k < angleEntries.length; k++) {
+           const curr = angleEntries[k];
+           const next = angleEntries[(k + 1) % angleEntries.length];
+           let diff = next.angle - curr.angle;
+           // Wrap around circle
+           if (k === angleEntries.length - 1) diff += 2 * Math.PI;
+           if (diff < minAngGap) {
+             const push = (minAngGap - diff) / 2;
+             curr.angle -= push;
+             next.angle += push;
+             moved = true;
+           }
+         }
+         if (!moved) break;
+       }
+
+       // Write resolved angles back to angleMap
+       angleEntries.forEach(({ id, angle }) => angleMap.set(id, angle));
+
        // Place nodes using computed angles
        group.forEach(c => {
          const angle = angleMap.get(c.id) ?? -Math.PI / 2;
