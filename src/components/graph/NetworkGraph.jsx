@@ -366,8 +366,8 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
        // Place nodes using computed angles
        group.forEach(c => {
          const angle = angleMap.get(c.id) ?? -Math.PI / 2;
-         const x = W / 2 + orbitR * Math.cos(angle);
-         const y = H / 2 + orbitR * Math.sin(angle);
+         const x = W / 2 + actualOrbitR * Math.cos(angle);
+         const y = H / 2 + actualOrbitR * Math.sin(angle);
          const existing = nodesRef.current.find(n => n.id === c.id && n.level === lvl);
          nodes.push({
            id: c.id,
@@ -382,7 +382,7 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
            vx: 0, vy: 0,
            radius: nRadius,
            level: lvl,
-           orbitRadius: orbitR,
+           orbitRadius: actualOrbitR,
            targetX: x,
            targetY: y,
            contact: c,
