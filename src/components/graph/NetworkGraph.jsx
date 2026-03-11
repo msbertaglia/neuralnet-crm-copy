@@ -244,11 +244,17 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
          });
 
        } else if (layoutModel === "proporcional") {
-         // Sector proportional to child count
+         // Proportional sectors — no edge crossings guaranteed
+         // Sectors are contiguous and ordered by parent angular position.
+         // Each parent gets arc = (childCount / total) * 2π.
+         // Start the first sector centered on the first parent's angle so
+         // the distribution is anchored to the actual parent positions.
          const total = parentEntries.reduce((s, p) => s + p.children.length, 0);
-         let cursor = parentEntries[0]?.angle - ((parentEntries[0]?.children.length / total) * Math.PI) || -Math.PI / 2;
-         parentEntries.forEach(({ children, angle }) => {
-           const size = (children.length / total) * 2 * Math.PI;
+         const sectorSizes = parentEntries.map(p => (p.children.length / total) * 2 * Math.PI);
+         // Anchor: start the sweep so the first parent's sector is centered on its angle
+         let cursor = (parentEntries[0]?.angle ?? -Math.PI / 2) - sectorSizes[0] / 2;
+         parentEntries.forEach(({ children }, i) => {
+           const size = sectorSizes[i];
            spreadChildren(children, cursor, cursor + size, 0.06);
            cursor += size;
          });
