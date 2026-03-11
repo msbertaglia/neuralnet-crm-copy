@@ -241,15 +241,16 @@ export default function Contacts() {
               <Tags className="w-4 h-4" /> Tags {selectedIds.size > 0 && `(${selectedIds.size})`}
             </button>
             <button
-              onClick={() => setShowBulkIndicador(true)}
-              disabled={selectedIds.size === 0}
-              className={`px-3 h-9 flex items-center gap-2 rounded-lg transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed ${
+              onClick={() => selectedIds.size > 0 ? setShowBulkIndicador(true) : setShowIndicadorFilter(true)}
+              className={`px-3 h-9 flex items-center gap-2 rounded-lg transition-colors text-sm font-medium ${
                 selectedIds.size > 0
                   ? "bg-green-600 hover:bg-green-700 text-white"
-                  : "bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300"
+                  : indicadorFilter.length > 0
+                    ? "bg-green-600/30 hover:bg-green-600/50 border border-green-500/50 text-green-300"
+                    : "bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300"
               }`}
             >
-              <Link2 className="w-4 h-4" /> Indicador {selectedIds.size > 0 && `(${selectedIds.size})`}
+              <Link2 className="w-4 h-4" /> Indicador {selectedIds.size > 0 ? `(${selectedIds.size})` : indicadorFilter.length > 0 ? `(${indicadorFilter.length})` : ""}
             </button>
             {/* View toggle */}
             <div className="flex bg-slate-800 border border-slate-700 rounded-lg overflow-hidden">
