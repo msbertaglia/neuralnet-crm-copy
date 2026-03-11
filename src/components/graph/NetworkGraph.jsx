@@ -517,6 +517,7 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
       }
 
       if (n.isCenter) {
+
         // Glow ring
         ctx.shadowColor = "#6366f1";
         ctx.shadowBlur = 28;
