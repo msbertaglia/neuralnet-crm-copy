@@ -212,45 +212,71 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
        });
        parentEntries.sort((a, b) => a.angle - b.angle);
 
-       // Each parent's sector spans from the bisector with the previous parent
-       // to the bisector with the next parent (Voronoi on circle).
-       // This maximizes spacing between families while keeping children non-crossing.
        const numParents = parentEntries.length;
 
-       parentEntries.forEach(({ children, angle }, idx) => {
-         let sectorStart, sectorEnd;
-
-         if (numParents === 1) {
-           // Single parent: owns the full circle
-           sectorStart = angle - Math.PI;
-           sectorEnd = angle + Math.PI;
-         } else {
-           const prevAngle = parentEntries[(idx - 1 + numParents) % numParents].angle;
-           const nextAngle = parentEntries[(idx + 1) % numParents].angle;
-
-           // Arc from prev to current (going forward)
-           let arcPrev = normalizeAngle(angle - prevAngle);
-           // Arc from current to next (going forward)
-           let arcNext = normalizeAngle(nextAngle - angle);
-
-           sectorStart = angle - arcPrev / 2;
-           sectorEnd = angle + arcNext / 2;
-         }
-
-         const sectorSize = sectorEnd - sectorStart;
-
+       // Helper: spread children within [sectorStart, sectorEnd] with optional padding
+       const spreadChildren = (children, sectorStart, sectorEnd, padding = 0.08) => {
+         const size = sectorEnd - sectorStart;
          if (children.length === 1) {
-           angleMap.set(children[0].id, angle);
+           angleMap.set(children[0].id, sectorStart + size / 2);
          } else {
-           // Small padding (8%) so children don't sit on sector boundaries
-           const padding = sectorSize * 0.08;
-           const spread = sectorSize - 2 * padding;
-           const childStep = spread / (children.length - 1);
-           children.forEach((c, i) => {
-             angleMap.set(c.id, sectorStart + padding + i * childStep);
-           });
+           const pad = size * padding;
+           const spread = size - 2 * pad;
+           const step = spread / (children.length - 1);
+           children.forEach((c, i) => angleMap.set(c.id, sectorStart + pad + i * step));
          }
-       });
+       };
+
+       if (layoutModel === "voronoi") {
+         // Bisector sectors — maximizes spacing between families
+         parentEntries.forEach(({ children, angle }, idx) => {
+           let sectorStart, sectorEnd;
+           if (numParents === 1) {
+             sectorStart = angle - Math.PI; sectorEnd = angle + Math.PI;
+           } else {
+             const prevAngle = parentEntries[(idx - 1 + numParents) % numParents].angle;
+             const nextAngle = parentEntries[(idx + 1) % numParents].angle;
+             sectorStart = angle - normalizeAngle(angle - prevAngle) / 2;
+             sectorEnd   = angle + normalizeAngle(nextAngle - angle) / 2;
+           }
+           if (children.length === 1) angleMap.set(children[0].id, angle);
+           else spreadChildren(children, sectorStart, sectorEnd, 0.08);
+         });
+
+       } else if (layoutModel === "proporcional") {
+         // Sector proportional to child count
+         const total = parentEntries.reduce((s, p) => s + p.children.length, 0);
+         let cursor = parentEntries[0]?.angle - ((parentEntries[0]?.children.length / total) * Math.PI) || -Math.PI / 2;
+         parentEntries.forEach(({ children, angle }) => {
+           const size = (children.length / total) * 2 * Math.PI;
+           spreadChildren(children, cursor, cursor + size, 0.06);
+           cursor += size;
+         });
+
+       } else if (layoutModel === "uniforme") {
+         // Equal sector per parent, children equidistant, centered on parent angle
+         const sectorSize = (2 * Math.PI) / Math.max(numParents, 1);
+         parentEntries.forEach(({ children, angle }) => {
+           spreadChildren(children, angle - sectorSize / 2, angle + sectorSize / 2, 0.1);
+         });
+
+       } else if (layoutModel === "arvore") {
+         // Narrow cone under parent — tree-like
+         const coneAngle = Math.PI / 4; // 45° cone per family
+         parentEntries.forEach(({ children, angle }) => {
+           const half = (coneAngle * Math.min(children.length, 6)) / 2;
+           spreadChildren(children, angle - half, angle + half, 0.05);
+         });
+
+       } else if (layoutModel === "espiral") {
+         // Asymmetric fan — children offset clockwise from parent
+         const fanBase = Math.PI / 3;
+         parentEntries.forEach(({ children, angle }) => {
+           const fan = fanBase * Math.min(children.length, 8) / 4;
+           // Shift slightly clockwise so the arc "flows" from parent
+           spreadChildren(children, angle - fan * 0.3, angle + fan * 0.7, 0.05);
+         });
+       }
 
        // Place nodes using computed angles
        group.forEach(c => {
