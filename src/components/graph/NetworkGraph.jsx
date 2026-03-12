@@ -335,7 +335,7 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
                return;
              }
              const startAngle = angle - ((n - 1) / 2) * minStep;
-             sorted.forEach((c, ci) => angleMap.set(c.id, normalizeAngle(startAngle + ci * minStep)));
+             sorted.forEach((c, ci) => angleMap.set(c.id, startAngle + ci * minStep));
            });
          }
 
