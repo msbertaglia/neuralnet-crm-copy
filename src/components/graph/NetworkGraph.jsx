@@ -274,42 +274,52 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
          }
 
        } else if (layoutModel === "proporcional") {
-         // Proportional sectors — strict no-overlap, no-crossing, alphabetical order
-         const total = parentEntries.reduce((s, p) => s + p.children.length, 0);
-         const sectorSizes = parentEntries.map(p => (p.children.length / total) * 2 * Math.PI);
-
-         // Anchor first sector centered on first parent's angle
-         let cursor = (parentEntries[0]?.angle ?? -Math.PI / 2) - sectorSizes[0] / 2;
-         const sectorStarts = sectorSizes.map(s => { const c = cursor; cursor += s; return c; });
-
-         // Minimum angular gap to avoid node overlap at this orbit radius
          const minAngStep = (2 * nRadius + NODE_MIN_GAP) / orbitR;
 
-         parentEntries.forEach(({ children, angle }, i) => {
-           // Sort alphabetically (clockwise order within sector)
-           const sorted = [...children].sort((a, b) => a.name.localeCompare(b.name, 'pt'));
-           const n = sorted.length;
-           const sectorStart = sectorStarts[i];
-           const sectorEnd = sectorStart + sectorSizes[i];
-
-           if (n === 1) {
-             const a = Math.max(sectorStart + minAngStep / 2, Math.min(sectorEnd - minAngStep / 2, angle));
-             angleMap.set(sorted[0].id, a);
-             return;
+         if (numParents <= 1) {
+           const fam = parentEntries[0];
+           if (fam) {
+             const soloParentId = [...byParent.keys()][0];
+             const parentIsCenter = soloParentId === "__center__";
+             const sorted = [...fam.children].sort((a, b) => a.name.localeCompare(b.name, 'pt'));
+             if (parentIsCenter || sorted.length === 1) {
+               const step = (2 * Math.PI) / sorted.length;
+               sorted.forEach((c, ci) => angleMap.set(c.id, ci * step - Math.PI / 2));
+             } else {
+               const parentOrbitR = nodes.find(n => n.level === lvl - 1)?.orbitRadius || 0;
+               const geomCap = orbitR > parentOrbitR && parentOrbitR > 0
+                 ? Math.acos(Math.min(1, parentOrbitR / orbitR)) : Math.PI * 0.40;
+               const MAX_HALF = Math.min(Math.PI * 0.40, geomCap);
+               const arc = (sorted.length - 1) * minAngStep;
+               const halfArc = Math.min(arc / 2, MAX_HALF);
+               const step = sorted.length > 1 ? (halfArc * 2) / (sorted.length - 1) : 0;
+               sorted.forEach((c, ci) => angleMap.set(c.id, fam.angle - halfArc + ci * step));
+             }
            }
+         } else {
+           // Proportional sectors — strict no-overlap, no-crossing, alphabetical order
+           const total = parentEntries.reduce((s, p) => s + p.children.length, 0);
+           const sectorSizes = parentEntries.map(p => (p.children.length / total) * 2 * Math.PI);
+           let cursor = (parentEntries[0]?.angle ?? -Math.PI / 2) - sectorSizes[0] / 2;
+           const sectorStarts = sectorSizes.map(s => { const c = cursor; cursor += s; return c; });
 
-           // Arc needed to space children without overlap
-           const neededArc = minAngStep * (n - 1);
-           const halfPad = minAngStep * 0.5;
-           const availableStart = sectorStart + halfPad;
-           const availableEnd = sectorEnd - halfPad;
-
-           // Center arc on parent angle, then clamp inside sector
-           let idealStart = angle - neededArc / 2;
-           idealStart = Math.max(availableStart, Math.min(availableEnd - neededArc, idealStart));
-
-           sorted.forEach((c, ci) => angleMap.set(c.id, idealStart + ci * minAngStep));
-         });
+           parentEntries.forEach(({ children, angle }, i) => {
+             const sorted = [...children].sort((a, b) => a.name.localeCompare(b.name, 'pt'));
+             const n = sorted.length;
+             const sectorStart = sectorStarts[i];
+             const sectorEnd = sectorStart + sectorSizes[i];
+             if (n === 1) {
+               const a = Math.max(sectorStart + minAngStep / 2, Math.min(sectorEnd - minAngStep / 2, angle));
+               angleMap.set(sorted[0].id, a);
+               return;
+             }
+             const neededArc = minAngStep * (n - 1);
+             const halfPad = minAngStep * 0.5;
+             let idealStart = angle - neededArc / 2;
+             idealStart = Math.max(sectorStart + halfPad, Math.min(sectorEnd - halfPad - neededArc, idealStart));
+             sorted.forEach((c, ci) => angleMap.set(c.id, idealStart + ci * minAngStep));
+           });
+         }
 
        } else if (layoutModel === "padrao") {
          // Zone-based layout: each parent owns a zone bounded by bisectors to its neighbors.
