@@ -368,17 +368,27 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
            const STEP_PX = 2 * nRadius + NODE_MIN_GAP;
 
            if (lvl === 1 && numParents === 1) {
-             // N1: distribute proportionally based on N2 children count per N1 node
+             // N1: distribute proportionally based on TOTAL subtree size (all descendants)
              // so nodes with larger sub-networks get more angular space
-             const n2Group = hierarchyContacts.filter(c => levelMap.get(c.id) === 2);
-             const n2ByParent = new Map();
-             n2Group.forEach(c => {
-               const pid = parentOf.get(c.id);
-               if (pid) n2ByParent.set(pid, (n2ByParent.get(pid) || 0) + 1);
-             });
+             const subtreeSize = (rootId) => {
+               let count = 0;
+               const queue = [rootId];
+               const visited = new Set([rootId]);
+               while (queue.length) {
+                 const cur = queue.shift();
+                 hierarchyContacts.forEach(c => {
+                   if (!visited.has(c.id) && parentOf.get(c.id) === cur) {
+                     visited.add(c.id);
+                     queue.push(c.id);
+                     count++;
+                   }
+                 });
+               }
+               return count;
+             };
 
              const n1Children = [...parentEntries[0].children].sort((a, b) => contacts.indexOf(a) - contacts.indexOf(b));
-             const weights = n1Children.map(c => Math.max(1, n2ByParent.get(c.id) || 0));
+             const weights = n1Children.map(c => Math.max(1, subtreeSize(c.id)));
              const totalWeight = weights.reduce((s, w) => s + w, 0);
 
              let cursor = -Math.PI / 2;
