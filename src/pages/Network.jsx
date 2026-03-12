@@ -332,6 +332,17 @@ export default function Network() {
           <RefreshCw className="w-4 h-4" />
         </button>
 
+        {/* Reset center button — only shown when center was changed */}
+        {centralContactId && originalCentralId && centralContactId !== originalCentralId && (
+          <button
+            onClick={() => { setCentralContactId(originalCentralId); setRebuildKey(k => k + 1); }}
+            className="absolute top-14 left-4 bg-indigo-700/90 hover:bg-indigo-600 border border-indigo-500 rounded-lg px-3 py-1.5 text-white text-xs font-medium transition-colors flex items-center gap-1.5"
+            title="Voltar ao centro original"
+          >
+            <RefreshCw className="w-3 h-3" /> Resetar centro
+          </button>
+        )}
+
       </div>
 
       {/* Sidebar */}
