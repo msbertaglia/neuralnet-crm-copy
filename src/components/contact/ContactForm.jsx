@@ -32,6 +32,7 @@ export default function ContactForm({ contact, contacts, onSave, onClose }) {
   const introducerRef = useRef(null);
   const [showApresentouModal, setShowApresentouModal] = useState(false);
   const [apresentouSuccess, setApresentouSuccess] = useState(0);
+  const [sessionAssignedIds, setSessionAssignedIds] = useState(new Set());
 
   const handleApresentouConfirm = async (chosen) => {
     await Promise.all(
@@ -42,6 +43,11 @@ export default function ContactForm({ contact, contacts, onSave, onClose }) {
         })
       )
     );
+    setSessionAssignedIds(prev => {
+      const next = new Set(prev);
+      chosen.forEach(c => next.add(c.id));
+      return next;
+    });
     setShowApresentouModal(false);
     setApresentouSuccess(chosen.length);
     setTimeout(() => setApresentouSuccess(0), 4000);
