@@ -337,6 +337,9 @@ export default function ContactForm({ contact, contacts, onSave, onClose }) {
                 {!contact?.id && (
                   <p className="text-slate-500 text-xs mt-1">Salve o contato primeiro para usar esta função</p>
                 )}
+                {apresentouSuccess > 0 && (
+                  <p className="text-green-400 text-xs mt-1">✓ {apresentouSuccess} contato(s) atualizado(s) com sucesso</p>
+                )}
               </Field>
               <Field label="Último contato">
                 <Input type="date" value={form.last_contact_date} onChange={e => set("last_contact_date", e.target.value)} className="bg-slate-800 border-slate-600 text-white" />
