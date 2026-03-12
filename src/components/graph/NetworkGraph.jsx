@@ -376,7 +376,7 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
 
           // Expand orbit radius until no adjacent family arcs overlap
           let computedR = orbitR;
-          if (numParents > 1) {
+          if (numParents > 1 && !hasCustomDistance) {
             for (let i = 0; i < numParents; i++) {
               const j = (i + 1) % numParents;
               const angGap = normalizeAngle(familyData[j].angle - familyData[i].angle);
