@@ -296,6 +296,7 @@ export default function Network() {
           </div>
         ) : (
           <NetworkGraph
+            key={rebuildKey}
             contacts={contacts}
             highlightedIds={highlightedIds}
             ancestorIds={ancestorIds}
