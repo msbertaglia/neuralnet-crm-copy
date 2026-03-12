@@ -31,6 +31,7 @@ export default function ContactForm({ contact, contacts, onSave, onClose }) {
   const [showIntroducerList, setShowIntroducerList] = useState(false);
   const introducerRef = useRef(null);
   const [showApresentouModal, setShowApresentouModal] = useState(false);
+  const [apresentouSuccess, setApresentouSuccess] = useState(0);
 
   const handleApresentouConfirm = async (chosen) => {
     await Promise.all(
@@ -42,6 +43,8 @@ export default function ContactForm({ contact, contacts, onSave, onClose }) {
       )
     );
     setShowApresentouModal(false);
+    setApresentouSuccess(chosen.length);
+    setTimeout(() => setApresentouSuccess(0), 4000);
   };
 
   useEffect(() => {
