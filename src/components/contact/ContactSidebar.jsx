@@ -33,8 +33,25 @@ const NEXT_STEP_COLORS = {
   sem_proximo_passo: "text-slate-400",
 };
 
-export default function ContactSidebar({ contact, onClose, onEdit, logs, documents }) {
+export default function ContactSidebar({ contact, onClose, onEdit, logs, documents, allContacts = [], onRefresh }) {
   const [tab, setTab] = useState("info");
+  const [showApresentouModal, setShowApresentouModal] = useState(false);
+  const [savingApresentou, setSavingApresentou] = useState(false);
+
+  const handleApresentouConfirm = async (chosen) => {
+    setSavingApresentou(true);
+    await Promise.all(
+      chosen.map(c =>
+        base44.entities.Contact.update(c.id, {
+          introduced_by_id: contact.id,
+          introduced_by_name: contact.name,
+        })
+      )
+    );
+    setSavingApresentou(false);
+    setShowApresentouModal(false);
+    if (onRefresh) onRefresh();
+  };
   if (!contact) return null;
 
   const fmtDate = (d) => {
