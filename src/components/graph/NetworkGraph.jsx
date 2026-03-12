@@ -290,33 +290,22 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
          });
 
        } else if (layoutModel === "padrao") {
-         // SOLAR SYSTEM - GUARANTEED NO EDGE CROSSINGS
+         // SOLAR SYSTEM - BISECTOR ZONES (guaranteed no crossing between ANY level edges)
          //
          // Algorithm:
-         // 1. Each parent family gets an EXCLUSIVE contiguous zone on the orbit
-         // 2. Zones are ordered clockwise in the same order as their parents
-         //    → this mathematically prevents any edge (parent→child) from crossing another
-         // 3. Each zone is centered on the parent's angle (minimizes parent-child distance)
-         // 4. Orbit radius is expanded until no adjacent zones overlap
-         //
-         // Proof of no-crossing: edges A→Ca and B→Cb cross iff their angular intervals interleave.
-         // Since all Ca are inside zone_A and all Cb are inside zone_B, and zone_A and zone_B
-         // are non-overlapping and in the same angular order as A and B → intervals never interleave.
+         // 1. Each parent family gets a zone bounded by bisectors to its angular neighbors
+         // 2. Children are placed within their parent's bisector zone
+         // 3. This guarantees that N(k)→N(k+1) edges never cross N(k-1)→N(k) edges
+         //    because both parent and all children lie within the same angular wedge from center
+         // 4. Orbit radius is expanded until all children fit within their zone
 
-         const INTER_FAMILY_PX = 20; // min pixel gap between adjacent family zones
-
-         // Build family data: sorted children + zone half-width in pixels
          const familyData = parentEntries.map(({ children, angle }) => {
            const sorted = [...children].sort((a, b) => a.name.localeCompare(b.name, 'pt'));
-           const n = sorted.length;
-           // Zone spans: center ± halfWidth, with minAngStep spacing between children
-           // halfWidthPx = (n-1)/2 * (2*nRadius + NODE_MIN_GAP)
-           const halfWidthPx = n <= 1 ? 0 : ((n - 1) / 2) * (2 * nRadius + NODE_MIN_GAP);
-           return { sorted, angle, n, halfWidthPx };
+           return { sorted, angle, n: sorted.length };
          });
 
          if (numParents <= 1) {
-           // Single parent (e.g., all N1 from center): spread evenly around full orbit
+           // Single parent: spread evenly around full orbit
            const fam = familyData[0];
            if (fam && fam.n > 0) {
              if (fam.n === 1) {
@@ -327,32 +316,65 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
              }
            }
          } else {
-           // Multiple parents: expand orbit R until adjacent zones don't overlap.
-           // Constraint for adjacent pair (i, j):
-           //   halfWidthPx_i + halfWidthPx_j + INTER_FAMILY_PX  ≤  R * angularGap(i→j)
-           //   ⟹  R  ≥  (halfWidthPx_i + halfWidthPx_j + INTER_FAMILY_PX) / angularGap(i→j)
+           const numF = numParents;
+
+           // Compute bisector between each adjacent pair: bisectors[i] = midpoint between family[i] and family[i+1]
+           const bisectors = familyData.map((fam, i) => {
+             const next = familyData[(i + 1) % numF];
+             const gap = normalizeAngle(next.angle - fam.angle);
+             return normalizeAngle(fam.angle + gap / 2);
+           });
+
+           // Zone for family i: from bisectors[i-1] to bisectors[i]  (clockwise)
+           const zoneArcs = familyData.map((_, i) => {
+             const zoneStart = bisectors[(i - 1 + numF) % numF];
+             return normalizeAngle(bisectors[i] - zoneStart);
+           });
+
+           // Expand orbit R so all families fit their children inside their zone
+           const STEP_PX = 2 * nRadius + NODE_MIN_GAP;
+           const ZONE_PAD_FRAC = 0.12;
            let computedR = orbitR;
            if (!hasCustomDistance) {
-             for (let i = 0; i < numParents; i++) {
-               const j = (i + 1) % numParents;
-               const angGap = normalizeAngle(familyData[j].angle - familyData[i].angle);
-               if (angGap < 0.0001) continue;
-               const needed = (familyData[i].halfWidthPx + familyData[j].halfWidthPx + INTER_FAMILY_PX) / angGap;
+             familyData.forEach(({ n }, i) => {
+               if (n <= 1) return;
+               const usableArc = zoneArcs[i] * (1 - 2 * ZONE_PAD_FRAC);
+               if (usableArc <= 0.001) return;
+               const needed = (n - 1) * STEP_PX / usableArc;
                if (needed > computedR) computedR = needed;
-             }
+             });
            }
            actualOrbitR = computedR;
 
-           const minAngStep = (2 * nRadius + NODE_MIN_GAP) / actualOrbitR;
-
-           familyData.forEach(({ sorted, angle, n }) => {
+           familyData.forEach(({ sorted, angle, n }, i) => {
              if (n === 1) {
                angleMap.set(sorted[0].id, angle);
-             } else {
-               // Center the arc on the parent's angle — minimizes parent-child distance
-               const startAngle = angle - ((n - 1) / 2) * minAngStep;
-               sorted.forEach((c, ci) => angleMap.set(c.id, startAngle + ci * minAngStep));
+               return;
              }
+             const minStep = STEP_PX / actualOrbitR;
+             const arc = (n - 1) * minStep;
+             const PAD = zoneArcs[i] * ZONE_PAD_FRAC;
+             const usableArc = Math.max(arc, zoneArcs[i] - 2 * PAD);
+             const effectiveStep = Math.min(minStep, (zoneArcs[i] - 2 * PAD) / (n - 1));
+
+             // Center children on parent's angle, clamped inside zone
+             const zoneStart = bisectors[(i - 1 + numF) % numF];
+             const zoneEnd = bisectors[i];
+             const clampedStart = normalizeAngle(zoneStart + PAD);
+             const clampedEnd = normalizeAngle(zoneEnd - PAD);
+             const availableForStart = normalizeAngle(clampedEnd - clampedStart - arc);
+             // Ideal start: centered on parent angle
+             let idealStart = normalizeAngle(angle - arc / 2);
+             // Clamp inside zone
+             const startMin = clampedStart;
+             const startMax = normalizeAngle(clampedEnd - arc);
+             // Work linearly from zoneStart
+             const idealOff = normalizeAngle(idealStart - clampedStart);
+             const maxOff = normalizeAngle(startMax - clampedStart);
+             const clampedOff = Math.min(idealOff, maxOff);
+             const startAngle = normalizeAngle(clampedStart + clampedOff);
+
+             sorted.forEach((c, ci) => angleMap.set(c.id, normalizeAngle(startAngle + ci * effectiveStep)));
            });
          }
 
