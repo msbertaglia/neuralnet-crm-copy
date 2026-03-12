@@ -596,10 +596,10 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
 
       let introducerId = contact.introduced_by_id;
 
-      // If "direto", draw edge from center
-      if (contact.introduced_by_id === "direto") {
-        introducerId = centralContactId;
-      }
+      // If "direto", draw edge from original owner (not transient center)
+       if (contact.introduced_by_id === "direto") {
+         introducerId = directOwnerId;
+       }
 
       if (!visibleIds.has(introducerId) || !visibleIds.has(contact.id)) {
         return;
