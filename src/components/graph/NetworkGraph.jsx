@@ -329,12 +329,14 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
            //   halfWidthPx_i + halfWidthPx_j + INTER_FAMILY_PX  ≤  R * angularGap(i→j)
            //   ⟹  R  ≥  (halfWidthPx_i + halfWidthPx_j + INTER_FAMILY_PX) / angularGap(i→j)
            let computedR = orbitR;
-           for (let i = 0; i < numParents; i++) {
-             const j = (i + 1) % numParents;
-             const angGap = normalizeAngle(familyData[j].angle - familyData[i].angle);
-             if (angGap < 0.0001) continue;
-             const needed = (familyData[i].halfWidthPx + familyData[j].halfWidthPx + INTER_FAMILY_PX) / angGap;
-             if (needed > computedR) computedR = needed;
+           if (!hasCustomDistance) {
+             for (let i = 0; i < numParents; i++) {
+               const j = (i + 1) % numParents;
+               const angGap = normalizeAngle(familyData[j].angle - familyData[i].angle);
+               if (angGap < 0.0001) continue;
+               const needed = (familyData[i].halfWidthPx + familyData[j].halfWidthPx + INTER_FAMILY_PX) / angGap;
+               if (needed > computedR) computedR = needed;
+             }
            }
            actualOrbitR = computedR;
 
