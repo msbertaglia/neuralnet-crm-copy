@@ -160,7 +160,7 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
      const parentOf = new Map();
      contacts.forEach(c => {
        if (!c.introduced_by_id || c.introduced_by_id === "sem_informacao") return;
-       const pid = c.introduced_by_id === "direto" ? centralContactId : c.introduced_by_id;
+       const pid = c.introduced_by_id === "direto" ? directOwnerId : c.introduced_by_id;
        parentOf.set(c.id, pid);
      });
 
