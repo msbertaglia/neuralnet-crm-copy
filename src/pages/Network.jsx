@@ -33,6 +33,7 @@ export default function Network() {
   const [selectedOrbit, setSelectedOrbit] = useState(2);
   const [orbitInputValue, setOrbitInputValue] = useState("180");
   const [rebuildKey, setRebuildKey] = useState(0);
+  const [originalCentralId, setOriginalCentralId] = useState(null);
 
   const maxLevel = useMemo(() => {
     if (!centralContactId || !contacts.length) return 5;

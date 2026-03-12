@@ -103,7 +103,7 @@ function computeOrbits(centralContactId, contacts) {
   return levels;
 }
 
-export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick, centralContactId, highlightedIds, ancestorIds, filterMode = "completo", layoutModel = "voronoi", orbitDistances = {} }) {
+export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick, onSetCenter, centralContactId, highlightedIds, ancestorIds, filterMode = "completo", layoutModel = "voronoi", orbitDistances = {} }) {
   const canvasRef = useRef(null);
   const nodesRef = useRef([]);
   const edgesRef = useRef([]);
@@ -115,6 +115,7 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
   const hoveredRef = useRef(null);
   const dragMovedRef = useRef(false); // track if mouse actually moved while dragging
   const returnTimerRef = useRef(null); // timer before snapping back
+  const dragNearCenterRef = useRef(false); // true when dragged node is hovering over center
 
   const buildGraph = useCallback(() => {
     const canvas = canvasRef.current;
