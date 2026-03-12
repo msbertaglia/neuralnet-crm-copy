@@ -219,22 +219,20 @@ export default function Network() {
               <option key={lvl} value={lvl}>N{lvl - 1}-N{lvl}</option>
             ))}
           </select>
-          <Input
-            type="number"
-            min={100}
-            max={2000}
+          <input
+            type="text"
+            inputMode="numeric"
+            pattern="[0-9]*"
             value={orbitInputValue}
-            onChange={e => setOrbitInputValue(e.target.value)}
-            style={{ MozAppearance: "textfield", WebkitAppearance: "none" }}
-            onWheel={e => e.currentTarget.blur()}
+            onChange={e => setOrbitInputValue(e.target.value.replace(/\D/g, ""))}
             onKeyDown={e => {
               if (e.key === "Enter") {
-                const v = Math.min(2000, Math.max(100, Number(orbitInputValue)));
+                const v = Math.min(2000, Math.max(100, Number(orbitInputValue) || 180));
                 setOrbitDistances(prev => ({ ...prev, [selectedOrbit]: v }));
                 setOrbitInputValue(String(v));
               }
             }}
-            className="w-16 h-6 text-xs bg-slate-700 border-slate-600 text-slate-200 px-1.5 text-center"
+            className="w-16 h-6 text-xs bg-slate-700 border border-slate-600 text-slate-200 px-1.5 text-center rounded"
           />
           <button
             onClick={() => {
