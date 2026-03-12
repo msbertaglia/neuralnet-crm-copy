@@ -1011,11 +1011,18 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
              lastClickTime = now;
            }
          } else {
-           // Was dragged - wait 1s then return to orbit
-           returnTimerRef.current = setTimeout(() => {
-             returnTimerRef.current = null;
-             node.returning = true;
-           }, 1000);
+           // Was dragged - check if dropped on center
+           if (dragNearCenterRef.current && !node.isCenter && onSetCenter) {
+             onSetCenter(node.contact);
+             dragNearCenterRef.current = false;
+           } else {
+             // Return to orbit
+             dragNearCenterRef.current = false;
+             returnTimerRef.current = setTimeout(() => {
+               returnTimerRef.current = null;
+               node.returning = true;
+             }, 1000);
+           }
          }
        }
        isPanningRef.current = false;
