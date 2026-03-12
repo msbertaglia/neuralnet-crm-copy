@@ -626,7 +626,18 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
 
       ctx.beginPath();
       ctx.moveTo(src.x, src.y);
-      ctx.lineTo(tgt.x, tgt.y);
+
+      if (e.isIntroduced) {
+        // Bezier curving outward (away from center) so the line never crosses inner orbits
+        const mx = (src.x + tgt.x) / 2;
+        const my = (src.y + tgt.y) / 2;
+        const cdx = mx - W / 2;
+        const cdy = my - H / 2;
+        const pushFactor = 0.35;
+        ctx.quadraticCurveTo(mx + cdx * pushFactor, my + cdy * pushFactor, tgt.x, tgt.y);
+      } else {
+        ctx.lineTo(tgt.x, tgt.y);
+      }
 
       if (e.isIntroduced) {
         ctx.strokeStyle = `rgba(148,163,184,${s.opacity * 0.7 * edgeFade})`;
