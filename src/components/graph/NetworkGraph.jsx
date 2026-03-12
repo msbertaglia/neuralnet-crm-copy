@@ -183,7 +183,9 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
        const prevNodeRadius = lvl === 1 ? 40 : (prevLvlNodes[0]?.radius || nRadius);
        const BASE_INTER_GAP = orbitDistances[lvl] ?? 180;
        const minFromPrev = prevOrbitR + prevNodeRadius + nRadius + BASE_INTER_GAP;
-       const orbitR = Math.max(baseR, neededR, minFromPrev);
+       const hasCustomDistance = orbitDistances[lvl] !== undefined;
+       // Se o usuário definiu a distância explicitamente, ela é fixa (ignora neededR)
+       const orbitR = hasCustomDistance ? minFromPrev : Math.max(baseR, neededR, minFromPrev);
 
        // Group children by parent (sorted by creation order)
        const byParent = new Map();
