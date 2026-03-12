@@ -285,9 +285,11 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
              const soloParentId = [...byParent.keys()][0];
              const parentIsCenter = soloParentId === "__center__";
              const sorted = [...fam.children].sort((a, b) => a.name.localeCompare(b.name, 'pt'));
-             if (parentIsCenter || sorted.length === 1) {
+             if (parentIsCenter) {
                const step = (2 * Math.PI) / sorted.length;
                sorted.forEach((c, ci) => angleMap.set(c.id, ci * step - Math.PI / 2));
+             } else if (sorted.length === 1) {
+               angleMap.set(sorted[0].id, fam.angle);
              } else {
                const parentOrbitR = nodes.find(n => n.level === lvl - 1)?.orbitRadius || 0;
                const geomCap = orbitR > parentOrbitR && parentOrbitR > 0
@@ -342,10 +344,11 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
              const soloParentId = [...byParent.keys()][0];
              const parentIsCenter = soloParentId === "__center__";
 
-             if (parentIsCenter || fam.n === 1) {
-               // Distribute evenly around the full circle — center has no directional bias
+             if (parentIsCenter) {
                const step = (2 * Math.PI) / fam.n;
                fam.sorted.forEach((c, ci) => angleMap.set(c.id, ci * step - Math.PI / 2));
+             } else if (fam.n === 1) {
+               angleMap.set(fam.sorted[0].id, fam.angle);
              } else {
                // Fan outward from the parent node's direction
                const parentAngle = fam.angle;
@@ -481,9 +484,11 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
                const soloParentId = [...byParent.keys()][0];
                const parentIsCenter = soloParentId === "__center__";
                const sorted = [...fam.children].sort((a, b) => contacts.indexOf(a) - contacts.indexOf(b));
-               if (parentIsCenter || sorted.length === 1) {
+               if (parentIsCenter) {
                  const step = (2 * Math.PI) / sorted.length;
                  sorted.forEach((c, ci) => angleMap.set(c.id, ci * step - Math.PI / 2));
+               } else if (sorted.length === 1) {
+                 angleMap.set(sorted[0].id, fam.angle);
                } else {
                  const parentOrbitR = nodes.find(n => n.level === lvl - 1)?.orbitRadius || 0;
                  const geomCap = orbitR > parentOrbitR && parentOrbitR > 0
