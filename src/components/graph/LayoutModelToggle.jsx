@@ -9,9 +9,9 @@ export const LAYOUT_MODELS = [
   },
   {
     id: "voronoi",
-    label: "Voronoi",
+    label: "Orgânico",
     icon: "⬡",
-    description: "Cada pai ocupa o arco máximo (bissetor com vizinhos). Máximo espaço entre famílias.",
+    description: "Filhos se agrupam ao redor do pai em leque. N2+ se posicionam relativamente ao pai, como no NeuralNet original.",
   },
   {
     id: "proporcional",
