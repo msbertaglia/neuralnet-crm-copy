@@ -365,39 +365,59 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
          });
 
        } else if (layoutModel === "espiral") {
-          // Asymmetric fan: arc starts at angle-0.3*arc, ends at angle+0.7*arc
-          // For adjacent families i→j, no overlap requires:
-          //   R * angGap >= rightPx_i + leftPx_j + NODE_MIN_GAP
-          // where rightPx = (n-1)*(2r+gap)*0.7, leftPx = (n-1)*(2r+gap)*0.3
-          const STEP_PX = 2 * nRadius + NODE_MIN_GAP;
+           const STEP_PX = 2 * nRadius + NODE_MIN_GAP;
 
-          const familyData = parentEntries.map(({ children, angle }) => {
-            const n = children.length;
-            const arcPx = n <= 1 ? 0 : (n - 1) * STEP_PX;
-            return { children, angle, n, rightPx: arcPx * 0.7, leftPx: arcPx * 0.3 };
-          });
+           if (lvl === 1 && numParents === 1) {
+             // N1: distribute proportionally based on N2 children count per N1 node
+             // so nodes with larger sub-networks get more angular space
+             const n2Group = hierarchyContacts.filter(c => levelMap.get(c.id) === 2);
+             const n2ByParent = new Map();
+             n2Group.forEach(c => {
+               const pid = parentOf.get(c.id);
+               if (pid) n2ByParent.set(pid, (n2ByParent.get(pid) || 0) + 1);
+             });
 
-          // Expand orbit radius until no adjacent family arcs overlap
-          let computedR = orbitR;
-          if (numParents > 1 && !hasCustomDistance) {
-            for (let i = 0; i < numParents; i++) {
-              const j = (i + 1) % numParents;
-              const angGap = normalizeAngle(familyData[j].angle - familyData[i].angle);
-              if (angGap < 0.0001) continue;
-              const needed = (familyData[i].rightPx + familyData[j].leftPx + NODE_MIN_GAP) / angGap;
-              if (needed > computedR) computedR = needed;
-            }
-          }
-          actualOrbitR = computedR;
+             const n1Children = [...parentEntries[0].children].sort((a, b) => contacts.indexOf(a) - contacts.indexOf(b));
+             const weights = n1Children.map(c => Math.max(1, n2ByParent.get(c.id) || 0));
+             const totalWeight = weights.reduce((s, w) => s + w, 0);
 
-          const minAngStep = STEP_PX / actualOrbitR;
+             let cursor = -Math.PI / 2;
+             n1Children.forEach((c, i) => {
+               const sector = (weights[i] / totalWeight) * 2 * Math.PI;
+               angleMap.set(c.id, cursor + sector / 2);
+               cursor += sector;
+             });
 
-          familyData.forEach(({ children, angle, n }) => {
-            if (n === 1) { angleMap.set(children[0].id, angle); return; }
-            const startAngle = angle - (n - 1) * minAngStep * 0.3;
-            children.forEach((c, ci) => angleMap.set(c.id, startAngle + ci * minAngStep));
-          });
-        }
+           } else {
+             // N2+: asymmetric fan around parent direction
+             // For adjacent families i→j, no overlap requires:
+             //   R * angGap >= rightPx_i + leftPx_j + NODE_MIN_GAP
+             const familyData = parentEntries.map(({ children, angle }) => {
+               const n = children.length;
+               const arcPx = n <= 1 ? 0 : (n - 1) * STEP_PX;
+               return { children, angle, n, rightPx: arcPx * 0.7, leftPx: arcPx * 0.3 };
+             });
+
+             let computedR = orbitR;
+             if (numParents > 1 && !hasCustomDistance) {
+               for (let i = 0; i < numParents; i++) {
+                 const j = (i + 1) % numParents;
+                 const angGap = normalizeAngle(familyData[j].angle - familyData[i].angle);
+                 if (angGap < 0.0001) continue;
+                 const needed = (familyData[i].rightPx + familyData[j].leftPx + NODE_MIN_GAP) / angGap;
+                 if (needed > computedR) computedR = needed;
+               }
+             }
+             actualOrbitR = computedR;
+
+             const minAngStep = STEP_PX / actualOrbitR;
+             familyData.forEach(({ children, angle, n }) => {
+               if (n === 1) { angleMap.set(children[0].id, angle); return; }
+               const startAngle = angle - (n - 1) * minAngStep * 0.3;
+               children.forEach((c, ci) => angleMap.set(c.id, startAngle + ci * minAngStep));
+             });
+           }
+         }
 
        // Place nodes using computed angles
        group.forEach(c => {
