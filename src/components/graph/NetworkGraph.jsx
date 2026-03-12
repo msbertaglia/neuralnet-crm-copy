@@ -345,11 +345,12 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
                return;
              }
 
-             // Zone bounds (linear arithmetic, no normalizeAngle)
-             const leftHalf = gaps[(i - 1 + numParents) % numParents] / 2;
-             const rightHalf = gaps[i] / 2;
-             const leftBound  = angle - leftHalf  * (1 - PAD_FRAC);
-             const rightBound = angle + rightHalf * (1 - PAD_FRAC);
+             // Zone bounds — cap each half to MAX_HALF_ARC so children stay near parent
+             const MAX_HALF_ARC = Math.PI * 0.35; // max ~63° on each side
+             const leftHalf  = Math.min(gaps[(i - 1 + numParents) % numParents] / 2, MAX_HALF_ARC) * (1 - PAD_FRAC);
+             const rightHalf = Math.min(gaps[i] / 2, MAX_HALF_ARC) * (1 - PAD_FRAC);
+             const leftBound  = angle - leftHalf;
+             const rightBound = angle + rightHalf;
 
              // Ideal step: STEP_PX/R, but compress to fit inside zone
              const idealStep = STEP_PX / actualOrbitR;
@@ -361,7 +362,6 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
              let start = angle - arc / 2;
              start = Math.max(leftBound, Math.min(rightBound - arc, start));
 
-             // Store raw (unwrapped) angles — cos/sin handle any value correctly
              sorted.forEach((c, ci) => angleMap.set(c.id, start + ci * step));
            });
          }
