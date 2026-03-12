@@ -30,7 +30,7 @@ export default function Network() {
   const [filters, setFilters] = useState({ statuses: [], tags: [], filterMode: "completo" });
   const [layoutModel, setLayoutModel] = useState("padrao");
   const [orbitDistances, setOrbitDistances] = useState({});
-  const [selectedOrbit, setSelectedOrbit] = useState(1);
+  const [selectedOrbit, setSelectedOrbit] = useState(2);
   const [orbitInputValue, setOrbitInputValue] = useState("180");
 
   const maxLevel = useMemo(() => {
