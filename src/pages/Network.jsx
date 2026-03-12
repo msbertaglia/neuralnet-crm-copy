@@ -81,7 +81,9 @@ export default function Network() {
     setUser(u);
     // Set central contact to Mauro Bertaglia (always)
     const mauroContact = c.find(contact => contact.name === "Mauro Bertaglia");
-    setCentralContactId(mauroContact?.id || null);
+    const mauroId = mauroContact?.id || null;
+    setCentralContactId(mauroId);
+    setOriginalCentralId(mauroId);
     setLoading(false);
   };
 

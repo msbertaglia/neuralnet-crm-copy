@@ -978,6 +978,14 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
          dragRef.current.y = (e.clientY - rect.top - ty) / scale;
          dragRef.current.vx = 0;
          dragRef.current.vy = 0;
+         // Check if dragged node is near center (within center node radius * 2)
+         const centerNode = nodesRef.current.find(n => n.isCenter);
+         if (centerNode && !dragRef.current.isCenter) {
+           const dx = dragRef.current.x - centerNode.x;
+           const dy = dragRef.current.y - centerNode.y;
+           const dist = Math.sqrt(dx * dx + dy * dy);
+           dragNearCenterRef.current = dist < centerNode.radius * 2.5;
+         }
        } else if (isPanningRef.current && panStartRef.current) {
          transformRef.current.x = e.clientX - panStartRef.current.x;
          transformRef.current.y = e.clientY - panStartRef.current.y;
