@@ -123,6 +123,9 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
     const W = canvas.width;
     const H = canvas.height;
 
+    // "direto" always means introduced by the original owner of the network, not the transient center
+    const directOwnerId = originalCentralId || centralContactId;
+
     const levelMap = computeOrbits(centralContactId, contacts);
     const centerContact = contacts.find(c => c.id === centralContactId);
 
