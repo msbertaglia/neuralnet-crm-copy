@@ -231,8 +231,6 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
 
        // actualOrbitR can be expanded by the 'padrao' layout to fit children in bisector sectors
        let actualOrbitR = orbitR;
-       // for organic layout: maps contactId -> absolute {x, y} target position
-       const absolutePosMap = new Map();
 
        if (layoutModel === "voronoi") {
          // Órbitas concêntricas relativas ao centro, filhos em leque ao redor da direção do pai
