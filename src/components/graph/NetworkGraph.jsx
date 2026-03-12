@@ -290,22 +290,18 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
          });
 
        } else if (layoutModel === "padrao") {
-         // SOLAR SYSTEM - BISECTOR ZONES (guaranteed no crossing between ANY level edges)
-         //
-         // Algorithm:
-         // 1. Each parent family gets a zone bounded by bisectors to its angular neighbors
-         // 2. Children are placed within their parent's bisector zone
-         // 3. This guarantees that N(k)→N(k+1) edges never cross N(k-1)→N(k) edges
-         //    because both parent and all children lie within the same angular wedge from center
-         // 4. Orbit radius is expanded until all children fit within their zone
+         // Simple centered layout: children centered on parent angle, orbit expands to avoid overlap
+         const STEP_PX = 2 * nRadius + NODE_MIN_GAP;
+         const INTER_FAMILY_PX = 20;
 
          const familyData = parentEntries.map(({ children, angle }) => {
            const sorted = [...children].sort((a, b) => a.name.localeCompare(b.name, 'pt'));
-           return { sorted, angle, n: sorted.length };
+           const n = sorted.length;
+           const halfArcPx = n <= 1 ? 0 : ((n - 1) / 2) * STEP_PX;
+           return { sorted, angle, n, halfArcPx };
          });
 
          if (numParents <= 1) {
-           // Single parent: spread evenly around full orbit
            const fam = familyData[0];
            if (fam && fam.n > 0) {
              if (fam.n === 1) {
@@ -316,64 +312,30 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
              }
            }
          } else {
-           const numF = numParents;
-
-           // Compute bisector between each adjacent pair: bisectors[i] = midpoint between family[i] and family[i+1]
-           const bisectors = familyData.map((fam, i) => {
-             const next = familyData[(i + 1) % numF];
-             const gap = normalizeAngle(next.angle - fam.angle);
-             return normalizeAngle(fam.angle + gap / 2);
-           });
-
-           // Zone for family i: from bisectors[i-1] to bisectors[i]  (clockwise)
-           const zoneArcs = familyData.map((_, i) => {
-             const zoneStart = bisectors[(i - 1 + numF) % numF];
-             return normalizeAngle(bisectors[i] - zoneStart);
-           });
-
-           // Expand orbit R so all families fit their children inside their zone
-           const STEP_PX = 2 * nRadius + NODE_MIN_GAP;
-           const ZONE_PAD_FRAC = 0.12;
+           // Expand orbit so adjacent family arcs don't overlap
            let computedR = orbitR;
            if (!hasCustomDistance) {
-             familyData.forEach(({ n }, i) => {
-               if (n <= 1) return;
-               const usableArc = zoneArcs[i] * (1 - 2 * ZONE_PAD_FRAC);
-               if (usableArc <= 0.001) return;
-               const needed = (n - 1) * STEP_PX / usableArc;
+             for (let i = 0; i < numParents; i++) {
+               const j = (i + 1) % numParents;
+               const angGap = normalizeAngle(familyData[j].angle - familyData[i].angle);
+               if (angGap < 0.0001) continue;
+               const needed = (familyData[i].halfArcPx + familyData[j].halfArcPx + INTER_FAMILY_PX) / angGap;
                if (needed > computedR) computedR = needed;
-             });
+             }
            }
            actualOrbitR = computedR;
 
-           familyData.forEach(({ sorted, angle, n }, i) => {
+           const minStep = STEP_PX / actualOrbitR;
+
+           // Place children centered on parent angle
+           // Use raw arithmetic (no normalizeAngle mid-computation) to avoid wrap-around bugs
+           familyData.forEach(({ sorted, angle, n }) => {
              if (n === 1) {
                angleMap.set(sorted[0].id, angle);
                return;
              }
-             // Work entirely in linear offsets from zoneStart to avoid wrap-around bugs
-             const zoneStart = bisectors[(i - 1 + numF) % numF];
-             const zoneSize = zoneArcs[i]; // always positive, computed via normalizeAngle
-             const PAD = zoneSize * ZONE_PAD_FRAC;
-             const usable = Math.max(0, zoneSize - 2 * PAD);
-
-             const minStep = STEP_PX / actualOrbitR;
-             const arc = (n - 1) * minStep;
-             // Compress step if arc exceeds usable space
-             const effectiveStep = arc <= usable ? minStep : (n > 1 ? usable / (n - 1) : 0);
-             const effectiveArc = (n - 1) * effectiveStep;
-
-             // Parent angle as offset from zoneStart (linear, no wrap)
-             const parentOff = normalizeAngle(angle - zoneStart);
-             // Ideal: center children on parent
-             let startOff = parentOff - effectiveArc / 2;
-             // Clamp so arc fits within [PAD, zoneSize - PAD]
-             startOff = Math.max(PAD, Math.min(zoneSize - PAD - effectiveArc, startOff));
-
-             sorted.forEach((c, ci) => {
-               const a = normalizeAngle(zoneStart + startOff + ci * effectiveStep);
-               angleMap.set(c.id, a);
-             });
+             const startAngle = angle - ((n - 1) / 2) * minStep;
+             sorted.forEach((c, ci) => angleMap.set(c.id, normalizeAngle(startAngle + ci * minStep)));
            });
          }
 
