@@ -788,6 +788,18 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
       }
 
       if (n.isCenter) {
+        // If a node is being dragged near the center, show a "drop here" indicator
+        if (dragNearCenterRef.current) {
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, n.radius + 18, 0, 2 * Math.PI);
+          ctx.strokeStyle = "rgba(34,197,94,0.8)";
+          ctx.lineWidth = 3;
+          ctx.setLineDash([6, 4]);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.fillStyle = "rgba(34,197,94,0.12)";
+          ctx.fill();
+        }
 
         // Glow ring
         ctx.shadowColor = "#6366f1";
