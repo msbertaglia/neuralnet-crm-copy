@@ -597,8 +597,8 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
         const r = sample?.orbitRadius || (BASE_ORBIT_RADII[lvl] || lvl * 180);
         ctx.beginPath();
         ctx.arc(centerNode.x, centerNode.y, r, 0, 2 * Math.PI);
-        ctx.strokeStyle = `rgba(220,38,38,${ringOpacity[Math.min(lvl, ringOpacity.length - 1)] || 0.08})`;
-        ctx.lineWidth = 1.2;
+        ctx.strokeStyle = `rgba(220,38,38,${ringOpacity[Math.min(lvl, ringOpacity.length - 1)] || 0.16})`;
+        ctx.lineWidth = 2.5;
         ctx.stroke();
         ctx.fillStyle = "rgba(99,102,241,0.18)";
         ctx.font = "10px Inter, sans-serif";
