@@ -177,6 +177,7 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
 
        const nRadius = lvl === 1 ? 26 : lvl === 2 ? 21 : 17;
        const baseR = BASE_ORBIT_RADII[lvl] ?? 0;
+       // neededR: minimum orbit radius so that ALL nodes on this level don't overlap
        const neededR = minOrbitRadius(group.length, nRadius);
        const prevLvlNodes = nodes.filter(n => n.level === lvl - 1);
        const prevOrbitR = lvl === 1 ? 0 : (prevLvlNodes[0]?.orbitRadius || 0);
@@ -184,8 +185,8 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
        const BASE_INTER_GAP = orbitDistances[lvl] ?? 180;
        const minFromPrev = prevOrbitR + prevNodeRadius + nRadius + BASE_INTER_GAP;
        const hasCustomDistance = orbitDistances[lvl] !== undefined;
-       // Se o usuário definiu a distância explicitamente, ela é fixa (ignora neededR)
-       const orbitR = hasCustomDistance ? minFromPrev : Math.max(baseR, neededR, minFromPrev);
+       // Always ensure neededR is respected so nodes never overlap
+       const orbitR = hasCustomDistance ? Math.max(minFromPrev, neededR) : Math.max(baseR, neededR, minFromPrev);
 
        // Group children by parent (sorted by creation order)
        const byParent = new Map();
