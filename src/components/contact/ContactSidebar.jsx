@@ -218,6 +218,14 @@ export default function ContactSidebar({ contact, onClose, onEdit, logs, documen
           </div>
         )}
       </div>
+      {showApresentouModal && (
+        <ApresentouModal
+          contact={contact}
+          allContacts={allContacts}
+          onConfirm={handleApresentouConfirm}
+          onClose={() => setShowApresentouModal(false)}
+        />
+      )}
     </div>
   );
 }
