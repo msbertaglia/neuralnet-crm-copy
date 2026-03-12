@@ -239,6 +239,7 @@ export default function Network() {
               const v = Math.min(2000, Math.max(100, Number(orbitInputValue)));
               setOrbitDistances(prev => ({ ...prev, [selectedOrbit]: v }));
               setOrbitInputValue(String(v));
+              setRebuildKey(k => k + 1);
             }}
             className="text-xs bg-blue-600 hover:bg-blue-700 text-white rounded px-1.5 py-0.5"
           >OK</button>
