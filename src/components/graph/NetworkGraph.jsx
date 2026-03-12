@@ -463,10 +463,30 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
                cursor += sector;
              });
 
+           } else if (numParents <= 1) {
+             // Single non-center parent: fan outward from parent direction
+             const fam = parentEntries[0];
+             if (fam) {
+               const soloParentId = [...byParent.keys()][0];
+               const parentIsCenter = soloParentId === "__center__";
+               const sorted = [...fam.children].sort((a, b) => contacts.indexOf(a) - contacts.indexOf(b));
+               if (parentIsCenter || sorted.length === 1) {
+                 const step = (2 * Math.PI) / sorted.length;
+                 sorted.forEach((c, ci) => angleMap.set(c.id, ci * step - Math.PI / 2));
+               } else {
+                 const parentOrbitR = nodes.find(n => n.level === lvl - 1)?.orbitRadius || 0;
+                 const geomCap = orbitR > parentOrbitR && parentOrbitR > 0
+                   ? Math.acos(Math.min(1, parentOrbitR / orbitR)) : Math.PI * 0.40;
+                 const MAX_HALF = Math.min(Math.PI * 0.40, geomCap);
+                 const minAngStep = STEP_PX / orbitR;
+                 const arc = (sorted.length - 1) * minAngStep;
+                 const halfArc = Math.min(arc / 2, MAX_HALF);
+                 const step = sorted.length > 1 ? (halfArc * 2) / (sorted.length - 1) : 0;
+                 sorted.forEach((c, ci) => angleMap.set(c.id, fam.angle - halfArc + ci * step));
+               }
+             }
            } else {
-             // N2+: asymmetric fan around parent direction
-             // For adjacent families i→j, no overlap requires:
-             //   R * angGap >= rightPx_i + leftPx_j + NODE_MIN_GAP
+             // N2+: asymmetric fan around parent direction (multiple parents)
              const familyData = parentEntries.map(({ children, angle }) => {
                const n = children.length;
                const arcPx = n <= 1 ? 0 : (n - 1) * STEP_PX;
@@ -474,7 +494,7 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
              });
 
              let computedR = orbitR;
-             if (numParents > 1 && !hasCustomDistance) {
+             if (!hasCustomDistance) {
                for (let i = 0; i < numParents; i++) {
                  const j = (i + 1) % numParents;
                  const angGap = normalizeAngle(familyData[j].angle - familyData[i].angle);
@@ -492,7 +512,7 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
                children.forEach((c, ci) => angleMap.set(c.id, startAngle + ci * minAngStep));
              });
            }
-         }
+           }
 
        // Place nodes using computed angles
        group.forEach(c => {
