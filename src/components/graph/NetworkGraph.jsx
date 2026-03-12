@@ -231,22 +231,40 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
 
        // actualOrbitR can be expanded by the 'padrao' layout to fit children in bisector sectors
        let actualOrbitR = orbitR;
+       // for organic layout: maps contactId -> absolute {x, y} target position
+       const absolutePosMap = new Map();
 
        if (layoutModel === "voronoi") {
-         // Bisector sectors — maximizes spacing between families
-         parentEntries.forEach(({ children, angle }, idx) => {
-           let sectorStart, sectorEnd;
-           if (numParents === 1) {
-             sectorStart = angle - Math.PI; sectorEnd = angle + Math.PI;
-           } else {
-             const prevAngle = parentEntries[(idx - 1 + numParents) % numParents].angle;
-             const nextAngle = parentEntries[(idx + 1) % numParents].angle;
-             sectorStart = angle - normalizeAngle(angle - prevAngle) / 2;
-             sectorEnd   = angle + normalizeAngle(nextAngle - angle) / 2;
-           }
-           if (children.length === 1) angleMap.set(children[0].id, angle);
-           else spreadChildren(children, sectorStart, sectorEnd, 0.08);
-         });
+         if (lvl === 1) {
+           // N1: espalha uniformemente ao redor do centro
+           group.forEach((c, i) => {
+             angleMap.set(c.id, (i / group.length) * 2 * Math.PI - Math.PI / 2);
+           });
+         } else {
+           // N2+: posiciona cada filho relativamente ao seu pai
+           byParent.forEach((children, parentNodeId) => {
+             const parentNode = nodes.find(n => n.id === parentNodeId || n.contactId === parentNodeId);
+             if (!parentNode) return;
+             const px = parentNode.targetX ?? parentNode.x ?? W / 2;
+             const py = parentNode.targetY ?? parentNode.y ?? H / 2;
+             // Direção: do avô (ou centro) para o pai
+             const gpId = parentOf.get(parentNode.contactId);
+             let gpx = W / 2, gpy = H / 2;
+             if (gpId && gpId !== centralContactId) {
+               const gpNode = nodes.find(n => n.contactId === gpId);
+               if (gpNode) { gpx = gpNode.targetX ?? gpNode.x ?? W / 2; gpy = gpNode.targetY ?? gpNode.y ?? H / 2; }
+             }
+             const dirAngle = Math.atan2(py - gpy, px - gpx);
+             const dist = orbitDistances[lvl] ?? 180;
+             const n = children.length;
+             const fanSpread = n === 1 ? 0 : Math.min(Math.PI * 0.85, Math.max(0.5, n * 0.38));
+             const sorted = [...children].sort((a, b) => contacts.indexOf(a) - contacts.indexOf(b));
+             sorted.forEach((c, i) => {
+               const a = n === 1 ? dirAngle : dirAngle - fanSpread / 2 + (i / (n - 1)) * fanSpread;
+               absolutePosMap.set(c.id, { x: px + dist * Math.cos(a), y: py + dist * Math.sin(a) });
+             });
+           });
+         }
 
        } else if (layoutModel === "proporcional") {
          // Proportional sectors — strict no-overlap, no-crossing, alphabetical order
