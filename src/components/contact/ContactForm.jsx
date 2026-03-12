@@ -30,6 +30,19 @@ export default function ContactForm({ contact, contacts, onSave, onClose }) {
   const [introducerSearch, setIntroducerSearch] = useState("");
   const [showIntroducerList, setShowIntroducerList] = useState(false);
   const introducerRef = useRef(null);
+  const [showApresentouModal, setShowApresentouModal] = useState(false);
+
+  const handleApresentouConfirm = async (chosen) => {
+    await Promise.all(
+      chosen.map(c =>
+        base44.entities.Contact.update(c.id, {
+          introduced_by_id: contact?.id,
+          introduced_by_name: form.name,
+        })
+      )
+    );
+    setShowApresentouModal(false);
+  };
 
   useEffect(() => {
     const handleClickOutside = (e) => {
