@@ -215,7 +215,7 @@ export default function Network() {
             }}
             className="h-6 text-xs bg-slate-700 border border-slate-600 text-slate-200 rounded px-1"
           >
-            {Array.from({ length: maxLevel - 1 }, (_, i) => i + 2).map(lvl => (
+            {Array.from({ length: maxLevel }, (_, i) => i + 1).map(lvl => (
               <option key={lvl} value={lvl}>N{lvl - 1}-N{lvl}</option>
             ))}
           </select>
