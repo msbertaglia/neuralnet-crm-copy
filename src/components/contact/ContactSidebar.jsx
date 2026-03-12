@@ -161,6 +161,16 @@ export default function ContactSidebar({ contact, onClose, onEdit, logs, documen
             <Section title="Relacionamento">
               <InfoRow icon={<Calendar className="w-3.5 h-3.5" />} label="Conhecemos em" value={fmtDate(contact.met_date)} />
               <InfoRow icon={<User className="w-3.5 h-3.5" />} label="Apresentado por" value={contact.introduced_by_name} />
+              <div className="flex items-center gap-2">
+                <span className="text-slate-500 flex-shrink-0"><UserPlus className="w-3.5 h-3.5" /></span>
+                <span className="text-slate-500 text-xs w-20 flex-shrink-0">Apresentou</span>
+                <button
+                  onClick={() => setShowApresentouModal(true)}
+                  className="text-blue-400 text-xs hover:underline hover:text-blue-300 flex items-center gap-1"
+                >
+                  Selecionar contatos
+                </button>
+              </div>
               <InfoRow icon={<Clock className="w-3.5 h-3.5" />} label="Último contato" value={fmtDate(contact.last_contact_date)} />
             </Section>
 
