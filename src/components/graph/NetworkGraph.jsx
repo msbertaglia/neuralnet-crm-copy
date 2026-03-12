@@ -237,20 +237,41 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
          // Órbitas concêntricas relativas ao centro, filhos em leque ao redor da direção do pai
          const minAngStep = (2 * nRadius + NODE_MIN_GAP) / actualOrbitR;
 
-         parentEntries.forEach(({ children, angle }) => {
-           const n = children.length;
-           const sorted = [...children].sort((a, b) => contacts.indexOf(a) - contacts.indexOf(b));
-           if (n === 1) {
-             angleMap.set(sorted[0].id, angle);
-           } else {
-             // Leque centrado no ângulo do pai, com espaçamento mínimo para não sobrepor
-             const fanSpread = Math.max(minAngStep * (n - 1), Math.min(Math.PI * 0.9, n * 0.42));
-             sorted.forEach((c, i) => {
-               const a = angle - fanSpread / 2 + (i / (n - 1)) * fanSpread;
-               angleMap.set(c.id, a);
-             });
+         if (numParents <= 1) {
+           const fam = parentEntries[0];
+           if (fam) {
+             const soloParentId = [...byParent.keys()][0];
+             const parentIsCenter = soloParentId === "__center__";
+             const sorted = [...fam.children].sort((a, b) => contacts.indexOf(a) - contacts.indexOf(b));
+             if (parentIsCenter || sorted.length === 1) {
+               const step = (2 * Math.PI) / sorted.length;
+               sorted.forEach((c, ci) => angleMap.set(c.id, ci * step - Math.PI / 2));
+             } else {
+               const parentOrbitR = nodes.find(n => n.level === lvl - 1)?.orbitRadius || 0;
+               const geomCap = actualOrbitR > parentOrbitR && parentOrbitR > 0
+                 ? Math.acos(Math.min(1, parentOrbitR / actualOrbitR)) : Math.PI * 0.40;
+               const MAX_HALF = Math.min(Math.PI * 0.40, geomCap);
+               const arc = (sorted.length - 1) * minAngStep;
+               const halfArc = Math.min(arc / 2, MAX_HALF);
+               const step = sorted.length > 1 ? (halfArc * 2) / (sorted.length - 1) : 0;
+               sorted.forEach((c, ci) => angleMap.set(c.id, fam.angle - halfArc + ci * step));
+             }
            }
-         });
+         } else {
+           parentEntries.forEach(({ children, angle }) => {
+             const n = children.length;
+             const sorted = [...children].sort((a, b) => contacts.indexOf(a) - contacts.indexOf(b));
+             if (n === 1) {
+               angleMap.set(sorted[0].id, angle);
+             } else {
+               const fanSpread = Math.max(minAngStep * (n - 1), Math.min(Math.PI * 0.9, n * 0.42));
+               sorted.forEach((c, i) => {
+                 const a = angle - fanSpread / 2 + (i / (n - 1)) * fanSpread;
+                 angleMap.set(c.id, a);
+               });
+             }
+           });
+         }
 
        } else if (layoutModel === "proporcional") {
          // Proportional sectors — strict no-overlap, no-crossing, alphabetical order
