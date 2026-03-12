@@ -401,17 +401,11 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
           });
         }
 
-       // Place nodes using computed angles or absolute positions
+       // Place nodes using computed angles
        group.forEach(c => {
-         let x, y;
-         if (layoutModel === "voronoi" && lvl >= 2 && absolutePosMap.has(c.id)) {
-           const pos = absolutePosMap.get(c.id);
-           x = pos.x; y = pos.y;
-         } else {
-           const angle = angleMap.get(c.id) ?? -Math.PI / 2;
-           x = W / 2 + actualOrbitR * Math.cos(angle);
-           y = H / 2 + actualOrbitR * Math.sin(angle);
-         }
+         const angle = angleMap.get(c.id) ?? -Math.PI / 2;
+         const x = W / 2 + actualOrbitR * Math.cos(angle);
+         const y = H / 2 + actualOrbitR * Math.sin(angle);
          const existing = nodesRef.current.find(n => n.id === c.id && n.level === lvl);
          nodes.push({
            id: c.id,
@@ -426,7 +420,7 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
            vx: 0, vy: 0,
            radius: nRadius,
            level: lvl,
-           orbitRadius: layoutModel === "voronoi" && lvl >= 2 ? undefined : actualOrbitR,
+           orbitRadius: actualOrbitR,
            targetX: x,
            targetY: y,
            contact: c,
