@@ -514,6 +514,30 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
            }
            }
 
+       // ── Post-process: enforce minimum angular gap so no nodes overlap ──
+       // Sort all placed nodes by angle, then push apart any that are too close.
+       {
+         const minGap = (2 * nRadius + NODE_MIN_GAP) / actualOrbitR;
+         const placed = [...angleMap.entries()].sort((a, b) => a[1] - b[1]);
+         if (placed.length > 1) {
+           // Iterative relaxation (2 passes is enough for most cases)
+           for (let pass = 0; pass < 3; pass++) {
+             for (let i = 0; i < placed.length; i++) {
+               const next = placed[(i + 1) % placed.length];
+               let diff = next[1] - placed[i][1];
+               // Handle wrap-around for the last→first pair
+               if (i === placed.length - 1) diff += 2 * Math.PI;
+               if (diff < minGap) {
+                 const push = (minGap - diff) / 2;
+                 placed[i][1] -= push;
+                 next[1] += push;
+               }
+             }
+           }
+           placed.forEach(([id, angle]) => angleMap.set(id, angle));
+         }
+       }
+
        // Place nodes using computed angles
        group.forEach(c => {
          const angle = angleMap.get(c.id) ?? -Math.PI / 2;
