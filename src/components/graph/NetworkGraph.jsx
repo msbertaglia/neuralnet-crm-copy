@@ -351,30 +351,29 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
                angleMap.set(sorted[0].id, angle);
                return;
              }
+             // Work entirely in linear offsets from zoneStart to avoid wrap-around bugs
+             const zoneStart = bisectors[(i - 1 + numF) % numF];
+             const zoneSize = zoneArcs[i]; // always positive, computed via normalizeAngle
+             const PAD = zoneSize * ZONE_PAD_FRAC;
+             const usable = Math.max(0, zoneSize - 2 * PAD);
+
              const minStep = STEP_PX / actualOrbitR;
              const arc = (n - 1) * minStep;
-             const PAD = zoneArcs[i] * ZONE_PAD_FRAC;
-             const usableArc = Math.max(arc, zoneArcs[i] - 2 * PAD);
-             const effectiveStep = Math.min(minStep, (zoneArcs[i] - 2 * PAD) / (n - 1));
+             // Compress step if arc exceeds usable space
+             const effectiveStep = arc <= usable ? minStep : (n > 1 ? usable / (n - 1) : 0);
+             const effectiveArc = (n - 1) * effectiveStep;
 
-             // Center children on parent's angle, clamped inside zone
-             const zoneStart = bisectors[(i - 1 + numF) % numF];
-             const zoneEnd = bisectors[i];
-             const clampedStart = normalizeAngle(zoneStart + PAD);
-             const clampedEnd = normalizeAngle(zoneEnd - PAD);
-             const availableForStart = normalizeAngle(clampedEnd - clampedStart - arc);
-             // Ideal start: centered on parent angle
-             let idealStart = normalizeAngle(angle - arc / 2);
-             // Clamp inside zone
-             const startMin = clampedStart;
-             const startMax = normalizeAngle(clampedEnd - arc);
-             // Work linearly from zoneStart
-             const idealOff = normalizeAngle(idealStart - clampedStart);
-             const maxOff = normalizeAngle(startMax - clampedStart);
-             const clampedOff = Math.min(idealOff, maxOff);
-             const startAngle = normalizeAngle(clampedStart + clampedOff);
+             // Parent angle as offset from zoneStart (linear, no wrap)
+             const parentOff = normalizeAngle(angle - zoneStart);
+             // Ideal: center children on parent
+             let startOff = parentOff - effectiveArc / 2;
+             // Clamp so arc fits within [PAD, zoneSize - PAD]
+             startOff = Math.max(PAD, Math.min(zoneSize - PAD - effectiveArc, startOff));
 
-             sorted.forEach((c, ci) => angleMap.set(c.id, normalizeAngle(startAngle + ci * effectiveStep)));
+             sorted.forEach((c, ci) => {
+               const a = normalizeAngle(zoneStart + startOff + ci * effectiveStep);
+               angleMap.set(c.id, a);
+             });
            });
          }
 
