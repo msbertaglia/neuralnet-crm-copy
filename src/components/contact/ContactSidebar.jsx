@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { X, Phone, Mail, Linkedin, Instagram, Twitter, Building2, MapPin, Calendar, User, ExternalLink, Clock, CheckCircle2, AlertCircle, Timer, MessageSquare, FileText, Link2 } from "lucide-react";
+import { X, Phone, Mail, Linkedin, Instagram, Twitter, Building2, MapPin, Calendar, User, ExternalLink, Clock, CheckCircle2, AlertCircle, Timer, MessageSquare, FileText, Link2, UserPlus } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { formatPhoneNumber } from "@/components/lib/phoneFormatter";
+import ApresentouModal from "@/components/contact/ApresentouModal";
+import { base44 } from "@/api/base44Client";
 
 const STATUS_COLORS = {
   ativo: "bg-green-500/20 text-green-400 border-green-500/30",
