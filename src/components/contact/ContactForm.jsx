@@ -321,10 +321,33 @@ export default function ContactForm({ contact, contacts, onSave, onClose }) {
                   )}
                 </div>
               </Field>
+              <Field label="Apresentou">
+                <button
+                  type="button"
+                  onClick={() => setShowApresentouModal(true)}
+                  disabled={!contact?.id}
+                  className="w-full flex items-center gap-2 px-3 py-2 bg-slate-800 border border-slate-600 rounded-md text-sm text-slate-400 hover:border-slate-500 hover:text-blue-400 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  Selecionar contatos que apresentou
+                </button>
+                {!contact?.id && (
+                  <p className="text-slate-500 text-xs mt-1">Salve o contato primeiro para usar esta função</p>
+                )}
+              </Field>
               <Field label="Último contato">
                 <Input type="date" value={form.last_contact_date} onChange={e => set("last_contact_date", e.target.value)} className="bg-slate-800 border-slate-600 text-white" />
               </Field>
             </div>
+          )}
+
+          {showApresentouModal && (
+            <ApresentouModal
+              contact={{ id: contact?.id, name: form.name }}
+              allContacts={contacts}
+              onConfirm={handleApresentouConfirm}
+              onClose={() => setShowApresentouModal(false)}
+            />
           )}
 
           {tab === 4 && (
