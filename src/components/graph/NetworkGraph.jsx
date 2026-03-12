@@ -434,7 +434,7 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
 
            if (lvl === 1 && numParents === 1) {
              // N1: distribute proportionally based on TOTAL subtree size (all descendants)
-             // so nodes with larger sub-networks get more angular space
+             // but enforce a minimum sector per node so no overlaps occur
              const subtreeSize = (rootId) => {
                let count = 0;
                const queue = [rootId];
@@ -453,14 +453,22 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
              };
 
              const n1Children = [...parentEntries[0].children].sort((a, b) => contacts.indexOf(a) - contacts.indexOf(b));
+             const n = n1Children.length;
+             // Minimum angular step to avoid overlap at this orbit
+             const minAngStep = (2 * nRadius + NODE_MIN_GAP) / actualOrbitR;
+             const minSector = minAngStep; // minimum sector per node
+             const totalMinArc = minSector * n;
+             const extraArc = Math.max(0, 2 * Math.PI - totalMinArc); // leftover arc to distribute by weight
+
              const weights = n1Children.map(c => Math.max(1, subtreeSize(c.id)));
              const totalWeight = weights.reduce((s, w) => s + w, 0);
+             // Each node gets minSector + proportional share of extraArc
+             const sectors = weights.map(w => minSector + (w / totalWeight) * extraArc);
 
              let cursor = -Math.PI / 2;
              n1Children.forEach((c, i) => {
-               const sector = (weights[i] / totalWeight) * 2 * Math.PI;
-               angleMap.set(c.id, cursor + sector / 2);
-               cursor += sector;
+               angleMap.set(c.id, cursor + sectors[i] / 2);
+               cursor += sectors[i];
              });
 
            } else if (numParents <= 1) {
