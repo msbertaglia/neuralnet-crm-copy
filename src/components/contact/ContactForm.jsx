@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { X, Upload, Plus, Trash2, Search, ChevronDown } from "lucide-react";
+import { X, Upload, Plus, Trash2, Search, ChevronDown, UserPlus } from "lucide-react";
+import ApresentouModal from "@/components/contact/ApresentouModal";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
