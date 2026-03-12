@@ -356,7 +356,7 @@ export default function ContactForm({ contact, contacts, onSave, onClose }) {
           {showApresentouModal && (
             <ApresentouModal
               contact={{ id: contact?.id, name: form.name }}
-              allContacts={contacts}
+              allContacts={contacts.filter(c => !sessionAssignedIds.has(c.id))}
               onConfirm={handleApresentouConfirm}
               onClose={() => setShowApresentouModal(false)}
             />
