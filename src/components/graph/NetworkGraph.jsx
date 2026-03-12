@@ -290,15 +290,15 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
          });
 
        } else if (layoutModel === "padrao") {
-         // Simple centered layout: children centered on parent angle, orbit expands to avoid overlap
+         // Zone-based layout: each parent owns a zone bounded by bisectors to its neighbors.
+         // Children are placed WITHIN the parent's zone (clamped), so edges NEVER cross.
+         // Uses pure linear arithmetic — no normalizeAngle on intermediate values.
          const STEP_PX = 2 * nRadius + NODE_MIN_GAP;
-         const INTER_FAMILY_PX = 20;
+         const PAD_FRAC = 0.10; // padding fraction on each side of zone
 
          const familyData = parentEntries.map(({ children, angle }) => {
            const sorted = [...children].sort((a, b) => a.name.localeCompare(b.name, 'pt'));
-           const n = sorted.length;
-           const halfArcPx = n <= 1 ? 0 : ((n - 1) / 2) * STEP_PX;
-           return { sorted, angle, n, halfArcPx };
+           return { sorted, angle, n: sorted.length };
          });
 
          if (numParents <= 1) {
@@ -312,30 +312,57 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
              }
            }
          } else {
-           // Expand orbit so adjacent family arcs don't overlap
+           // Compute angular gaps between consecutive parents (pure arithmetic, no normalizeAngle)
+           // gaps[i] = gap from family[i] to family[(i+1)%n], always positive
+           const gaps = familyData.map((fam, i) => {
+             const next = familyData[(i + 1) % numParents];
+             const diff = next.angle - fam.angle;
+             return diff > 0 ? diff : diff + 2 * Math.PI;
+           });
+
+           // Expand orbit only if STEP_PX step would require it (no runaway expansion)
+           // Max expansion: enough so that even the narrowest zone fits 1 step
            let computedR = orbitR;
            if (!hasCustomDistance) {
              for (let i = 0; i < numParents; i++) {
-               const j = (i + 1) % numParents;
-               const angGap = normalizeAngle(familyData[j].angle - familyData[i].angle);
-               if (angGap < 0.0001) continue;
-               const needed = (familyData[i].halfArcPx + familyData[j].halfArcPx + INTER_FAMILY_PX) / angGap;
-               if (needed > computedR) computedR = needed;
+               const { n } = familyData[i];
+               if (n <= 1) continue;
+               // left zone half = gaps[(i-1+n)%n]/2, right zone half = gaps[i]/2
+               const leftHalf = gaps[(i - 1 + numParents) % numParents] / 2;
+               const rightHalf = gaps[i] / 2;
+               const zoneArc = (leftHalf + rightHalf) * (1 - 2 * PAD_FRAC);
+               if (zoneArc < 0.001) continue;
+               // Required radius so children fit with ideal STEP_PX spacing
+               const neededR = (n - 1) * STEP_PX / zoneArc;
+               if (neededR > computedR) computedR = neededR;
              }
            }
            actualOrbitR = computedR;
 
-           const minStep = STEP_PX / actualOrbitR;
-
-           // Place children centered on parent angle
-           // Use raw arithmetic (no normalizeAngle mid-computation) to avoid wrap-around bugs
-           familyData.forEach(({ sorted, angle, n }) => {
+           familyData.forEach(({ sorted, angle, n }, i) => {
              if (n === 1) {
                angleMap.set(sorted[0].id, angle);
                return;
              }
-             const startAngle = angle - ((n - 1) / 2) * minStep;
-             sorted.forEach((c, ci) => angleMap.set(c.id, startAngle + ci * minStep));
+
+             // Zone bounds (linear arithmetic, no normalizeAngle)
+             const leftHalf = gaps[(i - 1 + numParents) % numParents] / 2;
+             const rightHalf = gaps[i] / 2;
+             const leftBound  = angle - leftHalf  * (1 - PAD_FRAC);
+             const rightBound = angle + rightHalf * (1 - PAD_FRAC);
+
+             // Ideal step: STEP_PX/R, but compress to fit inside zone
+             const idealStep = STEP_PX / actualOrbitR;
+             const maxStep = (rightBound - leftBound) / (n - 1);
+             const step = Math.min(idealStep, maxStep);
+             const arc = (n - 1) * step;
+
+             // Center on parent angle, clamp inside zone
+             let start = angle - arc / 2;
+             start = Math.max(leftBound, Math.min(rightBound - arc, start));
+
+             // Store raw (unwrapped) angles — cos/sin handle any value correctly
+             sorted.forEach((c, ci) => angleMap.set(c.id, start + ci * step));
            });
          }
 
