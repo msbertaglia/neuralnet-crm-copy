@@ -309,6 +309,7 @@ export default function Network() {
             onNodeClick={setSelectedContact}
             onNodeDoubleClick={(c) => { setEditingContact(c); setShowContactForm(true); }}
             centralContactId={centralContactId}
+            originalCentralId={originalCentralId}
             onSetCenter={(contact) => {
               setCentralContactId(contact.id);
               setRebuildKey(k => k + 1);
