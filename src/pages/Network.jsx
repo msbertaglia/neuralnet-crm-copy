@@ -225,7 +225,8 @@ export default function Network() {
             max={2000}
             value={orbitInputValue}
             onChange={e => setOrbitInputValue(e.target.value)}
-            style={{ MozAppearance: "textfield" }}
+            style={{ MozAppearance: "textfield", WebkitAppearance: "none" }}
+            onWheel={e => e.currentTarget.blur()}
             onKeyDown={e => {
               if (e.key === "Enter") {
                 const v = Math.min(2000, Math.max(100, Number(orbitInputValue)));
