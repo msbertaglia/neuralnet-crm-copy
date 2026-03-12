@@ -304,12 +304,21 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
          if (numParents <= 1) {
            const fam = familyData[0];
            if (fam && fam.n > 0) {
-             if (fam.n === 1) {
-               angleMap.set(fam.sorted[0].id, -Math.PI / 2);
-             } else {
-               const angStep = (2 * Math.PI) / fam.n;
-               fam.sorted.forEach((c, ci) => angleMap.set(c.id, ci * angStep - Math.PI / 2));
-             }
+             // Center the fan on the parent's direction from canvas center (outward)
+             const parentAngle = fam.angle; // already computed from parent's position
+             const STEP_PX = 2 * nRadius + NODE_MIN_GAP;
+             const parentOrbitR = lvl === 1 ? 0 : (nodes.find(n => n.level === lvl - 1)?.orbitRadius || 0);
+             const geomCap = orbitR > parentOrbitR && parentOrbitR > 0
+               ? Math.acos(Math.min(1, parentOrbitR / orbitR))
+               : Math.PI * 0.40;
+             const MAX_HALF = Math.min(Math.PI * 0.40, geomCap);
+             const idealStep = STEP_PX / orbitR;
+             const arc = (fam.n - 1) * idealStep;
+             const halfArc = Math.min(arc / 2, MAX_HALF);
+             const clampedStep = fam.n > 1 ? (halfArc * 2) / (fam.n - 1) : 0;
+             fam.sorted.forEach((c, ci) => {
+               angleMap.set(c.id, parentAngle - halfArc + ci * clampedStep);
+             });
            }
          } else {
            // Compute angular gaps between consecutive parents (pure arithmetic, no normalizeAngle)
