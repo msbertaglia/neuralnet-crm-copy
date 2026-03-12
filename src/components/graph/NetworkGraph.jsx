@@ -339,26 +339,33 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
            }
            actualOrbitR = computedR;
 
+           // Compute the parent's orbit radius (orbit of level lvl-1)
+           const parentOrbitR = lvl === 1 ? 0 : (nodes.find(n => n.level === lvl - 1)?.orbitRadius || 0);
+
            familyData.forEach(({ sorted, angle, n }, i) => {
              if (n === 1) {
                angleMap.set(sorted[0].id, angle);
                return;
              }
 
-             // Zone bounds — cap each half to MAX_HALF_ARC so children stay near parent
-             const MAX_HALF_ARC = Math.PI * 0.35; // max ~63° on each side
+             // Geometric cap: max angle so that the straight line from child (on actualOrbitR)
+             // to parent (on parentOrbitR) never dips inside the parent orbit.
+             // Using the inscribed-angle formula: acos(parentOrbitR / actualOrbitR), capped at PI*0.40
+             const geomCap = actualOrbitR > parentOrbitR && parentOrbitR > 0
+               ? Math.acos(Math.min(1, parentOrbitR / actualOrbitR))
+               : Math.PI * 0.40;
+             const MAX_HALF_ARC = Math.min(Math.PI * 0.40, geomCap);
+
              const leftHalf  = Math.min(gaps[(i - 1 + numParents) % numParents] / 2, MAX_HALF_ARC) * (1 - PAD_FRAC);
              const rightHalf = Math.min(gaps[i] / 2, MAX_HALF_ARC) * (1 - PAD_FRAC);
              const leftBound  = angle - leftHalf;
              const rightBound = angle + rightHalf;
 
-             // Ideal step: STEP_PX/R, but compress to fit inside zone
              const idealStep = STEP_PX / actualOrbitR;
-             const maxStep = (rightBound - leftBound) / (n - 1);
+             const maxStep = (rightBound - leftBound) / Math.max(1, n - 1);
              const step = Math.min(idealStep, maxStep);
              const arc = (n - 1) * step;
 
-             // Center on parent angle, clamp inside zone
              let start = angle - arc / 2;
              start = Math.max(leftBound, Math.min(rightBound - arc, start));
 
