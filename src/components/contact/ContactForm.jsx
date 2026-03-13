@@ -117,6 +117,55 @@ export default function ContactForm({ contact, contacts, onSave, onClose }) {
           <button onClick={onClose}><X className="w-5 h-5 text-slate-400" /></button>
         </div>
 
+        {/* Fixed identity panel - always visible */}
+        <div className="px-5 py-4 border-b border-slate-700 bg-slate-900/80">
+          <div className="flex gap-4 items-center">
+            <div className="flex flex-col items-center gap-1.5 flex-shrink-0">
+              <div className="w-14 h-14 rounded-xl bg-slate-800 border border-slate-600 overflow-hidden flex items-center justify-center">
+                {form.photo_url ? (
+                  <img src={form.photo_url} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-slate-400 text-base font-bold">
+                    {form.name ? form.name.split(" ").map(w => w[0]).slice(0,2).join("").toUpperCase() : "?"}
+                  </span>
+                )}
+              </div>
+              <label className="cursor-pointer text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1">
+                <Upload className="w-3 h-3" /> Foto
+                <input type="file" accept="image/*" className="hidden" onChange={uploadPhoto} />
+              </label>
+            </div>
+            <div className="flex-1 min-w-0 space-y-2">
+              <Input
+                value={form.name}
+                onChange={e => set("name", e.target.value)}
+                placeholder="Nome completo *"
+                className="bg-slate-800 border-slate-600 text-white font-semibold"
+              />
+              <div className="flex gap-2 items-center">
+                <Input
+                  value={tagInput}
+                  onChange={e => setTagInput(e.target.value)}
+                  onKeyDown={e => e.key === "Enter" && addTag()}
+                  placeholder="Adicionar tag..."
+                  className="bg-slate-800 border-slate-600 text-white text-xs h-7 py-1"
+                />
+                <Button size="sm" onClick={addTag} className="bg-slate-700 hover:bg-slate-600 h-7 px-2"><Plus className="w-3.5 h-3.5" /></Button>
+              </div>
+              {form.tags?.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {form.tags.map(t => (
+                    <span key={t} className="bg-slate-700 text-slate-300 text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
+                      {t}
+                      <button onClick={() => set("tags", form.tags.filter(x => x !== t))}><X className="w-2.5 h-2.5" /></button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
         {/* Tab nav */}
         <div className="flex border-b border-slate-700 px-2">
           {TABS.map((t, i) => (
@@ -136,43 +185,9 @@ export default function ContactForm({ contact, contacts, onSave, onClose }) {
         <div className="flex-1 overflow-y-auto p-5 space-y-4">
           {tab === 0 && (
             <>
-              <div className="flex gap-4 items-start">
-                <div className="flex flex-col items-center gap-2">
-                  <div className="w-16 h-16 rounded-xl bg-slate-800 border border-slate-600 overflow-hidden flex items-center justify-center">
-                    {form.photo_url ? (
-                      <img src={form.photo_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-slate-400 text-lg font-bold">
-                        {form.name ? form.name.split(" ").map(w => w[0]).slice(0,2).join("").toUpperCase() : "?"}
-                      </span>
-                    )}
-                  </div>
-                  <label className="cursor-pointer text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1">
-                    <Upload className="w-3 h-3" /> Foto
-                    <input type="file" accept="image/*" className="hidden" onChange={uploadPhoto} />
-                  </label>
-                </div>
-                <div className="flex-1 space-y-3">
-                  <Field label="Nome completo *">
-                    <Input value={form.name} onChange={e => set("name", e.target.value)} className="bg-slate-800 border-slate-600 text-white" />
-                  </Field>
-                  <Field label="Apelido">
-                    <Input value={form.nickname} onChange={e => set("nickname", e.target.value)} className="bg-slate-800 border-slate-600 text-white" />
-                  </Field>
-                </div>
-              </div>
               <div className="grid grid-cols-2 gap-3">
-                <Field label="Status">
-                  <Select value={form.status} onValueChange={v => set("status", v)}>
-                    <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-700">
-                      {statusOptions.map(s => (
-                        <SelectItem key={s.id} value={s.label} className="text-slate-200">{s.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <Field label="Apelido">
+                  <Input value={form.nickname} onChange={e => set("nickname", e.target.value)} className="bg-slate-800 border-slate-600 text-white" />
                 </Field>
                 <Field label="Data de nascimento">
                   <Input type="date" value={form.birth_date} onChange={e => set("birth_date", e.target.value)} className="bg-slate-800 border-slate-600 text-white" />
@@ -190,6 +205,18 @@ export default function ContactForm({ contact, contacts, onSave, onClose }) {
                    />
                  </Field>
               </div>
+              <Field label="Status">
+                <Select value={form.status} onValueChange={v => set("status", v)}>
+                  <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-800 border-slate-700">
+                    {statusOptions.map(s => (
+                      <SelectItem key={s.id} value={s.label} className="text-slate-200">{s.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </Field>
               <Field label="Visibilidade">
                 <Select value={form.visibility} onValueChange={v => set("visibility", v)}>
                   <SelectTrigger className="bg-slate-800 border-slate-600 text-white">
@@ -200,20 +227,6 @@ export default function ContactForm({ contact, contacts, onSave, onClose }) {
                     <SelectItem value="privado" className="text-slate-200">Privado (só eu)</SelectItem>
                   </SelectContent>
                 </Select>
-              </Field>
-              <Field label="Tags">
-                <div className="flex gap-2">
-                  <Input value={tagInput} onChange={e => setTagInput(e.target.value)} onKeyDown={e => e.key === "Enter" && addTag()} placeholder="Digite e pressione Enter" className="bg-slate-800 border-slate-600 text-white" />
-                  <Button size="sm" onClick={addTag} className="bg-slate-700 hover:bg-slate-600"><Plus className="w-4 h-4" /></Button>
-                </div>
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {form.tags?.map(t => (
-                    <span key={t} className="bg-slate-700 text-slate-300 text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
-                      {t}
-                      <button onClick={() => set("tags", form.tags.filter(x => x !== t))}><X className="w-2.5 h-2.5" /></button>
-                    </span>
-                  ))}
-                </div>
               </Field>
               <Field label="Observações">
                 <Textarea value={form.notes} onChange={e => set("notes", e.target.value)} rows={3} className="bg-slate-800 border-slate-600 text-white" />
