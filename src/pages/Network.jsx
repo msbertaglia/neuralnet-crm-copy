@@ -149,6 +149,7 @@ export default function Network() {
     setShowContactForm(false);
     setEditingContact(null);
     await loadAll();
+    setRebuildKey(k => k + 1);
   };
 
 
