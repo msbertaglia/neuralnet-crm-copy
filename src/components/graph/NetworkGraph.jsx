@@ -1066,15 +1066,160 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
       };
     };
 
+    // Touch support
+    let lastTouchDist = null;
+    let lastTouchMid = null;
+    let touchStartTime = 0;
+    let touchStartPos = null;
+    let touchMoved = false;
+    let lastTapTime = 0;
+
+    const getTouchDist = (t1, t2) => {
+      const dx = t1.clientX - t2.clientX;
+      const dy = t1.clientY - t2.clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    };
+
+    const getTouchMid = (t1, t2) => ({
+      x: (t1.clientX + t2.clientX) / 2,
+      y: (t1.clientY + t2.clientY) / 2,
+    });
+
+    const onTouchStart = (e) => {
+      e.preventDefault();
+      if (e.touches.length === 1) {
+        const t = e.touches[0];
+        touchStartTime = Date.now();
+        touchStartPos = { x: t.clientX, y: t.clientY };
+        touchMoved = false;
+        const node = getNodeAtPos(t.clientX, t.clientY);
+        if (node) {
+          dragRef.current = node;
+          dragMovedRef.current = false;
+          if (returnTimerRef.current) { clearTimeout(returnTimerRef.current); returnTimerRef.current = null; }
+          node.returning = false;
+        } else {
+          isPanningRef.current = true;
+          panStartRef.current = { x: t.clientX - transformRef.current.x, y: t.clientY - transformRef.current.y };
+        }
+        lastTouchDist = null;
+        lastTouchMid = null;
+      } else if (e.touches.length === 2) {
+        dragRef.current = null;
+        isPanningRef.current = false;
+        lastTouchDist = getTouchDist(e.touches[0], e.touches[1]);
+        lastTouchMid = getTouchMid(e.touches[0], e.touches[1]);
+      }
+    };
+
+    const onTouchMove = (e) => {
+      e.preventDefault();
+      if (e.touches.length === 2) {
+        const dist = getTouchDist(e.touches[0], e.touches[1]);
+        const mid = getTouchMid(e.touches[0], e.touches[1]);
+        if (lastTouchDist !== null) {
+          const scaleFactor = dist / lastTouchDist;
+          const rect = canvas.getBoundingClientRect();
+          const mx = mid.x - rect.left;
+          const my = mid.y - rect.top;
+          const { x: tx, y: ty, scale } = transformRef.current;
+          const newScale = Math.min(3, Math.max(0.2, scale * scaleFactor));
+          transformRef.current = {
+            x: mx - (mx - tx) * (newScale / scale),
+            y: my - (my - ty) * (newScale / scale),
+            scale: newScale,
+          };
+        }
+        lastTouchDist = dist;
+        lastTouchMid = mid;
+      } else if (e.touches.length === 1) {
+        const t = e.touches[0];
+        if (touchStartPos) {
+          const dx = Math.abs(t.clientX - touchStartPos.x);
+          const dy = Math.abs(t.clientY - touchStartPos.y);
+          if (dx > 5 || dy > 5) touchMoved = true;
+        }
+        if (dragRef.current) {
+          dragMovedRef.current = true;
+          const rect = canvas.getBoundingClientRect();
+          const { x: tx, y: ty, scale } = transformRef.current;
+          dragRef.current.x = (t.clientX - rect.left - tx) / scale;
+          dragRef.current.y = (t.clientY - rect.top - ty) / scale;
+          dragRef.current.vx = 0;
+          dragRef.current.vy = 0;
+          const centerNode = nodesRef.current.find(n => n.isCenter);
+          if (centerNode && !dragRef.current.isCenter) {
+            const ddx = dragRef.current.x - centerNode.x;
+            const ddy = dragRef.current.y - centerNode.y;
+            dragNearCenterRef.current = Math.sqrt(ddx * ddx + ddy * ddy) < centerNode.radius * 2.5;
+          }
+        } else if (isPanningRef.current && panStartRef.current) {
+          transformRef.current.x = t.clientX - panStartRef.current.x;
+          transformRef.current.y = t.clientY - panStartRef.current.y;
+        }
+      }
+    };
+
+    const onTouchEnd = (e) => {
+      e.preventDefault();
+      lastTouchDist = null;
+      lastTouchMid = null;
+      if (e.touches.length === 0) {
+        if (dragRef.current) {
+          const node = dragRef.current;
+          const moved = dragMovedRef.current;
+          dragRef.current = null;
+          dragMovedRef.current = false;
+          if (!moved) {
+            const now = Date.now();
+            if (now - lastTapTime < 350) {
+              lastTapTime = 0;
+              if (onNodeDoubleClick) onNodeDoubleClick(node.contact);
+              else if (onNodeClick && !node.isCenter) onNodeClick(node.contact);
+            } else {
+              lastTapTime = now;
+              setTimeout(() => {
+                if (lastTapTime !== 0 && Date.now() - lastTapTime >= 300) {
+                  if (onNodeClick && !node.isCenter) onNodeClick(node.contact);
+                  lastTapTime = 0;
+                }
+              }, 350);
+            }
+          } else {
+            if (dragNearCenterRef.current && !node.isCenter && onSetCenter) {
+              onSetCenter(node.contact);
+              dragNearCenterRef.current = false;
+            } else {
+              dragNearCenterRef.current = false;
+              returnTimerRef.current = setTimeout(() => { returnTimerRef.current = null; node.returning = true; }, 1000);
+            }
+          }
+        }
+        isPanningRef.current = false;
+        panStartRef.current = null;
+      } else if (e.touches.length === 1) {
+        // Went from 2 fingers to 1: restart pan
+        const t = e.touches[0];
+        isPanningRef.current = true;
+        panStartRef.current = { x: t.clientX - transformRef.current.x, y: t.clientY - transformRef.current.y };
+      }
+    };
+
     canvas.addEventListener("mousedown", onMouseDown);
     canvas.addEventListener("mousemove", onMouseMove);
     canvas.addEventListener("mouseup", onMouseUp);
     canvas.addEventListener("wheel", onWheel, { passive: false });
+    canvas.addEventListener("touchstart", onTouchStart, { passive: false });
+    canvas.addEventListener("touchmove", onTouchMove, { passive: false });
+    canvas.addEventListener("touchend", onTouchEnd, { passive: false });
     return () => {
       canvas.removeEventListener("mousedown", onMouseDown);
       canvas.removeEventListener("mousemove", onMouseMove);
       canvas.removeEventListener("mouseup", onMouseUp);
       canvas.removeEventListener("wheel", onWheel);
+      canvas.removeEventListener("touchstart", onTouchStart);
+      canvas.removeEventListener("touchmove", onTouchMove);
+      canvas.removeEventListener("touchend", onTouchEnd);
     };
   }, [onNodeClick, onNodeDoubleClick]);
 
