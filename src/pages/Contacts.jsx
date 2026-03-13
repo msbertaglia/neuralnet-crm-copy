@@ -365,6 +365,8 @@ export default function Contacts() {
           contact={selectedContact}
           logs={contactLogs}
           documents={contactDocs}
+          allContacts={contacts}
+          onRefresh={loadAll}
           onClose={() => setSelectedContact(null)}
           onEdit={(c) => { setEditingContact(c); setShowContactForm(true); setSelectedContact(null); }}
           onAddLog={() => setShowLogForm(true)}
