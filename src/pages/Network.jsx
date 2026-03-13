@@ -198,7 +198,7 @@ export default function Network() {
 
         {/* Stats pills */}
         <div className="hidden md:flex items-center gap-2">
-          <StatPill label="Total" value={stats.total} color="text-slate-300" />
+          <StatPill label="Total" value={`${filteredContacts.length} de ${stats.total}`} color="text-slate-300" />
           {stats.atrasados > 0 && <StatPill label="Atrasados" value={stats.atrasados} color="text-red-400" dot="#ef4444" />}
           {stats.pendentes > 0 && <StatPill label="Pendentes" value={stats.pendentes} color="text-amber-400" dot="#f59e0b" />}
           {stats.aguardando > 0 && <StatPill label="Aguardando" value={stats.aguardando} color="text-blue-400" dot="#3b82f6" />}
