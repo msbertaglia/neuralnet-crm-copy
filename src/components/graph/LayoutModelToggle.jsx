@@ -34,31 +34,20 @@ export const LAYOUT_MODELS = [
 ];
 
 export default function LayoutModelToggle({ value, onChange }) {
+  const current = LAYOUT_MODELS.find(m => m.id === value) || LAYOUT_MODELS[0];
+
   return (
-    <TooltipProvider delayDuration={300}>
-      <div className="flex items-center gap-1 bg-slate-800 border border-slate-700 rounded-lg p-1">
-        {LAYOUT_MODELS.map((m) => (
-          <Tooltip key={m.id}>
-            <TooltipTrigger asChild>
-              <button
-                onClick={() => onChange(m.id)}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
-                  value === m.id
-                    ? "bg-blue-600 text-white shadow"
-                    : "text-slate-400 hover:text-slate-200 hover:bg-slate-700"
-                }`}
-              >
-                <span className="text-sm leading-none">{m.icon}</span>
-                <span className="hidden sm:inline">{m.label}</span>
-              </button>
-            </TooltipTrigger>
-            <TooltipContent side="bottom" className="max-w-[200px] text-center">
-              <p className="font-semibold">{m.label}</p>
-              <p className="text-xs text-slate-400 mt-0.5">{m.description}</p>
-            </TooltipContent>
-          </Tooltip>
+    <div className="relative">
+      <select
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        className="h-8 pl-7 pr-2 text-xs bg-slate-800 border border-slate-700 text-slate-200 rounded-lg appearance-none cursor-pointer hover:bg-slate-700 transition-colors"
+      >
+        {LAYOUT_MODELS.map(m => (
+          <option key={m.id} value={m.id}>{m.icon} {m.label}</option>
         ))}
-      </div>
-    </TooltipProvider>
+      </select>
+      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-sm pointer-events-none">{current.icon}</span>
+    </div>
   );
 }
