@@ -80,6 +80,8 @@ export default function Contacts() {
     setUser(u);
     setConnections(conn);
     setLoading(false);
+    // Atualiza o contato selecionado (sidebar) com dados frescos
+    setSelectedContact(prev => prev ? (c.find(x => x.id === prev.id) || prev) : null);
   };
 
 
