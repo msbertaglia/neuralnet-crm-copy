@@ -31,6 +31,12 @@ export const LAYOUT_MODELS = [
     icon: "↺",
     description: "Filhos distribuídos em leque assimétrico. Cada família rotaciona levemente.",
   },
+  {
+    id: "fibonacci",
+    label: "Fibonacci",
+    icon: "🌀",
+    description: "Posicionamento baseado na espiral áurea de Fibonacci. Ângulo dourado (137.5°) entre irmãos, órbitas em proporção áurea.",
+  },
 ];
 
 export default function LayoutModelToggle({ value, onChange }) {
