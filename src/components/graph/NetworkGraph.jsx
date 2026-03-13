@@ -438,6 +438,39 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
            spreadChildren(children, angle - half, angle + half, 0.05);
          });
 
+       } else if (layoutModel === "fibonacci") {
+          // Fibonacci / golden spiral layout
+          // - Orbit radii grow by the golden ratio φ ≈ 1.618
+          // - Siblings are placed using the golden angle ≈ 137.5077°
+          const PHI = (1 + Math.sqrt(5)) / 2; // golden ratio
+          const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5)); // ≈ 2.3999 rad ≈ 137.508°
+
+          // For each parent group, assign angles using the golden angle sequence
+          // starting from the parent's own angle, so children fan out in a Fibonacci spiral
+          parentEntries.forEach(({ children, angle }) => {
+            const sorted = [...children].sort((a, b) => contacts.indexOf(a) - contacts.indexOf(b));
+            const n = sorted.length;
+            if (n === 1) {
+              angleMap.set(sorted[0].id, angle);
+              return;
+            }
+            // Start offset so the group is centered around the parent angle
+            const halfSpan = GOLDEN_ANGLE * (n - 1) / 2;
+            sorted.forEach((c, i) => {
+              angleMap.set(c.id, angle - halfSpan + i * GOLDEN_ANGLE);
+            });
+          });
+
+          // Override orbitR: scale each level by φ from the previous
+          // (actualOrbitR was already computed from minFromPrev, but we nudge it to φ-ratio)
+          if (lvl >= 2) {
+            const prevOrbit = nodes.find(n => n.level === lvl - 1)?.orbitRadius || 0;
+            if (prevOrbit > 0) {
+              const phiOrbit = prevOrbit * PHI;
+              if (phiOrbit > actualOrbitR) actualOrbitR = phiOrbit;
+            }
+          }
+
        } else if (layoutModel === "espiral") {
            const STEP_PX = 2 * nRadius + NODE_MIN_GAP;
 
