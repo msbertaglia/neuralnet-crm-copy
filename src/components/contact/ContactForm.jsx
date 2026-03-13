@@ -76,9 +76,12 @@ export default function ContactForm({ contact, contacts, onSave, onClose }) {
     let introducedByName = "";
     let introducedById = form.introduced_by_id;
     
-    if (form.introduced_by_id === "sem_informacao" || form.introduced_by_id === "direto") {
-      introducedById = form.introduced_by_id; // Keep the special state
-      introducedByName = ""; // Don't set a name
+    if (form.introduced_by_id === "sem_informacao") {
+      introducedById = ""; // Save as empty
+      introducedByName = "";
+    } else if (form.introduced_by_id === "direto") {
+      introducedById = "direto";
+      introducedByName = "";
     } else if (form.introduced_by_id) {
       const found = contacts.find(c => c.id === form.introduced_by_id);
       introducedByName = found?.name || "";
