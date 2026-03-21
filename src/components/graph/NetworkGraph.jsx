@@ -103,6 +103,9 @@ function computeOrbits(centralContactId, contacts) {
   return levels;
 }
 
+// Cache for loaded images (shared across renders)
+const imgCache = {};
+
 export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick, onSetCenter, centralContactId, originalCentralId, highlightedIds, ancestorIds, filterMode = "completo", layoutModel = "voronoi", orbitDistances = {} }) {
   const canvasRef = useRef(null);
   const nodesRef = useRef([]);
