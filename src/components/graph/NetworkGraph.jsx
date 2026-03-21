@@ -715,6 +715,176 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
     });
   }, []);
 
+  // ── Mural renderer ──────────────────────────────────────────────────────────
+  const drawMural = useCallback((ctx, W, H) => {
+    const nodes = nodesRef.current;
+    const edges = edgesRef.current;
+
+    const getNodeState = (nodeContactId) => {
+      if (!highlightedIds || !nodeContactId) return "highlight";
+      if (highlightedIds.has(nodeContactId)) return "highlight";
+      if (ancestorIds && ancestorIds.has(nodeContactId)) return "ancestor";
+      return "ghost";
+    };
+
+    // Draw edges as red strings first
+    edges.forEach(e => {
+      const src = nodes.find(n => n.id === e.sourceId);
+      const tgt = nodes.find(n => n.id === e.targetId);
+      if (!src || !tgt) return;
+
+      const srcState = getNodeState(src.contactId);
+      const tgtState = getNodeState(tgt.contactId);
+      if (filterMode === "parcial" && (srcState !== "highlight" || tgtState !== "highlight")) return;
+
+      const fade = (srcState === "ghost" || tgtState === "ghost") ? 0.18
+                 : (srcState === "ancestor" || tgtState === "ancestor") ? 0.4 : 1;
+
+      // Slightly curved string
+      ctx.beginPath();
+      const mx = (src.x + tgt.x) / 2 + (Math.random() * 6 - 3); // tiny jitter for "string" feel
+      const my = (src.y + tgt.y) / 2 + (Math.random() * 6 - 3);
+      ctx.moveTo(src.x, src.y);
+      ctx.quadraticCurveTo(mx, my, tgt.x, tgt.y);
+      ctx.strokeStyle = `rgba(185,28,28,${0.75 * fade})`;
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([]);
+      ctx.stroke();
+
+      // Pin dot at target end
+      ctx.beginPath();
+      ctx.arc(tgt.x, tgt.y, 3.5, 0, 2 * Math.PI);
+      ctx.fillStyle = `rgba(220,38,38,${0.9 * fade})`;
+      ctx.fill();
+    });
+
+    // Draw cards
+    const CARD_W = 72; // half-width; total = 144
+    const CARD_H = 90;
+
+    nodes.forEach(n => {
+      const isHovered = hoveredRef.current === n.id;
+      const nodeState = n.isCenter ? "highlight" : getNodeState(n.contactId);
+      if (filterMode === "parcial" && (nodeState === "ghost" || nodeState === "ancestor")) return;
+
+      const fade = nodeState === "ghost" ? 0.2 : nodeState === "ancestor" ? 0.45 : 1;
+      const cardW2 = n.isCenter ? 52 : CARD_W / 2;
+      const cardH = n.isCenter ? 104 : CARD_H;
+      const cx = n.x;
+      const cy = n.y;
+
+      ctx.save();
+      ctx.globalAlpha = fade;
+
+      // Slight random rotation per node (stable using contactId hash)
+      const hash = (n.contactId || n.id || "").split("").reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+      const rot = n.isCenter ? 0 : ((hash % 11) - 5) * 0.018; // ±0.09 rad ≈ ±5°
+      ctx.translate(cx, cy);
+      ctx.rotate(rot);
+
+      // Drop shadow
+      ctx.shadowColor = "rgba(0,0,0,0.45)";
+      ctx.shadowBlur = isHovered ? 18 : 8;
+      ctx.shadowOffsetX = 2;
+      ctx.shadowOffsetY = 3;
+
+      // Card background
+      const cardColor = n.isCenter ? "#fff8e1" : "#fafaf7";
+      ctx.fillStyle = cardColor;
+      ctx.beginPath();
+      ctx.roundRect(-cardW2, -cardH / 2, cardW2 * 2, cardH, 3);
+      ctx.fill();
+
+      // Border
+      ctx.shadowColor = "transparent";
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+      const borderColor = n.isCenter ? "#d97706" : (STATUS_COLORS[n.status] || "#d1d5db") + "99";
+      ctx.strokeStyle = borderColor;
+      ctx.lineWidth = n.isCenter ? 2.5 : 1.5;
+      ctx.stroke();
+
+      // Photo area
+      const photoH = cardH * 0.55;
+      const photoY = -cardH / 2 + 6;
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(-cardW2 + 4, photoY, cardW2 * 2 - 8, photoH);
+      ctx.clip();
+
+      if (n.photoUrl) {
+        const key = n.photoUrl;
+        if (!imgCache[key]) {
+          imgCache[key] = new Image();
+          imgCache[key].src = key;
+        }
+        const img = imgCache[key];
+        if (img.complete && img.naturalWidth > 0) {
+          ctx.drawImage(img, -cardW2 + 4, photoY, cardW2 * 2 - 8, photoH);
+        } else {
+          drawCardInitials(ctx, n, cardW2, photoY, photoH);
+        }
+      } else {
+        drawCardInitials(ctx, n, cardW2, photoY, photoH);
+      }
+      ctx.restore();
+
+      // Divider line
+      ctx.beginPath();
+      ctx.moveTo(-cardW2 + 4, photoY + photoH + 2);
+      ctx.lineTo(cardW2 - 4, photoY + photoH + 2);
+      ctx.strokeStyle = "#e5e7eb";
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+
+      // Name text
+      const textY = photoY + photoH + 10;
+      ctx.fillStyle = n.isCenter ? "#92400e" : "#1f2937";
+      ctx.font = `bold ${n.isCenter ? 11 : 9}px Inter, sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "top";
+      const nameWords = (n.label || "").split(" ");
+      const line1 = nameWords.slice(0, 2).join(" ");
+      const line2 = nameWords.slice(2, 4).join(" ");
+      ctx.fillText(line1, 0, textY, cardW2 * 2 - 8);
+      if (line2) ctx.fillText(line2, 0, textY + 11, cardW2 * 2 - 8);
+
+      // Company (level 1 only)
+      if (n.company && (n.level === 1 || n.isCenter)) {
+        ctx.fillStyle = "#6b7280";
+        ctx.font = `8px Inter, sans-serif`;
+        ctx.fillText(n.company, 0, textY + (line2 ? 23 : 12), cardW2 * 2 - 8);
+      }
+
+      // Push-pin
+      const pinColor = n.isCenter ? "#d97706" : "#dc2626";
+      ctx.beginPath();
+      ctx.arc(0, -cardH / 2 - 1, 5, 0, 2 * Math.PI);
+      ctx.fillStyle = pinColor;
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(0, -cardH / 2 - 1, 2.5, 0, 2 * Math.PI);
+      ctx.fillStyle = "rgba(255,255,255,0.6)";
+      ctx.fill();
+
+      ctx.restore();
+    });
+  }, [highlightedIds, filterMode]);
+
+  function drawCardInitials(ctx, n, cardW2, photoY, photoH) {
+    const statusColor = STATUS_COLORS[n.status] || "#94a3b8";
+    ctx.fillStyle = statusColor + "22";
+    ctx.fillRect(-cardW2 + 4, photoY, cardW2 * 2 - 8, photoH);
+    const initials = (n.label || "?").split(" ").map(w => w[0]).slice(0, 2).join("").toUpperCase();
+    ctx.fillStyle = statusColor + "cc";
+    ctx.font = `bold ${n.isCenter ? 22 : 16}px Inter, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(initials, 0, photoY + photoH / 2);
+    ctx.textBaseline = "alphabetic";
+  }
+
   const drawGraph = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
