@@ -906,30 +906,31 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
     };
 
     ctx.clearRect(0, 0, W, H);
-    ctx.save();
-    ctx.translate(tx, ty);
-    ctx.scale(scale, scale);
 
-    // ── Mural mode: cork-board background + card renderer ──
+    // ── Mural mode: cork-board background covers the ENTIRE canvas (before transform) ──
     if (layoutModel === "mural") {
-      // Cork texture background
-      const centerNode2 = nodesRef.current.find(n => n.isCenter);
-      const bgGrad = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(W, H) * 0.7);
-      bgGrad.addColorStop(0, "#c9a96e");
-      bgGrad.addColorStop(1, "#a07840");
-      ctx.fillStyle = bgGrad;
+      ctx.fillStyle = "#b8924a";
       ctx.fillRect(0, 0, W, H);
-      // Cork grain lines
-      ctx.globalAlpha = 0.06;
+      // Cork grain lines (fixed to screen, no transform)
+      ctx.globalAlpha = 0.055;
       for (let i = 0; i < H; i += 4) {
         ctx.beginPath();
-        ctx.moveTo(0, i + (Math.sin(i * 0.3) * 1.5));
-        ctx.lineTo(W, i + (Math.sin(i * 0.3 + 1) * 1.5));
+        ctx.moveTo(0, i + Math.sin(i * 0.3) * 1.5);
+        ctx.lineTo(W, i + Math.sin(i * 0.3 + 1) * 1.5);
         ctx.strokeStyle = i % 8 === 0 ? "#6b4c1e" : "#d4a96a";
         ctx.lineWidth = 1;
         ctx.stroke();
       }
       ctx.globalAlpha = 1;
+    }
+
+    ctx.save();
+    ctx.translate(tx, ty);
+    ctx.scale(scale, scale);
+
+    // ── Mural mode: orbit rings + card renderer (inside transform) ──
+    if (layoutModel === "mural") {
+      const centerNode2 = nodesRef.current.find(n => n.isCenter);
       // Orbit rings (subtle on cork)
       if (centerNode2) {
         const levelsPresent = [...new Set(nodesRef.current.filter(n => !n.isCenter && n.orbitRadius).map(n => n.level))].sort((a,b)=>a-b);
