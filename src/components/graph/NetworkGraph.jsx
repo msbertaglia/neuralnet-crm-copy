@@ -332,7 +332,7 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
            });
          }
 
-       } else if (layoutModel === "padrao") {
+       } else if (layoutModel === "mural" || layoutModel === "padrao") {
          // Zone-based layout: each parent owns a zone bounded by bisectors to its neighbors.
          // Children are placed WITHIN the parent's zone (clamped), so edges NEVER cross.
          // Uses pure linear arithmetic — no normalizeAngle on intermediate values.
