@@ -1154,7 +1154,7 @@ export default function NetworkGraph({ contacts, onNodeClick, onNodeDoubleClick,
     });
 
     ctx.restore();
-  }, [highlightedIds]);
+  }, [highlightedIds, layoutModel, drawMural]);
 
   function drawInitials(ctx, n, alpha = 1) {
     const statusColor = STATUS_COLORS[n.status] || "#94a3b8";
