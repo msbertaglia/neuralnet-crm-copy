@@ -37,6 +37,12 @@ export const LAYOUT_MODELS = [
     icon: "🌀",
     description: "Posicionamento baseado na espiral áurea de Fibonacci. Ângulo dourado (137.5°) entre irmãos, órbitas em proporção áurea.",
   },
+  {
+    id: "mural",
+    label: "Mural",
+    icon: "📌",
+    description: "Estilo painel de investigação: cartões com fotos em fundo de cortiça, conectados por fios vermelhos. Mesmas distâncias do layout Padrão.",
+  },
 ];
 
 export default function LayoutModelToggle({ value, onChange }) {
