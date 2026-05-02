@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { LayoutDashboard, Users, Share2, FolderOpen, Menu, X, ChevronRight, Upload } from "lucide-react";
+import { LayoutDashboard, Users, Share2, FolderOpen, Menu, X, ChevronRight, Upload, DatabaseBackup } from "lucide-react";
 
 import { User } from "lucide-react";
 
@@ -12,6 +12,7 @@ const navItems = [
   { label: "Projetos", page: "Projects", icon: FolderOpen },
   { label: "Dashboard", page: "Dashboard", icon: LayoutDashboard },
   { label: "Importar DEX", page: "ImportContacts", icon: Upload },
+  { label: "Exportar Dados", page: "ExportData", icon: DatabaseBackup },
 ];
 
 export default function Layout({ children, currentPageName }) {
