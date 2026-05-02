@@ -17,6 +17,30 @@ export default function ExportData() {
   const [done, setDone] = useState(false);
   const [progress, setProgress] = useState([]);
 
+  const handleExportCSV = async () => {
+    setLoading(true);
+    try {
+      const contacts = await base44.entities.Contact.list(undefined, 9999);
+      const headers = ["Nome", "Status", "Tags", "Empresa"];
+      const rows = contacts.map(c => [
+        `"${(c.name || "").replace(/"/g, '""')}"`,
+        `"${(c.status || "").replace(/"/g, '""')}"`,
+        `"${(Array.isArray(c.tags) ? c.tags.join(", ") : "").replace(/"/g, '""')}"`,
+        `"${(c.company || "").replace(/"/g, '""')}"`,
+      ]);
+      const csv = [headers.join(","), ...rows.map(r => r.join(","))].join("\n");
+      const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `contatos_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleExport = async () => {
     setLoading(true);
     setDone(false);
@@ -81,6 +105,14 @@ export default function ExportData() {
             );
           })}
         </div>
+
+        <Button
+          onClick={handleExportCSV}
+          disabled={loading}
+          className="w-full mb-3 bg-green-700 hover:bg-green-800 text-white"
+        >
+          <Download className="w-4 h-4" /> Exportar Contatos (CSV simples)
+        </Button>
 
         <Button
           onClick={handleExport}
