@@ -1,0 +1,51 @@
+{
+  "name": "MeetingLog",
+  "type": "object",
+  "properties": {
+    "contact_id": {
+      "type": "string"
+    },
+    "contact_name": {
+      "type": "string"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "reuniao_presencial",
+        "videochamada",
+        "ligacao",
+        "email",
+        "whatsapp",
+        "linkedin",
+        "evento",
+        "outro"
+      ],
+      "default": "reuniao_presencial"
+    },
+    "summary": {
+      "type": "string"
+    },
+    "outcome": {
+      "type": "string"
+    },
+    "duration_minutes": {
+      "type": "number"
+    },
+    "visibility": {
+      "type": "string",
+      "enum": [
+        "publico",
+        "privado"
+      ],
+      "default": "publico"
+    }
+  },
+  "required": [
+    "contact_id",
+    "date"
+  ]
+}

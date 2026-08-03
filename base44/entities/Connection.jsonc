@@ -1,0 +1,68 @@
+{
+  "name": "Connection",
+  "type": "object",
+  "properties": {
+    "contact_a_id": {
+      "type": "string"
+    },
+    "contact_a_name": {
+      "type": "string"
+    },
+    "contact_b_id": {
+      "type": "string"
+    },
+    "contact_b_name": {
+      "type": "string"
+    },
+    "connection_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "introduced_by_id": {
+      "type": "string"
+    },
+    "introduced_by_name": {
+      "type": "string"
+    },
+    "connection_type": {
+      "type": "string",
+      "enum": [
+        "profissional",
+        "pessoal",
+        "negocios",
+        "parceria",
+        "cliente",
+        "fornecedor"
+      ],
+      "default": "profissional"
+    },
+    "strength": {
+      "type": "string",
+      "enum": [
+        "fraca",
+        "media",
+        "forte"
+      ],
+      "default": "media"
+    },
+    "origin": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "implicita"
+      ],
+      "default": "manual"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "discovered_date": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "contact_a_id",
+    "contact_b_id"
+  ]
+}

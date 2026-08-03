@@ -1,0 +1,142 @@
+{
+  "name": "Contact",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Nome completo"
+    },
+    "nickname": {
+      "type": "string"
+    },
+    "photo_url": {
+      "type": "string"
+    },
+    "birth_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "company": {
+      "type": "string"
+    },
+    "company_logo_url": {
+      "type": "string"
+    },
+    "position": {
+      "type": "string"
+    },
+    "sector": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "city": {
+      "type": "string"
+    },
+    "state": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string"
+    },
+    "linkedin_url": {
+      "type": "string"
+    },
+    "instagram_url": {
+      "type": "string"
+    },
+    "twitter_url": {
+      "type": "string"
+    },
+    "facebook_url": {
+      "type": "string"
+    },
+    "telegram": {
+      "type": "string"
+    },
+    "website": {
+      "type": "string"
+    },
+    "whatsapp_message_link": {
+      "type": "string"
+    },
+    "other_social": {
+      "type": "string"
+    },
+    "starred": {
+      "type": "boolean",
+      "default": false
+    },
+    "status": {
+      "type": "string",
+      "default": "prospect"
+    },
+    "met_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "introduced_by_id": {
+      "type": "string"
+    },
+    "introduced_by_name": {
+      "type": "string"
+    },
+    "last_contact_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notes": {
+      "type": "string"
+    },
+    "next_step_description": {
+      "type": "string"
+    },
+    "next_step_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "next_step_type": {
+      "type": "string",
+      "enum": [
+        "eu_contato",
+        "aguardando_deles"
+      ],
+      "default": "eu_contato"
+    },
+    "next_step_status": {
+      "type": "string",
+      "enum": [
+        "pendente",
+        "aguardando",
+        "atrasado",
+        "concluido",
+        "sem_proximo_passo"
+      ],
+      "default": "sem_proximo_passo"
+    },
+    "visibility": {
+      "type": "string",
+      "enum": [
+        "publico",
+        "privado"
+      ],
+      "default": "publico"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "ContactStatus",
+  "type": "object",
+  "properties": {
+    "label": {
+      "type": "string",
+      "description": "Nome do status"
+    },
+    "color": {
+      "type": "string",
+      "description": "Cor do status (tailwind class)"
+    }
+  },
+  "required": [
+    "label"
+  ]
+}

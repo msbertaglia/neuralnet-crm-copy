@@ -1,0 +1,45 @@
+{
+  "name": "Document",
+  "type": "object",
+  "properties": {
+    "contact_id": {
+      "type": "string"
+    },
+    "contact_name": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "file_url": {
+      "type": "string"
+    },
+    "document_type": {
+      "type": "string",
+      "enum": [
+        "due_diligence",
+        "contrato",
+        "proposta",
+        "apresentacao",
+        "nda",
+        "outro"
+      ],
+      "default": "outro"
+    },
+    "visibility": {
+      "type": "string",
+      "enum": [
+        "publico",
+        "privado"
+      ],
+      "default": "privado"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "contact_id",
+    "name"
+  ]
+}
